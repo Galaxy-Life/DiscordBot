@@ -16,9 +16,9 @@ namespace AdvancedBot.Core.Extensions
                 if (message.HasStringPrefix(prefixes[i], ref prefixStart)) { return true; }
             }
 
-            argPos = client.CurrentUser.Mention.Length;
-            if (message.HasMentionPrefix(client.CurrentUser, ref prefixStart)) { return true; }
-            else { return false; }
+            prefixStart = 0;
+            argPos = client.CurrentUser.Mention.Length + 1;
+            return message.HasMentionPrefix(client.CurrentUser, ref prefixStart);
         }
 
         public static bool HasPrefix(this SocketUserMessage message, DiscordSocketClient client, out int argPos,
@@ -29,9 +29,9 @@ namespace AdvancedBot.Core.Extensions
             argPos = prefix.Length;
             if (message.HasStringPrefix(prefix, ref prefixStart)) { return true; }
 
-            argPos = client.CurrentUser.Mention.Length;
-            if (message.HasMentionPrefix(client.CurrentUser, ref prefixStart)) { return true; }
-            else { return false; }
+            prefixStart = 0;
+            argPos = client.CurrentUser.Mention.Length + 1;
+            return message.HasMentionPrefix(client.CurrentUser, ref prefixStart);
         }
     }
 }
