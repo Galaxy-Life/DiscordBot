@@ -7,17 +7,18 @@ using System;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using AdvancedBot.Core.Commands;
 
 namespace AdvancedBot.Core.Services.Commands
 {
     public class CommandHandlerService
     {
         private readonly DiscordSocketClient _client;
-        private readonly CommandService _commands;
+        private readonly CustomCommandService _commands;
         private readonly IServiceProvider _services;
         private readonly GuildAccountService _accounts;
 
-        public CommandHandlerService(DiscordSocketClient client, CommandService commands, IServiceProvider services, GuildAccountService accounts)
+        public CommandHandlerService(DiscordSocketClient client, CustomCommandService commands, IServiceProvider services, GuildAccountService accounts)
         {
             _commands = commands;
             _client = client;
@@ -95,38 +96,15 @@ namespace AdvancedBot.Core.Services.Commands
     
         private async Task SendWrongParameterCountMessage(ICommandContext ctx, CommandInfo command)
         {
-            var fieldValue = GenerateUsageField(command);
+            var usageField = _commands.GenerateUsageField(command);
 
             var embed = new EmbedBuilder()
-            .WithTitle("Correct usage:")
-            .WithDescription(fieldValue)
-            .WithColor(Color.DarkOrange)
+            .WithTitle("Command wrongly executed")
+            .AddField(usageField)
             .WithFooter("Tip: <> means mandatory, [] optional")
             .Build();
 
             await ctx.Channel.SendMessageAsync("", false, embed);
         }
-
-        private string GenerateUsageField(CommandInfo command)
-        {
-            string example = "";
-            StringBuilder parameters = new StringBuilder();
-
-            for (int i = 0; i < command.Parameters.Count; i++)
-            {
-                var pref = "<";
-                var suff = ">";
-                
-                if (command.Parameters[i].IsOptional)
-                {
-                    pref = "["; suff = "]";
-                }
-
-                parameters.Append($"{pref}{command.Parameters[i]}{suff} ");
-            }
-            
-            example = $"\n!**{command.Aliases[0]} {parameters}**";
-            return example;
-        } 
     }
 }

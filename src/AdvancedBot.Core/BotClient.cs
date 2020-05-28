@@ -6,16 +6,17 @@ using AdvancedBot.Core.Services.DataStorage;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Threading.Tasks;
+using AdvancedBot.Core.Commands;
 
 namespace AdvancedBot.Core
 {
     public class BotClient
     {
         private DiscordSocketClient _client;
-        private CommandService _commands;
+        private CustomCommandService _commands;
         private IServiceProvider _services;
 
-        public BotClient(CommandService commands = null, DiscordSocketClient client = null)
+        public BotClient(CustomCommandService commands = null, DiscordSocketClient client = null)
         {
             _client = client ?? new DiscordSocketClient(new DiscordSocketConfig
             {
@@ -24,7 +25,7 @@ namespace AdvancedBot.Core
                 MessageCacheSize = 1000
             });
 
-            _commands = commands ?? new CommandService(new CommandServiceConfig
+            _commands = commands ?? new CustomCommandService(new CustomCommandServiceConfig
             {
                 CaseSensitiveCommands = false,
                 LogLevel = LogSeverity.Error,
@@ -41,7 +42,7 @@ namespace AdvancedBot.Core
             _client.Log += LogAsync;
             _commands.Log += LogAsync;
 
-            var token = Environment.GetEnvironmentVariable("GLRDevToken");
+            var token = Environment.GetEnvironmentVariable("Token");
 
             await Task.Delay(10).ContinueWith(t => _client.LoginAsync(TokenType.Bot, token));
             await _client.StartAsync();

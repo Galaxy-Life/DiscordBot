@@ -2,15 +2,16 @@ using System.Collections.Generic;
 using System.Linq;
 using Discord.Commands;
 using AdvancedBot.Core.Entities;
+using AdvancedBot.Core.Commands;
 
 namespace AdvancedBot.Core.Services.DataStorage
 {
     public class GuildAccountService
     {
         private LiteDBHandler _storage;
-        private CommandService _commands;
+        private CustomCommandService _commands;
 
-        public GuildAccountService(LiteDBHandler storage, CommandService commands)
+        public GuildAccountService(LiteDBHandler storage, CustomCommandService commands)
         {
             _storage = storage;
             _commands = commands;
