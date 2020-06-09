@@ -10,6 +10,7 @@ using Discord;
 namespace AdvancedBot.Core.Commands.Modules
 {
     [RequireCustomPermission(GuildPermission.ManageChannels)]
+    [Group("command")][Alias("c")]
     public class CommandPermissionsModule : CustomModule
     {
         private GuildAccountService _accounts;
@@ -21,7 +22,7 @@ namespace AdvancedBot.Core.Commands.Modules
             _commands = commands;
         }
         
-        [Command("command")][Alias("cmd")]
+        [Command]
         [Summary("Enables or disables a command.")]
         public async Task SetStateOfCommand(string action, string commandName)
         {
@@ -40,7 +41,7 @@ namespace AdvancedBot.Core.Commands.Modules
             await ReplyAsync($"Successfully {action}d command {command.Name} in {command.Module.Name}");
         }
 
-        [Command("commandsetrolelist")]
+        [Command("roles")]
         public async Task SetWhitelistOrBlacklistForRoles(string commandName, string action)
         {
             var result = _commands.Search(commandName);
@@ -57,7 +58,7 @@ namespace AdvancedBot.Core.Commands.Modules
             await ReplyAsync($"Successfully {action}d whitelist instead of blacklist for roles.");
         }
 
-        [Command("commandsetchannellist")]
+        [Command("channel")]
         public async Task SetWhitelistOrBlacklistForChannels(string commandName, string action)
         {
             var result = _commands.Search(commandName);
@@ -74,7 +75,7 @@ namespace AdvancedBot.Core.Commands.Modules
             await ReplyAsync($"Successfully {action}d whitelist instead of blacklist for roles.");
         }
 
-        [Command("commandwhitelist")]
+        [Command("whitelist")][Alias("wl")]
         public async Task SetUserOrChannelInList(string action, string commandName, ulong id)
         {
             var result = _commands.Search(commandName);
