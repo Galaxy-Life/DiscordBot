@@ -7,6 +7,7 @@ using AdvancedBot.Core.Services.DataStorage;
 namespace AdvancedBot.Core.Commands.Modules
 {
     [RequireCustomPermission(GuildPermission.ManageGuild)]
+    [Group("prefix")]
     public class PrefixModule : CustomModule
     {
         private GuildAccountService _accounts;
@@ -16,8 +17,7 @@ namespace AdvancedBot.Core.Commands.Modules
             _accounts = accounts;
         }
 
-
-        [Command("prefixadd")][Alias("padd")]
+        [Command("add")]
         public async Task AddPrefix([Remainder]string prefix)
         {
             var guild = _accounts.GetOrCreateGuildAccount(Context.Guild.Id);
@@ -27,7 +27,7 @@ namespace AdvancedBot.Core.Commands.Modules
             await ReplyAsync($"Successfully added `{prefix}` to the current list.");
         }
 
-        [Command("prefixremove")][Alias("premove")]
+        [Command("remove")]
         public async Task RemovePrefix([Remainder]string prefix)
         {
             var guild = _accounts.GetOrCreateGuildAccount(Context.Guild.Id);
@@ -37,13 +37,12 @@ namespace AdvancedBot.Core.Commands.Modules
             await ReplyAsync($"Successfully removed `{prefix}` from the current list.");
         }
 
-        [Command("prefixlist")][Alias("plist", "prefixes")]
+        [Command][Alias("list")]
         public async Task ListPrefix()
         {
             var guild = _accounts.GetOrCreateGuildAccount(Context.Guild.Id);
 
-            await ReplyAsync($"Prefixes for **{Context.Guild.Name}**:\n" +
-                            $"▬▬▬▬▬▬▬▬▬▬▬▬\n" + 
+            await ReplyAsync($"**Prefixes for {Context.Guild.Name}:**\n" +
                             $"`{string.Join("`, `", guild.Prefixes)}`");
         }
     }
