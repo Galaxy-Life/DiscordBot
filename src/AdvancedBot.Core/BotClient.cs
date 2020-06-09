@@ -28,8 +28,7 @@ namespace AdvancedBot.Core
             _commands = commands ?? new CustomCommandService(new CustomCommandServiceConfig
             {
                 CaseSensitiveCommands = false,
-                LogLevel = LogSeverity.Error,
-                SeparatorChar = '|'
+                LogLevel = LogSeverity.Error
             });
         }
 
