@@ -5,21 +5,14 @@ namespace AdvancedBot.Core.Commands.Modules
 {
     public class HelpCommand : CustomModule
     {
-        private CustomCommandService _commands;
-
-        public HelpCommand(CustomCommandService commands)
-        {
-            _commands = commands;
-        }
-
         [Command("help")]
         [Summary("Displays the help command.")]
         public async Task Help()
-            => await _commands.SendHelpCommand(Context);
+            => await Commands.SendHelpCommand(Context);
 
         [Command("help")]
         [Summary("Displays the help command for a specific command.")]
-        public async Task Help(string input)
+        public async Task Help([Remainder]string input)
         {
             if (InputIsModule(input))
             {
@@ -27,10 +20,10 @@ namespace AdvancedBot.Core.Commands.Modules
                 return;
             }
 
-            var command = _commands.GetCommandInfo(input);
+            var command = Commands.GetCommandInfo(input);
 
-            var embed = _commands.GetCommandHelpEmbed(command);
-            var usageField = _commands.GenerateUsageField(command);
+            var embed = Commands.GetCommandHelpEmbed(command);
+            var usageField = Commands.GenerateUsageField(command);
 
             embed.AddField(usageField);
 
