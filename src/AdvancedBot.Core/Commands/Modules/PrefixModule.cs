@@ -7,7 +7,7 @@ using AdvancedBot.Core.Services.DataStorage;
 namespace AdvancedBot.Core.Commands.Modules
 {
     [RequireCustomPermission(GuildPermission.ManageGuild)]
-    [Group("prefix")]
+    [Group("prefix")][Alias("prefixes")]
     public class PrefixModule : CustomModule
     {
         private GuildAccountService _accounts;
