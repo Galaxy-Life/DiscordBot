@@ -1,118 +1,210 @@
-using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Discord.Commands;
 using Discord.WebSocket;
 using AdvancedBot.Core.Commands.Preconditions;
-using AdvancedBot.Core.Services.DataStorage;
 using Discord;
 
 namespace AdvancedBot.Core.Commands.Modules
 {
     [RequireCustomPermission(GuildPermission.ManageChannels)]
+    [Group("command")][Alias("c", "cmd")]
     public class CommandPermissionsModule : CustomModule
-    {
-        private GuildAccountService _accounts;
-        private CommandService _commands;
-
-        public CommandPermissionsModule(GuildAccountService accounts, CommandService commands)
+    {        
+        [Command("enable")]
+        [Summary("Enables a command.")]
+        public async Task EnableCommandAsync([Remainder]string commandName)
         {
-            _accounts = accounts;
-            _commands = commands;
-        }
-        
-        [Command("command")][Alias("cmd")]
-        [Summary("Enables or disables a command.")]
-        public async Task SetStateOfCommand(string action, string commandName)
-        {
-            var result = _commands.Search(commandName);
-            if (result.Error != null) throw new Exception("Command not found.");
+            var command = Commands.GetCommandInfo(commandName);
 
-            var guild = _accounts.GetOrCreateGuildAccount(Context.Guild.Id);
-            var command = result.Commands.First().Command;
-            var formattedName = FormatName(command);
+            var guild = Accounts.GetOrCreateGuildAccount(Context.Guild.Id);
+            var formattedName = FormatCommandName(command);
 
-            if (action == "enable") guild.EnableCommand(formattedName);
-            else if (action == "disable") guild.DisableCommand(formattedName);
-            else throw new Exception("Not a valid operation.");
+            guild.EnableCommand(formattedName);
            
-            _accounts.SaveGuildAccount(guild);
-            await ReplyAsync($"Successfully {action}d command {command.Name} in {command.Module.Name}");
+            Accounts.SaveGuildAccount(guild);
+            await ReplyAsync($"Successfully enabled `{formattedName}`.");
         }
 
-        [Command("commandsetrolelist")]
-        public async Task SetWhitelistOrBlacklistForRoles(string commandName, string action)
+        [Command("disable")]
+        [Summary("Disables a command.")]
+        public async Task DisableCommandAsync([Remainder]string commandName)
         {
-            var result = _commands.Search(commandName);
-            if (result.Error != null) throw new Exception("Command not found.");
+            var command = Commands.GetCommandInfo(commandName);
 
-            var guild = _accounts.GetOrCreateGuildAccount(Context.Guild.Id);
-            var command = result.Commands.First().Command;
-            var formattedName = FormatName(command);
+            var guild = Accounts.GetOrCreateGuildAccount(Context.Guild.Id);
+            var formattedName = FormatCommandName(command);
 
-            if (action == "enable") guild.EnableWhitelist(formattedName, false);
-            else if (action == "disable") guild.DisableWhitelist(formattedName, false);
-
-            _accounts.SaveGuildAccount(guild);
-            await ReplyAsync($"Successfully {action}d whitelist instead of blacklist for roles.");
-        }
-
-        [Command("commandsetchannellist")]
-        public async Task SetWhitelistOrBlacklistForChannels(string commandName, string action)
-        {
-            var result = _commands.Search(commandName);
-            if (result.Error != null) throw new Exception("Command not found.");
-
-            var guild = _accounts.GetOrCreateGuildAccount(Context.Guild.Id);
-            var command = result.Commands.First().Command;
-            var formattedName = FormatName(command);
-
-            if (action == "enable") guild.EnableWhitelist(formattedName, true);
-            else if (action == "disable") guild.DisableWhitelist(formattedName, true);
-
-            _accounts.SaveGuildAccount(guild);
-            await ReplyAsync($"Successfully {action}d whitelist instead of blacklist for roles.");
-        }
-
-        [Command("commandwhitelist")]
-        public async Task SetUserOrChannelInList(string action, string commandName, ulong id)
-        {
-            var result = _commands.Search(commandName);
-            if (result.Error != null) throw new Exception("Command not found.");
-
-            var guild = _accounts.GetOrCreateGuildAccount(Context.Guild.Id);
-            var command = result.Commands.First().Command;
-            var formattedName = FormatName(command);
-
-            if (action == "add") guild.AddToWhitelist(formattedName, id, IdIsChannel(id));
-            else if (action == "remove") guild.RemoveFromWhitelist(formattedName, id, IdIsChannel(id));
-            else throw new Exception("Invalid operation.");
-
-            _accounts.SaveGuildAccount(guild);
-            await ReplyAsync($"Succesfully {action}ed id `{id}` to the list.");
+            guild.DisableCommand(formattedName);
+           
+            Accounts.SaveGuildAccount(guild);
+            await ReplyAsync($"Successfully disable `{formattedName}`.");
         }
 
         [Command("modrole")]
-        public async Task SetModRole(SocketRole role)
+        [Summary("Sets the modrole to a certain role.")]
+        public async Task SetModRoleAsync(SocketRole role)
         {
-            var guild = _accounts.GetOrCreateGuildAccount(Context.Guild.Id);
+            var guild = Accounts.GetOrCreateGuildAccount(Context.Guild.Id);
             guild.SetModRole(role.Id);
-            _accounts.SaveGuildAccount(guild);
+            Accounts.SaveGuildAccount(guild);
 
             await ReplyAsync($"Modrole has successfully been changed to `{role.Name}`\n" +
-                            $"{role.Members.Count()} can now access all enabled commands anywhere.");
+                            $"**{role.Members.Count()}** users can now access all enabled commands anywhere.");
         }
 
-        private string FormatName(CommandInfo command)
-            => $"{command.Module.Name}_{command.Name}".ToLower();
-    
-        private bool IdIsChannel(ulong id)
+        [Group("roles")]
+        public class RolesSubmodule : CommandPermissionsModule
         {
-            var allegedChannel = Context.Client.GetChannel(id);
-            var allegedRole = Context.Guild.GetRole(id);
+            [Command]
+            [Summary("Displays the status of roles for a certain command.")]
+            public async Task DisplayRolesCommandStatusAsync([Remainder]string commandName)
+            {
+                var command = Commands.GetCommandInfo(commandName);
+                var formattedName = FormatCommandName(command);
 
-            if (allegedChannel == null && allegedRole == null) throw new Exception("Specified Id is not a valid role or channel.");
-            return (allegedRole == null);
+                var guild = Accounts.GetOrCreateGuildAccount(Context.Guild.Id);
+
+                var cmd = guild.Commands.Find(x => x.Name == formattedName);
+                var roleList = cmd.WhitelistedRoles.Count == 0 
+                            ? $"No roles have been put on the list."
+                            : $"**Roles:**<#{string.Join("> <#", cmd.WhitelistedRoles)}>";
+
+                await ReplyAsync($"Blacklist enabled for roles: `{cmd.RolesListIsBlacklist}`.\n" +
+                                $"{roleList}");
+            }
+
+            [Command("enable")]
+            [Summary("Enables whitelist and disables blacklist for roles for a certain command.")]
+            public async Task EnableWhitelistAsync([Remainder]string commandName)
+            {
+                var command = Commands.GetCommandInfo(commandName);
+                var formattedName = FormatCommandName(command);
+
+                var guild = Accounts.GetOrCreateGuildAccount(Context.Guild.Id);
+                guild.EnableWhitelist(formattedName, false);
+                Accounts.SaveGuildAccount(guild);
+
+                await ReplyAsync($"Successfully enabled roles whitelist for `{formattedName}`.");
+            }
+
+            [Command("disable")]
+            [Summary("Disables whitelist and enables blacklist for roles for a certain command.")]
+            public async Task EnableBlacklistAsync([Remainder]string commandName)
+            {
+                var command = Commands.GetCommandInfo(commandName);
+                var formattedName = FormatCommandName(command);
+
+                var guild = Accounts.GetOrCreateGuildAccount(Context.Guild.Id);
+                guild.DisableWhitelist(formattedName, false);
+
+                Accounts.SaveGuildAccount(guild);
+                await ReplyAsync($"Successfully disabled roles whitelist for `{formattedName}`.");
+            }
+
+            [Command("add")]
+            [Summary("Adds a role to the white/blacklist.")]
+            public async Task AddChannelToListAsync(SocketRole role, [Remainder]string commandName)
+            {
+                var command = Commands.GetCommandInfo(commandName);
+                var formattedName = FormatCommandName(command);
+
+                var guild = Accounts.GetOrCreateGuildAccount(Context.Guild.Id);
+                guild.AddToWhitelist(formattedName, role.Id, false);
+                Accounts.SaveGuildAccount(guild);
+
+                await ReplyAsync($"Succesfully added `{role.Mention}` to the list.");
+            }
+
+            [Command("remove")]
+            [Summary("Removes a role from the white/blacklist")]
+            public async Task RemoveChannelFromListAsync(SocketRole role, [Remainder]string commandName)
+            {
+                var command = Commands.GetCommandInfo(commandName);
+                var formattedName = FormatCommandName(command);
+
+                var guild = Accounts.GetOrCreateGuildAccount(Context.Guild.Id);
+                guild.RemoveFromWhitelist(formattedName, role.Id, false);
+                Accounts.SaveGuildAccount(guild);
+
+                await ReplyAsync($"Succesfully removed `{role.Mention}` from the list.");
+            }
+        }
+    
+        [Group("channels")]
+        public class ChannelPermissionsSubmodule : CommandPermissionsModule
+        {
+            [Command]
+            public async Task DisplayChannelsCommandStatusAsync([Remainder]string commandName)
+            {
+                var command = Commands.GetCommandInfo(commandName);
+                var formattedName = FormatCommandName(command);
+
+                var guild = Accounts.GetOrCreateGuildAccount(Context.Guild.Id);
+
+                var cmd = guild.Commands.Find(x => x.Name == formattedName);
+                var channelList = cmd.WhitelistedRoles.Count == 0 
+                            ? $"No channels have been put on the list."
+                            : $"**Channels:**<#{string.Join("> <#", cmd.WhitelistedChannels)}>";
+
+                await ReplyAsync($"Blacklist enabled for channels: `{cmd.ChannelListIsBlacklist}`.\n" +
+                                $"{channelList}");
+            }
+
+            [Command("enable")]
+            public async Task EnableWhitelistAsync([Remainder]string commandName)
+            {
+                var command = Commands.GetCommandInfo(commandName);
+                var formattedName = FormatCommandName(command);
+
+                var guild = Accounts.GetOrCreateGuildAccount(Context.Guild.Id);
+                guild.EnableWhitelist(formattedName, true);
+                Accounts.SaveGuildAccount(guild);
+
+                await ReplyAsync($"Successfully enabled channels whitelist for `{formattedName}`.");
+            }
+
+            [Command("disable")]
+            [Summary("Disables whitelist and enables blacklist for said command.")]
+            public async Task EnableBlacklistAsync([Remainder]string commandName)
+            {
+                var command = Commands.GetCommandInfo(commandName);
+                var formattedName = FormatCommandName(command);
+
+                var guild = Accounts.GetOrCreateGuildAccount(Context.Guild.Id);
+                guild.DisableWhitelist(formattedName, true);
+
+                Accounts.SaveGuildAccount(guild);
+                await ReplyAsync($"Successfully disabled channels whitelist for `{formattedName}`.");
+            }
+
+            [Command("add")]
+            [Summary("Adds a channel to the white/blacklist.")]
+            public async Task AddChannelToListAsync(SocketTextChannel channel, [Remainder]string commandName)
+            {
+                var command = Commands.GetCommandInfo(commandName);
+                var formattedName = FormatCommandName(command);
+
+                var guild = Accounts.GetOrCreateGuildAccount(Context.Guild.Id);
+                guild.AddToWhitelist(formattedName, channel.Id, true);
+                Accounts.SaveGuildAccount(guild);
+
+                await ReplyAsync($"Succesfully added `{channel.Mention}` to the list.");
+            }
+
+            [Command("remove")]
+            [Summary("Removes a channel from the white/blacklist")]
+            public async Task RemoveChannelFromListAsync(SocketTextChannel channel, [Remainder]string commandName)
+            {
+                var command = Commands.GetCommandInfo(commandName);
+                var formattedName = FormatCommandName(command);
+
+                var guild = Accounts.GetOrCreateGuildAccount(Context.Guild.Id);
+                guild.RemoveFromWhitelist(formattedName, channel.Id, true);
+                Accounts.SaveGuildAccount(guild);
+
+                await ReplyAsync($"Succesfully removed `{channel.Mention}` from the list.");
+            }
         }
     }
 }
