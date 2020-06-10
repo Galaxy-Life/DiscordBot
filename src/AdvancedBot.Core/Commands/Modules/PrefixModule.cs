@@ -2,7 +2,6 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
 using AdvancedBot.Core.Commands.Preconditions;
-using AdvancedBot.Core.Services.DataStorage;
 
 namespace AdvancedBot.Core.Commands.Modules
 {
