@@ -11,9 +11,10 @@ namespace AdvancedBot.Core.Commands
     public class CustomModule : ModuleBase<SocketCommandContext>
     {
         public GuildAccountService Accounts { get; set; }
+        public CustomCommandService Commands { get; set; }
         private CommandInfo _currentCommand;
         [DontInject]
-        public string ExpandedCommandName => $"{_currentCommand.Module.Name}_{_currentCommand.Name}".ToLower();
+        public string ExpandedCommandName => FormatCommandName(_currentCommand);
 
         protected override void BeforeExecute(CommandInfo command)
         {            
@@ -29,6 +30,9 @@ namespace AdvancedBot.Core.Commands
 
         protected override void AfterExecute(CommandInfo command)
             => base.AfterExecute(command);
+
+        public string FormatCommandName(CommandInfo command)
+            => $"{command.Module.Name}_{command.Name}".ToLower();
 
         private bool CommandIsAllowedToRun(GuildAccount guild)
         {

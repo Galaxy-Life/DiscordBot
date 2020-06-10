@@ -29,11 +29,9 @@ namespace AdvancedBot.Core.Commands
             var embed = new EmbedBuilder()
             {
                 Title = "About the bot",
+                Description = $"**Documentation:** {documentation}\n\n**Source code:** {sourceRepo}\n\n**Made possible by:** {_contributers}",
                 ThumbnailUrl = _thumbnailUrl,
             }
-            .AddField("Documentation   ⠀", $"{documentation}   ⠀\n\u200b", true)
-            .AddField("⠀   Source code    ", $"⠀ ⠀ {sourceRepo}   ⠀\n\u200b", true)
-            .AddField("⠀   Made possible by:", $"⠀   {_contributers}\n\u200b", true)
             .WithFooter(context.User.Username, context.User.GetAvatarUrl())
             .Build();
 

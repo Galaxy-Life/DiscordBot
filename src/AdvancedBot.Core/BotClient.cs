@@ -20,7 +20,7 @@ namespace AdvancedBot.Core
         {
             _client = client ?? new DiscordSocketClient(new DiscordSocketConfig
             {
-                LogLevel = LogSeverity.Error,
+                LogLevel = LogSeverity.Info,
                 AlwaysDownloadUsers = true,
                 MessageCacheSize = 1000
             });
@@ -28,8 +28,7 @@ namespace AdvancedBot.Core
             _commands = commands ?? new CustomCommandService(new CustomCommandServiceConfig
             {
                 CaseSensitiveCommands = false,
-                LogLevel = LogSeverity.Error,
-                SeparatorChar = '|'
+                LogLevel = LogSeverity.Info
             });
         }
 
