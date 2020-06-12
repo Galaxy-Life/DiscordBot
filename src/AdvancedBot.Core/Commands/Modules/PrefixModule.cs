@@ -7,7 +7,7 @@ namespace AdvancedBot.Core.Commands.Modules
 {
     [RequireCustomPermission(GuildPermission.ManageGuild)]
     [Group("prefix")][Alias("prefixes")]
-    public class PrefixModule : CustomModule
+    public class PrefixModule : TopModule
     {
         [Command("add")]
         [Summary("Adds the given prefix to this guild's prefixlist.")]

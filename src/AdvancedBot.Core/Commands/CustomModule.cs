@@ -5,13 +5,15 @@ using Discord.Commands;
 using Discord.WebSocket;
 using AdvancedBot.Core.Entities;
 using AdvancedBot.Core.Services.DataStorage;
+using AdvancedBot.Core.Services;
 
 namespace AdvancedBot.Core.Commands
 {
-    public class CustomModule : ModuleBase<SocketCommandContext>
+    public class TopModule : ModuleBase<SocketCommandContext>
     {
         public GuildAccountService Accounts { get; set; }
         public CustomCommandService Commands { get; set; }
+        public PaginatorService Paginator { get; set; }
         private CommandInfo _currentCommand;
         [DontInject]
         public string ExpandedCommandName => FormatCommandName(_currentCommand);
