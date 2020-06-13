@@ -9,7 +9,7 @@ namespace AdvancedBot.Core.Commands.Modules
 {
     [RequireCustomPermission(GuildPermission.ManageChannels)]
     [Group("command")][Alias("c", "cmd")]
-    public class CommandPermissionsModule : CustomModule
+    public class CommandPermissionsModule : TopModule
     {        
         [Command("enable")]
         [Summary("Enables a command.")]

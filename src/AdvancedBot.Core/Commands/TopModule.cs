@@ -5,13 +5,17 @@ using Discord.Commands;
 using Discord.WebSocket;
 using AdvancedBot.Core.Entities;
 using AdvancedBot.Core.Services.DataStorage;
+using AdvancedBot.Core.Services;
+using System.Threading.Tasks;
+using System.Collections.Generic;
 
 namespace AdvancedBot.Core.Commands
 {
-    public class CustomModule : ModuleBase<SocketCommandContext>
+    public class TopModule : ModuleBase<SocketCommandContext>
     {
         public GuildAccountService Accounts { get; set; }
         public CustomCommandService Commands { get; set; }
+        public PaginatorService Paginator { get; set; }
         private CommandInfo _currentCommand;
         [DontInject]
         public string ExpandedCommandName => FormatCommandName(_currentCommand);
@@ -68,6 +72,18 @@ namespace AdvancedBot.Core.Commands
 
             if (!rolesInCommon.Any() || rolesInCommon == null) return false;
             return true;
+        }
+    
+        public async Task<IUserMessage> SendPaginatedMessageAsync(IEnumerable<string> displayTexts, EmbedBuilder templateEmbed)
+        {
+            templateEmbed.WithTitle($"{templateEmbed.Title} | Page 1");
+            templateEmbed.WithDescription(string.Join("\n", displayTexts.Take(10)));
+            templateEmbed.WithFooter($"{Context.User.Username} ({Context.User.Id}) | Total Display Items: {displayTexts}");
+            
+            var message = await Paginator.HandleNewPaginatedMessageAsync(Context, displayTexts, templateEmbed.Build());
+            await Task.Delay(1000);    
+
+            return message;
         }
     }
 }
