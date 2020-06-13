@@ -56,7 +56,7 @@ namespace AdvancedBot.Core.Commands.Modules
         [Group("roles")]
         public class RolesSubmodule : CommandPermissionsModule
         {
-            [Command]
+            [Command][Alias("list")][Name("")]
             [Summary("Displays the status of roles for a certain command.")]
             public async Task DisplayRolesCommandStatusAsync([Remainder]string commandName)
             {
@@ -134,7 +134,8 @@ namespace AdvancedBot.Core.Commands.Modules
         [Group("channels")]
         public class ChannelPermissionsSubmodule : CommandPermissionsModule
         {
-            [Command]
+            [Command][Alias("list")][Name("")]
+            [Summary("Displays the status of channels for a certain command.")]
             public async Task DisplayChannelsCommandStatusAsync([Remainder]string commandName)
             {
                 var command = Commands.GetCommandInfo(commandName);
@@ -152,6 +153,7 @@ namespace AdvancedBot.Core.Commands.Modules
             }
 
             [Command("enable")]
+            [Summary("Enables whitelist and disables blacklist for channels for a certain command.")]
             public async Task EnableWhitelistAsync([Remainder]string commandName)
             {
                 var command = Commands.GetCommandInfo(commandName);
