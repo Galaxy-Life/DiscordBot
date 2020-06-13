@@ -31,7 +31,18 @@ namespace AdvancedBot.Core.Commands.Modules
             await ReplyAsync($"Successfully removed `{prefix}` from the current list.");
         }
 
-        [Command][Alias("list")]
+        [Command("clear")]
+        [Summary("Clears all the prefixes for a certain guild.")]
+        public async Task ClearPrefixes()
+        {
+            var guild = Accounts.GetOrCreateGuildAccount(Context.Guild.Id);
+            guild.Prefixes.Clear();
+            Accounts.SaveGuildAccount(guild);
+
+            await ReplyAsync($"Successfully cleared the prefixes.\nOnly working prefix now is bot mention.");
+        }
+
+        [Command][Alias("list")][Name("")]
         [Summary("Lists the current prefixes.")]
         public async Task ListPrefix()
         {
