@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Threading.Tasks;
 using AdvancedBot.Core.Commands;
+using AdvancedBot.Core.Services;
 
 namespace AdvancedBot.Core
 {
@@ -64,6 +65,7 @@ namespace AdvancedBot.Core
                 .AddSingleton<CommandHandlerService>()
                 .AddSingleton<LiteDBHandler>()
                 .AddSingleton<GuildAccountService>()
+                .AddSingleton<PaginatorService>()
                 .BuildServiceProvider();
         }
     }
