@@ -4,7 +4,7 @@ using Discord.Commands;
 
 namespace AdvancedBot.Core.Commands.Modules
 {
-    public class HelpCommand : TopModule
+    public class CommandInformationModule : TopModule
     {
         [Command("help")]
         [Summary("Displays the help command.")]
