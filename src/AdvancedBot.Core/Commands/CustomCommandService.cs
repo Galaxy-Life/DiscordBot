@@ -176,7 +176,7 @@ namespace AdvancedBot.Core.Commands
                     pref = "["; suff = "]";
                 }
 
-                parameters.Append($"{pref}{command.Parameters[i]}{suff} ");
+                parameters.Append($"{pref}{command.Parameters[i].Name.Underscore().Dasherize()}{suff} ");
             }
             
             return $"\n!**{command.Aliases[0]} {parameters}**";
