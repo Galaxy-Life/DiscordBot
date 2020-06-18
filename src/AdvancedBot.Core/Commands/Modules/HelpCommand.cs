@@ -1,4 +1,6 @@
+using System.Linq;
 using System.Threading.Tasks;
+using Discord;
 using Discord.Commands;
 
 namespace AdvancedBot.Core.Commands.Modules
@@ -8,24 +10,18 @@ namespace AdvancedBot.Core.Commands.Modules
         [Command("help")]
         [Summary("Displays the help command.")]
         public async Task Help()
-            => await Commands.SendHelpCommand(Context);
+            => await Commands.SendBotInfoAsync(Context);
 
         [Command("help")]
         [Summary("Displays the help command for a specific command.")]
         public async Task Help([Remainder]string input)
         {
-            if (InputIsModule(input))
-            {
-                // TODO: implement
-                return;
-            }
+            var result = Commands.AdvancedSearch(input);
+            EmbedBuilder embed;
 
-            var command = Commands.GetCommandInfo(input);
-
-            var embed = Commands.GetCommandHelpEmbed(command);
-            var usageField = Commands.GenerateUsageField(command);
-
-            embed.AddField(usageField);
+            if (result.Value is null)
+                embed = Commands.CreateModuleInfoEmbed(result.Key);
+            else embed = Commands.CreateCommandInfoEmbed(result.Value);
 
             await ReplyAsync("", false, embed.Build());
         }
