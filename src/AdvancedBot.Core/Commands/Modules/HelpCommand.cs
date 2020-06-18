@@ -24,10 +24,5 @@ namespace AdvancedBot.Core.Commands.Modules
 
             await ReplyAsync("", false, embed.Build());
         }
-
-        private bool InputIsModule(string input)
-        {
-            return false;
-        }
     }
 }
