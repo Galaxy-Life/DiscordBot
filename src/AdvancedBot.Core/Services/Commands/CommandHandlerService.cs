@@ -96,11 +96,11 @@ namespace AdvancedBot.Core.Services.Commands
     
         private async Task SendWrongParameterCountMessage(ICommandContext ctx, CommandInfo command)
         {
-            var usageField = _commands.GenerateUsageField(command);
+            var usage = _commands.GenerateCommandUsage(command);
 
             var embed = new EmbedBuilder()
             .WithTitle("Command wrongly executed")
-            .AddField(usageField)
+            .AddField($"Command example:", usage)
             .WithFooter("Tip: <> means mandatory, [] optional")
             .Build();
 

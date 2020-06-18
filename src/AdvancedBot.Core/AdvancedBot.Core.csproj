@@ -6,5 +6,6 @@
   <ItemGroup>
     <PackageReference Include="Discord.Net" Version="2.1.1"/>
     <PackageReference Include="LiteDB" Version="5.0.7"/>
+    <PackageReference Include="Humanizer" Version="2.8.26"/>
   </ItemGroup>
 </Project>
