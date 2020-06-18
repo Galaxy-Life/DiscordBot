@@ -9,6 +9,7 @@ namespace AdvancedBot.Core.Commands.Modules
 {
     [RequireCustomPermission(GuildPermission.ManageChannels)]
     [Group("command")][Alias("c", "cmd")]
+    [Summary("Handles all commands regarding command permissions.")]
     public class CommandPermissionsModule : TopModule
     {        
         [Command("enable")]
@@ -53,7 +54,19 @@ namespace AdvancedBot.Core.Commands.Modules
                             $"**{role.Members.Count()}** users can now access all enabled commands anywhere.");
         }
 
+        [Command("modrole")]
+        [Summary("Clears the modrole.")]
+        public async Task SetModRoleAsync()
+        {
+            var guild = Accounts.GetOrCreateGuildAccount(Context.Guild.Id);
+            guild.ModRoleId = 0;
+            Accounts.SaveGuildAccount(guild);
+
+            await ReplyAsync($"Successfully cleared the modrole.");
+        }
+
         [Group("roles")]
+        [Summary("Handle all permissions related to roles.")]
         public class RolesSubmodule : CommandPermissionsModule
         {
             [Command][Alias("list")][Name("")]
@@ -132,6 +145,7 @@ namespace AdvancedBot.Core.Commands.Modules
         }
     
         [Group("channels")]
+        [Summary("Handle all permissions related to channels.")]
         public class ChannelPermissionsSubmodule : CommandPermissionsModule
         {
             [Command][Alias("list")][Name("")]
