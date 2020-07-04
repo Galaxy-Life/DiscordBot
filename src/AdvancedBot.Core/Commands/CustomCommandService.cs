@@ -3,9 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using AdvancedBot.Core.Entities;
 using AdvancedBot.Core.Services;
-using AdvancedBot.Core.Services.DataStorage;
 using Discord;
 using Discord.Commands;
 using Humanizer;
@@ -34,13 +32,12 @@ namespace AdvancedBot.Core.Commands
             var embed = new EmbedBuilder()
             {
                 Title = "About the bot",
-                Description = $"**Documentation:** {documentation}\n\n**Source code:** {sourceRepo}\n\n**Made possible by:** {_contributers}\n\n**Invite the bot:** {_botInvite}",
+                Description = $"**Documentation:** {documentation}\n\n**Source code:** {sourceRepo}\n\n" +
+                              $"**Made possible by:** {_contributers}\n\n**Invite the bot:** {_botInvite}",
                 ThumbnailUrl = _thumbnailUrl,
             }
             .WithFooter(context.User.Username, context.User.GetAvatarUrl())
             .Build();
-
-            await context.Channel.SendMessageAsync("", false, embed);
         }
 
         public EmbedBuilder CreateModuleInfoEmbed(ModuleInfo module)
@@ -49,24 +46,27 @@ namespace AdvancedBot.Core.Commands
             var commandsField = "";
 
             var topModule = module.IsSubmodule && module.Parent.Group != "TopModule"
-                            ? $"This category is a subcategory of **{module.Parent.Group.Transform(To.SentenceCase)}**.\n"
+                            ? $"This category is a subcategory of **{module.Parent.Name}**.\n"
                             : string.Empty;
 
             var embed = new EmbedBuilder()
             {
-                Title = $"Info for category: {module.Group.Transform(To.SentenceCase)}",
+                Title = $"Info for category: {module.Name.Transform(To.SentenceCase)}",
                 Description = $"{topModule}{module.Summary}\n\n",
                 Color = Color.Purple
             }
-            .WithFooter($"{"command".ToQuantity(module.Commands.Count)} | {"category".ToQuantity(module.Submodules.Count)}");
+            .WithFooter($"{"command".ToQuantity(module.Commands.Count)} | {"subcategory".ToQuantity(module.Submodules.Count)}");
 
             for (int i = 0; i < module.Submodules.Count; i++)
             {
                 var currentModule = module.Submodules[i];
 
+                var moduleName = currentModule.Name.Transform(To.SentenceCase);
+                var commandCount = "command".ToQuantity(currentModule.Commands.Count);
+                var subcategoryCount = "subcategory".ToQuantity(currentModule.Submodules.Count);
+
                 submodulesField += 
-                $"**{currentModule.Name.Transform(To.SentenceCase)}** | {"command".ToQuantity(currentModule.Commands.Count)} | " +
-                $"{"subcategory".ToQuantity(currentModule.Submodules.Count)}\n" +
+                $"**{moduleName}** with {commandCount} and {subcategoryCount}\n" +
                 $"{currentModule.Summary}\n\n";
             }
 
@@ -74,7 +74,7 @@ namespace AdvancedBot.Core.Commands
             {
                 var currentCommand = module.Commands[i];
 
-                commandsField += $"{GenerateCommandUsage(currentCommand)}\n{currentCommand.Summary}\n";
+                commandsField += $"**{GenerateCommandUsage(currentCommand)}**\n{currentCommand.Summary}\n\n";
             }
 
             if (!string.IsNullOrEmpty(submodulesField)) embed.AddField($"Subcategories:", $"{submodulesField}");
@@ -106,6 +106,7 @@ namespace AdvancedBot.Core.Commands
             if (!string.IsNullOrEmpty(possibleModule) || possibleModule == possibleCommand && !string.IsNullOrEmpty(possibleModule))
             {
                 var module = Modules.FirstOrDefault(x => x.Aliases.Contains(possibleModule));
+                if (module is null) module = Modules.FirstOrDefault(x => x.Name == possibleModule);
                 result.Add(module, null);
             }
 
@@ -121,9 +122,12 @@ namespace AdvancedBot.Core.Commands
         }
 
         public string AllCommandsToString()
-            => string.Join(", ", Commands);
+            => string.Join(", ", Commands.Select(x => $"{x.Aliases.First()}"));
 
-        public List<string> ListAllCommandAliases()
+        public string AllModulesToString()
+            => string.Join(", ", Modules.Select(module => $"{module.Aliases.First()}").Where(alias => !string.IsNullOrEmpty(alias)));
+
+        private List<string> ListAllCommandAliases()
         {
             var aliases = new List<string>();
             var commands = Commands.ToList();
@@ -136,7 +140,7 @@ namespace AdvancedBot.Core.Commands
             return aliases;
         }
 
-        public List<string> ListAllModuleAliases()
+        private List<string> ListAllModuleAliases()
         {
             var aliases = new List<string>();
             var modules = Modules.ToList();
@@ -144,6 +148,7 @@ namespace AdvancedBot.Core.Commands
             for (int i = 0; i < modules.Count; i++)
             {
                 aliases.AddRange(modules[i].Aliases);
+                aliases.Add(modules[i].Name);
             }
 
             return aliases;
@@ -179,7 +184,7 @@ namespace AdvancedBot.Core.Commands
                 parameters.Append($"{pref}{command.Parameters[i].Name.Underscore().Dasherize()}{suff} ");
             }
             
-            return $"\n!**{command.Aliases[0]} {parameters}**";
+            return $"!{command.Aliases[0]} {parameters}";
         }
     }
 }
