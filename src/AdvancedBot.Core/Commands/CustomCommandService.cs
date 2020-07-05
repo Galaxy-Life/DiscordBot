@@ -13,31 +13,40 @@ namespace AdvancedBot.Core.Commands
     public class CustomCommandService : CommandService
     {
         public PaginatorService Paginator { get; set; }
-        private readonly string _documentationUrl = "";
-        private readonly string _thumbnailUrl = "";
-        private readonly string _sourceRepo = "https://github.com/svr333/AdvancedBot-Template";
-        private readonly string _contributers = "<@202095042372829184>";
-        private readonly string _botInvite = "";
+        private readonly string _documentationUrl;
+        private readonly string _sourceRepo;
+        private readonly string _contributers;
+        private readonly bool _botIsPrivate;
 
         public CustomCommandService() : base() { }
 
-        public CustomCommandService(CustomCommandServiceConfig config) : base(config) { }
+        public CustomCommandService(CustomCommandServiceConfig config) : base(config)
+        {
+            _documentationUrl = config.DocumentationUrl;
+            _sourceRepo = config.RepositoryUrl;
+            _contributers = config.Contributers;
+            _botIsPrivate = config.BotInviteIsPrivate;
+        }
 
-        public async Task SendBotInfoAsync(ICommandContext context)
+        public async Task<IUserMessage> SendBotInfoAsync(ICommandContext context)
         {
             var documentation = string.IsNullOrEmpty(_documentationUrl) ? $"N/A" : $"[Click me!]({_documentationUrl})";
             var sourceRepo = string.IsNullOrEmpty(_sourceRepo) ? $"N/A" : $"[Click me!]({_sourceRepo})";
-            var botInvite = string.IsNullOrEmpty(_botInvite) ? $"N/A" : $"[Click me!]({_botInvite})";
+            var botInvite = _botIsPrivate ? $"Private bot." : $"[Click me!](https://discordapp.com/api/oauth2/authorize?client_id={context.Client.CurrentUser.Id}&permissions=8&scope=bot)";
 
             var embed = new EmbedBuilder()
             {
                 Title = "About the bot",
-                Description = $"**Documentation:** {documentation}\n\n**Source code:** {sourceRepo}\n\n" +
-                              $"**Made possible by:** {_contributers}\n\n**Invite the bot:** {_botInvite}",
-                ThumbnailUrl = _thumbnailUrl,
+                Description = $"For a bare list of all commands, execute `!commands`, for a bare list of categories, execute `!modules`" + 
+                              $"**Documentation:** {documentation}\n\n**Source code:** {sourceRepo}\n\n" +
+                              $"**Made possible by:** {_contributers}\n\n**Invite the bot:** {botInvite}",
+                ThumbnailUrl = context.Client.CurrentUser.GetAvatarUrl(),
             }
             .WithFooter(context.User.Username, context.User.GetAvatarUrl())
             .Build();
+
+            var message = await context.Channel.SendMessageAsync("", false, embed);
+            return message;
         }
 
         public EmbedBuilder CreateModuleInfoEmbed(ModuleInfo module)
