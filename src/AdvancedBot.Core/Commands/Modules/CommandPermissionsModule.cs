@@ -69,7 +69,7 @@ namespace AdvancedBot.Core.Commands.Modules
         [Summary("Handle all permissions related to roles.")]
         public class RolesSubmodule : CommandPermissionsModule
         {
-            [Command][Alias("list")][Name("")]
+            [Command][Alias("list")][Name("")][Priority(0)]
             [Summary("Displays the status of roles for a certain command.")]
             public async Task DisplayRolesCommandStatusAsync([Remainder]string commandName)
             {
@@ -87,7 +87,7 @@ namespace AdvancedBot.Core.Commands.Modules
                                 $"{roleList}");
             }
 
-            [Command("enable")]
+            [Command("enable")][Priority(1)]
             [Summary("Enables whitelist and disables blacklist for roles for a certain command.")]
             public async Task EnableWhitelistAsync([Remainder]string commandName)
             {
@@ -101,7 +101,7 @@ namespace AdvancedBot.Core.Commands.Modules
                 await ReplyAsync($"Successfully enabled roles whitelist for `{formattedName}`.");
             }
 
-            [Command("disable")]
+            [Command("disable")][Priority(1)]
             [Summary("Disables whitelist and enables blacklist for roles for a certain command.")]
             public async Task EnableBlacklistAsync([Remainder]string commandName)
             {
@@ -115,7 +115,7 @@ namespace AdvancedBot.Core.Commands.Modules
                 await ReplyAsync($"Successfully disabled roles whitelist for `{formattedName}`.");
             }
 
-            [Command("add")]
+            [Command("add")][Priority(1)]
             [Summary("Adds a role to the white/blacklist.")]
             public async Task AddChannelToListAsync(SocketRole role, [Remainder]string commandName)
             {
@@ -126,10 +126,10 @@ namespace AdvancedBot.Core.Commands.Modules
                 guild.AddToWhitelist(formattedName, role.Id, false);
                 Accounts.SaveGuildAccount(guild);
 
-                await ReplyAsync($"Succesfully added `{role.Mention}` to the list.");
+                await ReplyAsync($"Succesfully added {role.Mention} to the list.");
             }
 
-            [Command("remove")]
+            [Command("remove")][Priority(1)]
             [Summary("Removes a role from the white/blacklist")]
             public async Task RemoveChannelFromListAsync(SocketRole role, [Remainder]string commandName)
             {
@@ -140,7 +140,7 @@ namespace AdvancedBot.Core.Commands.Modules
                 guild.RemoveFromWhitelist(formattedName, role.Id, false);
                 Accounts.SaveGuildAccount(guild);
 
-                await ReplyAsync($"Succesfully removed `{role.Mention}` from the list.");
+                await ReplyAsync($"Succesfully removed {role.Mention} from the list.");
             }
         }
     
@@ -148,7 +148,7 @@ namespace AdvancedBot.Core.Commands.Modules
         [Summary("Handle all permissions related to channels.")]
         public class ChannelPermissionsSubmodule : CommandPermissionsModule
         {
-            [Command][Alias("list")][Name("")]
+            [Command][Alias("list")][Name("")][Priority(0)]
             [Summary("Displays the status of channels for a certain command.")]
             public async Task DisplayChannelsCommandStatusAsync([Remainder]string commandName)
             {
@@ -166,7 +166,7 @@ namespace AdvancedBot.Core.Commands.Modules
                                 $"{channelList}");
             }
 
-            [Command("enable")]
+            [Command("enable")][Priority(1)]
             [Summary("Enables whitelist and disables blacklist for channels for a certain command.")]
             public async Task EnableWhitelistAsync([Remainder]string commandName)
             {
@@ -180,7 +180,7 @@ namespace AdvancedBot.Core.Commands.Modules
                 await ReplyAsync($"Successfully enabled channels whitelist for `{formattedName}`.");
             }
 
-            [Command("disable")]
+            [Command("disable")][Priority(1)]
             [Summary("Disables whitelist and enables blacklist for said command.")]
             public async Task EnableBlacklistAsync([Remainder]string commandName)
             {
@@ -194,7 +194,7 @@ namespace AdvancedBot.Core.Commands.Modules
                 await ReplyAsync($"Successfully disabled channels whitelist for `{formattedName}`.");
             }
 
-            [Command("add")]
+            [Command("add")][Priority(1)]
             [Summary("Adds a channel to the white/blacklist.")]
             public async Task AddChannelToListAsync(SocketTextChannel channel, [Remainder]string commandName)
             {
@@ -205,10 +205,10 @@ namespace AdvancedBot.Core.Commands.Modules
                 guild.AddToWhitelist(formattedName, channel.Id, true);
                 Accounts.SaveGuildAccount(guild);
 
-                await ReplyAsync($"Succesfully added `{channel.Mention}` to the list.");
+                await ReplyAsync($"Succesfully added {channel.Mention} to the list.");
             }
 
-            [Command("remove")]
+            [Command("remove")][Priority(1)]
             [Summary("Removes a channel from the white/blacklist")]
             public async Task RemoveChannelFromListAsync(SocketTextChannel channel, [Remainder]string commandName)
             {
@@ -219,7 +219,7 @@ namespace AdvancedBot.Core.Commands.Modules
                 guild.RemoveFromWhitelist(formattedName, channel.Id, true);
                 Accounts.SaveGuildAccount(guild);
 
-                await ReplyAsync($"Succesfully removed `{channel.Mention}` from the list.");
+                await ReplyAsync($"Succesfully removed {channel.Mention} from the list.");
             }
         }
     }

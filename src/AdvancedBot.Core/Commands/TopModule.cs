@@ -78,7 +78,7 @@ namespace AdvancedBot.Core.Commands
         {
             templateEmbed.WithTitle($"{templateEmbed.Title} | Page 1");
             templateEmbed.WithDescription(string.Join("\n", displayTexts.Take(10)));
-            templateEmbed.WithFooter($"{Context.User.Username} ({Context.User.Id}) | Total Display Items: {displayTexts}");
+            templateEmbed.WithFooter($"{templateEmbed.Footer.Text}\n{Context.User.Username} ({Context.User.Id}) | Total Display Items: {displayTexts.Count()}");
             
             var message = await Paginator.HandleNewPaginatedMessageAsync(Context, displayTexts, templateEmbed.Build());
             await Task.Delay(1000);    
