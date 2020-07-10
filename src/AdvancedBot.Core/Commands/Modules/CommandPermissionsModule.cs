@@ -126,7 +126,7 @@ namespace AdvancedBot.Core.Commands.Modules
                 guild.AddToWhitelist(formattedName, role.Id, false);
                 Accounts.SaveGuildAccount(guild);
 
-                await ReplyAsync($"Succesfully added `{role.Mention}` to the list.");
+                await ReplyAsync($"Succesfully added {role.Mention} to the list.");
             }
 
             [Command("remove")][Priority(1)]
@@ -140,7 +140,7 @@ namespace AdvancedBot.Core.Commands.Modules
                 guild.RemoveFromWhitelist(formattedName, role.Id, false);
                 Accounts.SaveGuildAccount(guild);
 
-                await ReplyAsync($"Succesfully removed `{role.Mention}` from the list.");
+                await ReplyAsync($"Succesfully removed {role.Mention} from the list.");
             }
         }
     
@@ -205,7 +205,7 @@ namespace AdvancedBot.Core.Commands.Modules
                 guild.AddToWhitelist(formattedName, channel.Id, true);
                 Accounts.SaveGuildAccount(guild);
 
-                await ReplyAsync($"Succesfully added `{channel.Mention}` to the list.");
+                await ReplyAsync($"Succesfully added {channel.Mention} to the list.");
             }
 
             [Command("remove")][Priority(1)]
@@ -219,7 +219,7 @@ namespace AdvancedBot.Core.Commands.Modules
                 guild.RemoveFromWhitelist(formattedName, channel.Id, true);
                 Accounts.SaveGuildAccount(guild);
 
-                await ReplyAsync($"Succesfully removed `{channel.Mention}` from the list.");
+                await ReplyAsync($"Succesfully removed {channel.Mention} from the list.");
             }
         }
     }
