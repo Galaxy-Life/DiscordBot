@@ -37,7 +37,7 @@ namespace AdvancedBot.Core.Commands
             var embed = new EmbedBuilder()
             {
                 Title = "About the bot",
-                Description = $"For a bare list of all commands, execute `!commands`, for a bare list of categories, execute `!modules`" + 
+                Description = $"For a bare list of all commands, execute `!commands`\nFor a bare list of categories, execute `!modules`\n" + 
                               $"**Documentation:** {documentation}\n\n**Source code:** {sourceRepo}\n\n" +
                               $"**Made possible by:** {_contributers}\n\n**Invite the bot:** {botInvite}",
                 ThumbnailUrl = context.Client.CurrentUser.GetAvatarUrl(),

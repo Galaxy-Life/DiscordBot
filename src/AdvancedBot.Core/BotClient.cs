@@ -29,7 +29,9 @@ namespace AdvancedBot.Core
             _commands = commands ?? new CustomCommandService(new CustomCommandServiceConfig
             {
                 CaseSensitiveCommands = false,
-                LogLevel = LogSeverity.Info
+                LogLevel = LogSeverity.Info,
+                BotInviteIsPrivate = true,
+                RepositoryUrl = "https://github.com/Phoenix-Network-Ltd/PhoenixAdmin"
             });
         }
 
