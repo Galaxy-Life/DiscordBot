@@ -125,7 +125,7 @@ namespace AdvancedBot.Core.Commands
                 result.Add(cmd.Module, cmd);
             }     
 
-            else throw new Exception("Could not find a module or command for the given input.");
+            else throw new Exception("Could not find a category or command for the given input.");
 
             return result.FirstOrDefault();
         }
@@ -162,6 +162,9 @@ namespace AdvancedBot.Core.Commands
 
             return aliases;
         }
+
+        public string FormatCommandName(CommandInfo command)
+            => $"{command.Module.Name}_{command.Name}".ToLower();
 
         public CommandInfo GetCommandInfo(string commandName)
         {

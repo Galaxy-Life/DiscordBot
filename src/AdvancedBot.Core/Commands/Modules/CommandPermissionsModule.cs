@@ -1,9 +1,8 @@
 using System.Linq;
 using System.Threading.Tasks;
+using AdvancedBot.Core.Services._commands;
 using Discord.Commands;
 using Discord.WebSocket;
-using AdvancedBot.Core.Commands.Preconditions;
-using Discord;
 
 namespace AdvancedBot.Core.Commands.Modules
 {
@@ -11,24 +10,28 @@ namespace AdvancedBot.Core.Commands.Modules
     [Group("command")][Alias("c", "cmd")]
     [Summary("Handles all commands regarding command permissions.")]
     public class CommandPermissionsModule : TopModule
-    {        
-        [Command("enable")]
-        [Summary("Enables a command.")]
-        public async Task EnableCommandAsync([Remainder]string commandName)
+    {
+        private CommandPermissionService _permissions;
+
+        public CommandPermissionsModule(CommandPermissionService permissions)
         {
-            var command = Commands.GetCommandInfo(commandName);
+            _permissions = permissions;
+        }
 
+        [Command("enable")]
+        [Summary("Enables a command or a category.")]
+        public async Task EnableCommandOrModuleAsync([Remainder]string input)
+        {
             var guild = Accounts.GetOrCreateGuildAccount(Context.Guild.Id);
-            var formattedName = FormatCommandName(command);
 
-            guild.EnableCommand(formattedName);
-           
+            _permissions.EnableGuildCommandOrModule(guild, input);
+  
             Accounts.SaveGuildAccount(guild);
-            await ReplyAsync($"Successfully enabled `{formattedName}`.");
+            await ReplyAsync($"Successfully enabled all commands associated with {input}");
         }
 
         [Command("disable")]
-        [Summary("Disables a command.")]
+        [Summary("Disables a command or module.")]
         public async Task DisableCommandAsync([Remainder]string commandName)
         {
             var command = Commands.GetCommandInfo(commandName);
