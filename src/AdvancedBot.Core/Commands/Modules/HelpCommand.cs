@@ -27,7 +27,7 @@ namespace AdvancedBot.Core.Commands.Modules
             await ReplyAsync("", false, embed.Build());
         }
 
-        [Command("commands")][Alias("cmds")][Priority(50)]
+        [Command("commands")][Alias("cmds")]
         [Summary("Lists all commands the bot has.")]
         public async Task DisplayAllCommands()
             => await ReplyAsync(Commands.AllCommandsToString());
