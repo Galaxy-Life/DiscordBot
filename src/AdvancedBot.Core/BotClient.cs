@@ -30,7 +30,7 @@ namespace AdvancedBot.Core
                 CaseSensitiveCommands = false,
                 LogLevel = LogSeverity.Info,
                 BotInviteIsPrivate = true,
-                RepositoryUrl = "https://github.com/Phoenix-Network-Ltd/PhoenixAdmin"
+                RepositoryUrl = "https://github.com/svr333/AdvancedBot-Template"
             });
         }
 
@@ -66,6 +66,7 @@ namespace AdvancedBot.Core
                 .AddSingleton<CommandHandlerService>()
                 .AddSingleton<LiteDBHandler>()
                 .AddSingleton<GuildAccountService>()
+                //.AddSingleton<ILoggerService>()
                 .AddSingleton<PaginatorService>()
                 .AddSingleton<CommandPermissionService>()
                 .BuildServiceProvider();

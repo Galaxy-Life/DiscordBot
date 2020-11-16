@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -124,8 +123,8 @@ namespace AdvancedBot.Core.Services
             var displayMessages = msg.DisplayMessages.Skip((msg.CurrentPage - 1) * 10).Take(10);
 
             // update title to correct page
-            var title = oldEmbed.Title.Split(" | ").First();
-            var newTitle = title + $" | Page {msg.CurrentPage}";
+            var title = oldEmbed.Title.Split('|').First();
+            var newTitle = title + $"| Page {msg.CurrentPage}";
 
             var newEmbed = new EmbedBuilder()
             {
