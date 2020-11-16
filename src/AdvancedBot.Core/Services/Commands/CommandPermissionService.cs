@@ -2,7 +2,7 @@ using AdvancedBot.Core.Commands;
 using AdvancedBot.Core.Entities;
 using Discord.Commands;
 
-namespace AdvancedBot.Core.Services._commands
+namespace AdvancedBot.Core.Services.Commands
 {
     public class CommandPermissionService
     {

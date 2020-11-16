@@ -1,6 +1,8 @@
 using System.Linq;
 using System.Threading.Tasks;
-using AdvancedBot.Core.Services._commands;
+using AdvancedBot.Core.Commands.Preconditions;
+using AdvancedBot.Core.Services.Commands;
+using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 
@@ -11,12 +13,7 @@ namespace AdvancedBot.Core.Commands.Modules
     [Summary("Handles all commands regarding command permissions.")]
     public class CommandPermissionsModule : TopModule
     {
-        private CommandPermissionService _permissions;
-
-        public CommandPermissionsModule(CommandPermissionService permissions)
-        {
-            _permissions = permissions;
-        }
+        public CommandPermissionService Permissions { get; set; }
 
         [Command("enable")]
         [Summary("Enables a command or a category.")]
@@ -24,7 +21,7 @@ namespace AdvancedBot.Core.Commands.Modules
         {
             var guild = Accounts.GetOrCreateGuildAccount(Context.Guild.Id);
 
-            _permissions.EnableGuildCommandOrModule(guild, input);
+            Permissions.EnableGuildCommandOrModule(guild, input);
   
             Accounts.SaveGuildAccount(guild);
             await ReplyAsync($"Successfully enabled all commands associated with {input}");

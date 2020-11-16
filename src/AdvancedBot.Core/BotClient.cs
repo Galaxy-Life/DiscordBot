@@ -1,7 +1,6 @@
 ﻿using Discord;
-using Discord.Commands;
 using Discord.WebSocket;
-using AdvancedBot.Core.Services._commands;
+using AdvancedBot.Core.Services.Commands;
 using AdvancedBot.Core.Services.DataStorage;
 using Microsoft.Extensions.DependencyInjection;
 using System;
