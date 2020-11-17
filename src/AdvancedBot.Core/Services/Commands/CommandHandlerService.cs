@@ -64,7 +64,7 @@ namespace AdvancedBot.Core.Services.Commands
             }
 
             if (result.Error == CommandError.UnknownCommand) return;
-            if (result.Error == CommandError.BadArgCount)
+            else if (result.Error == CommandError.BadArgCount)
             {
                 await SendWrongParameterCountMessage(ctx, cmd.Value);
                 return;
@@ -99,9 +99,10 @@ namespace AdvancedBot.Core.Services.Commands
             var usage = _commands.GenerateCommandUsage(command);
 
             var embed = new EmbedBuilder()
-            .WithTitle("Command wrongly executed")
-            .AddField($"Command example:", usage)
+            .WithTitle("Wrongly executed, correct example:")
+            .WithDescription(usage)
             .WithFooter("Tip: <> means mandatory, [] optional")
+            .WithColor(Color.Red)
             .Build();
 
             await ctx.Channel.SendMessageAsync("", false, embed);
