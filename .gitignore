@@ -352,5 +352,5 @@ MigrationBackup/
 # Project specific
 *assets/
 *.db
-*.vs/
-*.vscode/
+.vs/
+.vscode/
