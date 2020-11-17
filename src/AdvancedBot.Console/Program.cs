@@ -6,6 +6,6 @@ namespace AdvancedBot.Console
     public class Program
     {
         public static async Task Main(string[] args)
-            => new BotClient().InitializeAsync().GetAwaiter().GetResult();
+            => await new BotClient().InitializeAsync();
     }
 }

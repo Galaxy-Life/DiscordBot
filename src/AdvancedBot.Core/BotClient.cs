@@ -66,7 +66,6 @@ namespace AdvancedBot.Core
                 .AddSingleton<CommandHandlerService>()
                 .AddSingleton<LiteDBHandler>()
                 .AddSingleton<GuildAccountService>()
-                //.AddSingleton<ILoggerService>()
                 .AddSingleton<PaginatorService>()
                 .AddSingleton<CommandPermissionService>()
                 .BuildServiceProvider();

@@ -27,7 +27,7 @@ namespace AdvancedBot.Core.Services.Commands
 
         public async Task InitializeAsync()
         {
-            await _commands.AddModulesAsync(Assembly.GetEntryAssembly(), _services);
+            await _commands.AddModulesAsync(Assembly.GetExecutingAssembly(), _services);
 
             _client.MessageReceived += OnMessageReceived;
             _commands.CommandExecuted += OnCommandExecuted;
@@ -48,7 +48,8 @@ namespace AdvancedBot.Core.Services.Commands
             var guild = _accounts.GetOrCreateGuildAccount(guildId);
 
             int argPos = 0;
-            if (!message.HasPrefix(_client, out argPos, guild.Prefixes)) { return; }
+            if (!message.HasPrefix(_client, out argPos, guild.Prefixes)) 
+                return;
 
             var context = new SocketCommandContext(_client, message);
             var result = await _commands.ExecuteAsync(context, argPos, _services);
