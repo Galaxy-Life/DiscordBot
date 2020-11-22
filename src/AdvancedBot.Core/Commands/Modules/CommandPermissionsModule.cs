@@ -24,7 +24,7 @@ namespace AdvancedBot.Core.Commands.Modules
             Permissions.EnableGuildCommandOrModule(guild, input);
   
             Accounts.SaveGuildAccount(guild);
-            await ReplyAsync($"Successfully enabled all commands associated with {input}");
+            await ReplyAsync($"Successfully enabled all commands associated with `{input}`");
         }
 
         [Command("disable")]
@@ -87,7 +87,7 @@ namespace AdvancedBot.Core.Commands.Modules
 
             [Command("enable")][Alias("whitelist")][Priority(1)]
             [Summary("Enables whitelist and disables blacklist for roles for a certain command.")]
-            public async Task EnableWhitelistAsync([Remainder]string input)
+            public async Task EnableWhitelistAsync([Remainder] string input)
             {
                 var guild = Accounts.GetOrCreateGuildAccount(Context.Guild.Id);
 
@@ -99,7 +99,7 @@ namespace AdvancedBot.Core.Commands.Modules
 
             [Command("disable")][Alias("blacklist")][Priority(1)]
             [Summary("Disables whitelist and enables blacklist for roles for a certain command.")]
-            public async Task EnableBlacklistAsync([Remainder]string input)
+            public async Task EnableBlacklistAsync([Remainder] string input)
             {
                 var guild = Accounts.GetOrCreateGuildAccount(Context.Guild.Id);
 
@@ -111,29 +111,25 @@ namespace AdvancedBot.Core.Commands.Modules
 
             [Command("add")][Priority(1)]
             [Summary("Adds a role to the white/blacklist.")]
-            public async Task AddChannelToListAsync(SocketRole role, [Remainder]string commandName)
+            public async Task AddChannelToListAsync(SocketRole role, [Remainder] string input)
             {
-                var command = Commands.GetCommandInfo(commandName);
-                var formattedName = FormatCommandName(command);
-
                 var guild = Accounts.GetOrCreateGuildAccount(Context.Guild.Id);
-                guild.AddToWhitelist(formattedName, role.Id, false);
-                Accounts.SaveGuildAccount(guild);
 
+                Permissions.AddIdToWhitelistForCommandOrModule(guild, input, role.Id, false);
+
+                Accounts.SaveGuildAccount(guild);
                 await ReplyAsync($"Succesfully added {role.Mention} to the list.");
             }
 
             [Command("remove")][Priority(1)]
             [Summary("Removes a role from the white/blacklist")]
-            public async Task RemoveChannelFromListAsync(SocketRole role, [Remainder]string commandName)
+            public async Task RemoveChannelFromListAsync(SocketRole role, [Remainder] string input)
             {
-                var command = Commands.GetCommandInfo(commandName);
-                var formattedName = FormatCommandName(command);
-
                 var guild = Accounts.GetOrCreateGuildAccount(Context.Guild.Id);
-                guild.RemoveFromWhitelist(formattedName, role.Id, false);
-                Accounts.SaveGuildAccount(guild);
 
+                Permissions.RemoveIdFromWhitelistForCommandOrModule(guild, input, role.Id, false);
+
+                Accounts.SaveGuildAccount(guild);
                 await ReplyAsync($"Succesfully removed {role.Mention} from the list.");
             }
         }
@@ -144,7 +140,7 @@ namespace AdvancedBot.Core.Commands.Modules
         {
             [Command][Alias("list")][Name("")][Priority(0)]
             [Summary("Displays the status of channels for a certain command.")]
-            public async Task DisplayChannelsCommandStatusAsync([Remainder]string commandName)
+            public async Task DisplayChannelsCommandStatusAsync([Remainder] string commandName)
             {
                 var command = Commands.GetCommandInfo(commandName);
                 var formattedName = FormatCommandName(command);
@@ -161,60 +157,52 @@ namespace AdvancedBot.Core.Commands.Modules
                                 $"{channelList}");
             }
 
-            [Command("enable")][Priority(1)]
+            [Command("enable")][Alias("whitelist")][Priority(1)]
             [Summary("Enables whitelist and disables blacklist for channels for a certain command.")]
-            public async Task EnableWhitelistAsync([Remainder]string commandName)
+            public async Task EnableWhitelistAsync([Remainder]string input)
             {
-                var command = Commands.GetCommandInfo(commandName);
-                var formattedName = FormatCommandName(command);
-
                 var guild = Accounts.GetOrCreateGuildAccount(Context.Guild.Id);
-                guild.EnableWhitelist(formattedName, true);
-                Accounts.SaveGuildAccount(guild);
 
-                await ReplyAsync($"Successfully enabled channels whitelist for `{formattedName}`.");
+                Permissions.EnableWhitelistForCommandOrModule(guild, input, true);
+
+                Accounts.SaveGuildAccount(guild);
+                await ReplyAsync($"Successfully enabled channels whitelist for `{input}`.");
             }
 
-            [Command("disable")][Priority(1)]
+            [Command("disable")][Alias("blacklist")][Priority(1)]
             [Summary("Disables whitelist and enables blacklist for said command.")]
-            public async Task EnableBlacklistAsync([Remainder]string commandName)
+            public async Task EnableBlacklistAsync([Remainder]string input)
             {
-                var command = Commands.GetCommandInfo(commandName);
-                var formattedName = FormatCommandName(command);
-
                 var guild = Accounts.GetOrCreateGuildAccount(Context.Guild.Id);
-                guild.DisableWhitelist(formattedName, true);
+
+                Permissions.DisableWhitelistForCommandOrModule(guild, input, true);
 
                 Accounts.SaveGuildAccount(guild);
-                await ReplyAsync($"Successfully disabled channels whitelist for `{formattedName}`.");
+                await ReplyAsync($"Successfully enabled channels blacklist for `{input}`.");
             }
 
             [Command("add")][Priority(1)]
             [Summary("Adds a channel to the white/blacklist.")]
-            public async Task AddChannelToListAsync(SocketTextChannel channel, [Remainder]string commandName)
+            public async Task AddChannelToListAsync(SocketTextChannel channel, [Remainder] string input)
             {
-                var command = Commands.GetCommandInfo(commandName);
-                var formattedName = FormatCommandName(command);
-
                 var guild = Accounts.GetOrCreateGuildAccount(Context.Guild.Id);
-                guild.AddToWhitelist(formattedName, channel.Id, true);
-                Accounts.SaveGuildAccount(guild);
 
-                await ReplyAsync($"Succesfully added {channel.Mention} to the list.");
+                Permissions.AddIdToWhitelistForCommandOrModule(guild, input, channel.Id, true);
+
+                Accounts.SaveGuildAccount(guild);
+                await ReplyAsync($"Succesfully added {channel.Mention} to the list for `{input}`.");
             }
 
             [Command("remove")][Priority(1)]
             [Summary("Removes a channel from the white/blacklist")]
-            public async Task RemoveChannelFromListAsync(SocketTextChannel channel, [Remainder]string commandName)
+            public async Task RemoveChannelFromListAsync(SocketTextChannel channel, [Remainder] string input)
             {
-                var command = Commands.GetCommandInfo(commandName);
-                var formattedName = FormatCommandName(command);
-
                 var guild = Accounts.GetOrCreateGuildAccount(Context.Guild.Id);
-                guild.RemoveFromWhitelist(formattedName, channel.Id, true);
-                Accounts.SaveGuildAccount(guild);
 
-                await ReplyAsync($"Succesfully removed {channel.Mention} from the list.");
+                Permissions.AddIdToWhitelistForCommandOrModule(guild, input, channel.Id, true);
+
+                Accounts.SaveGuildAccount(guild);
+                await ReplyAsync($"Succesfully removed {channel.Mention} from the list for `{input}`.");
             }
         }
     }

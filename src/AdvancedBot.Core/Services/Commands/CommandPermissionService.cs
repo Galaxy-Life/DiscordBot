@@ -53,6 +53,26 @@ namespace AdvancedBot.Core.Services.Commands
                 DisableWhitelistForModule(guild, result.Key, isChannel);
         }
 
+        public void AddIdToWhitelistForCommandOrModule(GuildAccount guild, string input, ulong id, bool isChannel)
+        {
+            var result = _commands.AdvancedSearch(input);
+
+            if (result.Key is null)            
+                guild.AddToWhitelist(_commands.FormatCommandName(result.Value), id, isChannel);
+            else
+                AddIdToWhitelistForModule(guild, result.Key, id, isChannel);
+        }
+
+        public void RemoveIdFromWhitelistForCommandOrModule(GuildAccount guild, string input, ulong id, bool isChannel)
+        {
+            var result = _commands.AdvancedSearch(input);
+
+            if (result.Key is null)            
+                guild.RemoveFromWhitelist(_commands.FormatCommandName(result.Value), id, isChannel);
+            else
+                RemoveIdFromWhitelistForModule(guild, result.Key, id, isChannel);
+        }
+
         private void EnableEntireModuleInGuild(GuildAccount guild, ModuleInfo module)
         {
             for (int i = 0; i < module.Commands.Count; i++)
@@ -106,6 +126,34 @@ namespace AdvancedBot.Core.Services.Commands
             for (int i = 0; i < module.Submodules.Count; i++)
             {
                 DisableWhitelistForModule(guild, module.Submodules[i], isChannel);
+            }
+        }
+    
+        private void AddIdToWhitelistForModule(GuildAccount guild, ModuleInfo module, ulong id,bool isChannel)
+        {
+            for (int i = 0; i < module.Commands.Count; i++)
+            {
+                var cmd = module.Commands[i];
+                guild.AddToWhitelist(_commands.FormatCommandName(cmd), id, isChannel);
+            }
+
+            for (int i = 0; i < module.Submodules.Count; i++)
+            {
+                AddIdToWhitelistForModule(guild, module.Submodules[i], id, isChannel);
+            }
+        }
+
+        private void RemoveIdFromWhitelistForModule(GuildAccount guild, ModuleInfo module, ulong id, bool isChannel)
+        {
+            for (int i = 0; i < module.Commands.Count; i++)
+            {
+                var cmd = module.Commands[i];
+                guild.RemoveFromWhitelist(_commands.FormatCommandName(cmd), id, isChannel);
+            }
+
+            for (int i = 0; i < module.Submodules.Count; i++)
+            {
+                RemoveIdFromWhitelistForModule(guild, module.Submodules[i], id, isChannel);
             }
         }
     }
