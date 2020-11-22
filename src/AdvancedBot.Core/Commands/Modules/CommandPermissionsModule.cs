@@ -29,17 +29,14 @@ namespace AdvancedBot.Core.Commands.Modules
 
         [Command("disable")]
         [Summary("Disables a command or module.")]
-        public async Task DisableCommandAsync([Remainder]string commandName)
+        public async Task DisableCommandAsync([Remainder]string input)
         {
-            var command = Commands.GetCommandInfo(commandName);
-
             var guild = Accounts.GetOrCreateGuildAccount(Context.Guild.Id);
-            var formattedName = FormatCommandName(command);
 
-            guild.DisableCommand(formattedName);
+            Permissions.DisableGuildCommandOrModule(guild, input);
            
             Accounts.SaveGuildAccount(guild);
-            await ReplyAsync($"Successfully disable `{formattedName}`.");
+            await ReplyAsync($"Successfully disabled all commands associated with `{input}`.");
         }
 
         [Command("modrole")]
@@ -88,32 +85,28 @@ namespace AdvancedBot.Core.Commands.Modules
                                 $"{roleList}");
             }
 
-            [Command("enable")][Priority(1)]
+            [Command("enable")][Alias("whitelist")][Priority(1)]
             [Summary("Enables whitelist and disables blacklist for roles for a certain command.")]
-            public async Task EnableWhitelistAsync([Remainder]string commandName)
+            public async Task EnableWhitelistAsync([Remainder]string input)
             {
-                var command = Commands.GetCommandInfo(commandName);
-                var formattedName = FormatCommandName(command);
-
                 var guild = Accounts.GetOrCreateGuildAccount(Context.Guild.Id);
-                guild.EnableWhitelist(formattedName, false);
-                Accounts.SaveGuildAccount(guild);
 
-                await ReplyAsync($"Successfully enabled roles whitelist for `{formattedName}`.");
+                Permissions.EnableWhitelistForCommandOrModule(guild, input, false);
+
+                Accounts.SaveGuildAccount(guild);
+                await ReplyAsync($"Successfully enabled roles whitelist for `{input}`.");
             }
 
-            [Command("disable")][Priority(1)]
+            [Command("disable")][Alias("blacklist")][Priority(1)]
             [Summary("Disables whitelist and enables blacklist for roles for a certain command.")]
-            public async Task EnableBlacklistAsync([Remainder]string commandName)
+            public async Task EnableBlacklistAsync([Remainder]string input)
             {
-                var command = Commands.GetCommandInfo(commandName);
-                var formattedName = FormatCommandName(command);
-
                 var guild = Accounts.GetOrCreateGuildAccount(Context.Guild.Id);
-                guild.DisableWhitelist(formattedName, false);
+
+                Permissions.DisableWhitelistForCommandOrModule(guild, input, false);
 
                 Accounts.SaveGuildAccount(guild);
-                await ReplyAsync($"Successfully disabled roles whitelist for `{formattedName}`.");
+                await ReplyAsync($"Successfully enabled roles blacklist for `{input}`.");
             }
 
             [Command("add")][Priority(1)]
