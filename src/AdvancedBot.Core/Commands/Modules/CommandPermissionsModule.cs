@@ -78,7 +78,7 @@ namespace AdvancedBot.Core.Commands.Modules
                 var cmd = guild.Commands.Find(x => x.Name == formattedName);
                 var roleList = cmd.WhitelistedRoles.Count == 0 
                             ? $"No roles have been put on the list."
-                            : $"**Roles:**<#{string.Join("> <#", cmd.WhitelistedRoles)}>";
+                            : $"**Roles:** <#{string.Join("> <#", cmd.WhitelistedRoles)}>";
 
                 await ReplyAsync($"**Info for {cmd.Name} regarding roles.**\n" + 
                                 $"Blacklist enabled: `{cmd.RolesListIsBlacklist}`.\n" +
