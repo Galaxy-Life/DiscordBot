@@ -104,6 +104,7 @@ namespace AdvancedBot.Core.Commands
 
         public KeyValuePair<ModuleInfo, CommandInfo> AdvancedSearch(string input)
         {
+            input = input.ToLower();
             var result = new Dictionary<ModuleInfo, CommandInfo>();
 
             var allCommandAliases = ListAllCommandAliases();
