@@ -74,13 +74,30 @@ namespace AdvancedBot.Core.Commands
             return true;
         }
     
-        public async Task<IUserMessage> SendPaginatedMessageAsync(IEnumerable<string> displayTexts, EmbedBuilder templateEmbed)
+        public async Task<IUserMessage> SendPaginatedMessageAsync(IEnumerable<EmbedField> displayFields, IEnumerable<string> displayTexts, EmbedBuilder templateEmbed)
         {
-            templateEmbed.WithTitle($"{templateEmbed.Title} | Page 1");
-            templateEmbed.WithDescription(string.Join("\n", displayTexts.Take(10)));
-            templateEmbed.WithFooter($"{templateEmbed.Footer.Text}\n{Context.User.Username} ({Context.User.Id}) | Total Display Items: {displayTexts.Count()}");
+            var displayItems = 0;
             
-            var message = await Paginator.HandleNewPaginatedMessageAsync(Context, displayTexts, templateEmbed.Build());
+            if (displayTexts != null)
+            {
+                templateEmbed.WithDescription(string.Join("\n", displayTexts.Take(10)));
+                displayItems = displayTexts.Count();
+            }
+            else
+            {
+                displayItems = displayFields.Count();
+                var fields = displayFields.Take(10).ToArray();
+
+                for (int i = 0; i < fields.Length; i++)
+                {
+                    templateEmbed.AddField(fields[i].Name, fields[i].Value, fields[i].Inline);
+                }
+            }
+
+            templateEmbed.WithTitle($"{templateEmbed.Title} | Page 1");
+            templateEmbed.WithFooter($"{templateEmbed.Footer?.Text}\n{Context.User.Username} ({Context.User.Id}) | Total Display Items: {displayItems}");
+
+            var message = await Paginator.HandleNewPaginatedMessageAsync(Context, displayFields, displayTexts, templateEmbed.Build());
             await Task.Delay(1000);    
 
             return message;

@@ -47,7 +47,7 @@ namespace AdvancedBot.Core.Services
             ResetTimer(message.Id);
         }
 
-        public async Task<IUserMessage> HandleNewPaginatedMessageAsync(SocketCommandContext context, IEnumerable<string> displayTexts, Embed embed)
+        public async Task<IUserMessage> HandleNewPaginatedMessageAsync(SocketCommandContext context, IEnumerable<EmbedField> displayFields, IEnumerable<string> displayTexts, Embed embed)
         {
             var message = await context.Channel.SendMessageAsync("", false, embed);
             var paginatedMessage = new PaginatedMessage()
@@ -55,8 +55,11 @@ namespace AdvancedBot.Core.Services
                 DiscordMessageId = message.Id,
                 DiscordChannelId = message.Channel.Id,
                 DiscordUserId = context.User.Id,
-                DisplayMessages = displayTexts.ToArray()
             };
+
+            if (displayFields == null) paginatedMessage.DisplayMessages = displayTexts.ToArray();
+            else paginatedMessage.DisplayFields = displayFields.ToArray();
+
             _activeMessages.Add(paginatedMessage);
             
             if (paginatedMessage.TotalPages == 1) return message;
@@ -118,25 +121,33 @@ namespace AdvancedBot.Core.Services
         {
             var message = await (_client.GetChannel(msg.DiscordChannelId) as SocketTextChannel).GetMessageAsync(msg.DiscordMessageId) as SocketUserMessage;
             var oldEmbed = message.Embeds.First();
-
-            // get correct messages to display
-            var displayMessages = msg.DisplayMessages.Skip((msg.CurrentPage - 1) * 10).Take(10);
-
-            // update title to correct page
-            var title = oldEmbed.Title.Split('|').First();
-            var newTitle = title + $"| Page {msg.CurrentPage}";
-
+            
             var newEmbed = new EmbedBuilder()
             {
-                Title = newTitle,
-                Description = string.Join("\n", displayMessages),
+                Title = $"{oldEmbed.Title.Split('|').First()}| Page {msg.CurrentPage}",
                 Color = oldEmbed.Color,
                 Url = oldEmbed.Url
             }
-            .WithFooter(oldEmbed.Footer.Value.Text, oldEmbed.Footer.Value.IconUrl)
-            .Build();
+            .WithFooter(oldEmbed.Footer.Value.Text, oldEmbed.Footer.Value.IconUrl);
 
-            await message.ModifyAsync(x => x.Embed = newEmbed);
+            if (msg.DisplayMessages != null)
+            {
+                // get correct messages to display
+                var displayMessages = msg.DisplayMessages.Skip((msg.CurrentPage - 1) * 10).Take(10);
+                
+                newEmbed.Description = string.Join("\n", displayMessages);
+            }
+            else
+            {
+                var displayFields = msg.DisplayFields.Skip((msg.CurrentPage - 1) * 10).Take(10).ToArray();
+
+                for (int i = 0; i < displayFields.Length; i++)
+                {
+                    newEmbed.AddField(displayFields[i].Name, displayFields[i].Value, displayFields[i].Inline);
+                }
+            }
+
+            await message.ModifyAsync(x => x.Embed = newEmbed.Build());
         }
 
         private async Task GoToLastPageAsync(ulong id)
