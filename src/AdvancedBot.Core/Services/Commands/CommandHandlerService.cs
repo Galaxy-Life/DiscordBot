@@ -28,7 +28,7 @@ namespace AdvancedBot.Core.Services.Commands
 
         public async Task InitializeAsync()
         {
-            _commands.AddTypeReader<IUser>(new UserTypeReader(), true);
+            _commands.AddTypeReader<IUser>(new IUserTypeReader(), true);
             await _commands.AddModulesAsync(Assembly.GetExecutingAssembly(), _services);
 
             _client.MessageReceived += OnMessageReceived;
