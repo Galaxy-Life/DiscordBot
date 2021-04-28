@@ -7,6 +7,7 @@ using System;
 using System.Reflection;
 using System.Threading.Tasks;
 using AdvancedBot.Core.Commands;
+using AdvancedBot.Core.Commands.TypeReaders;
 
 namespace AdvancedBot.Core.Services.Commands
 {
@@ -27,6 +28,7 @@ namespace AdvancedBot.Core.Services.Commands
 
         public async Task InitializeAsync()
         {
+            _commands.AddTypeReader(typeof(IUser), new IUserTypeReader());
             await _commands.AddModulesAsync(Assembly.GetExecutingAssembly(), _services);
 
             _client.MessageReceived += OnMessageReceived;
