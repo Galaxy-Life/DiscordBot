@@ -2,7 +2,7 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
 
-namespace AdvancedBot.Core.Commands.Modules
+namespace AdvancedBot.Core.Commands.Modules.Base
 {
     [Name("info")]
     [Summary("Category that handles all information regarding the bot.")]

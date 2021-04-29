@@ -6,7 +6,7 @@ using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 
-namespace AdvancedBot.Core.Commands.Modules
+namespace AdvancedBot.Core.Commands.Modules.Base
 {
     [RequireCustomPermission(GuildPermission.ManageChannels)]
     [Group("command")][Alias("c", "cmd")]
