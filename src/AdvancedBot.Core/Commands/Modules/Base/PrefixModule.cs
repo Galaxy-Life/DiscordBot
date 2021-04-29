@@ -3,7 +3,7 @@ using Discord;
 using Discord.Commands;
 using AdvancedBot.Core.Commands.Preconditions;
 
-namespace AdvancedBot.Core.Commands.Modules
+namespace AdvancedBot.Core.Commands.Modules.Base
 {
     [RequireCustomPermission(GuildPermission.ManageGuild)]
     [Group("prefix")][Alias("prefixes")]
