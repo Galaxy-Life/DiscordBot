@@ -61,7 +61,12 @@ namespace AdvancedBot.Core.Services.Commands
         {
             if (result.IsSuccess) 
             {
-                await ctx.Message.AddReactionAsync(new Emoji("✅"));
+                try
+                {
+                    await ctx.Message.AddReactionAsync(new Emoji("✅"));
+                }
+                catch{} // message no longer exists, just ignore
+
                 return;
             }
 
