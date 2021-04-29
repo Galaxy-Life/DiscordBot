@@ -9,15 +9,18 @@ using Discord.Commands;
 namespace AdvancedBot.Core.Commands.Modules.Base
 {
     [Group("purge")]
+    [Summary("Category that holds all the purge commands.")]
     [RequireCustomPermission(GuildPermission.ManageMessages)]
     [RequireBotPermission(GuildPermission.ManageMessages)]
     public class PurgeModule : TopModule
     {
         [Command("")]
+        [Summary("Purges the last x messages.")]
         public async Task DefaultPurgeAsync(int search = 100)
             => await ReplyAsync($"", false, await HandlePurgeCommandAsync(search));
 
         [Command("user")]
+        [Summary("Purges the last x messages by said user.")]
         public async Task PurgeUserAsync(IUser user, int search = 100)
             => await ReplyAsync($"", false, await HandlePurgeCommandAsync(search, user));
 
