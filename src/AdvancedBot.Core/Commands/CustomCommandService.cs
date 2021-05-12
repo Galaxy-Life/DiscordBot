@@ -49,7 +49,7 @@ namespace AdvancedBot.Core.Commands
             return message;
         }
 
-        public EmbedBuilder CreateModuleInfoEmbed(ModuleInfo module)
+        public EmbedBuilder CreateModuleInfoEmbed(ModuleInfo module, string prefix)
         {
             var submodulesField = "";
             var commandsField = "";
@@ -83,7 +83,7 @@ namespace AdvancedBot.Core.Commands
             {
                 var currentCommand = module.Commands[i];
 
-                commandsField += $"**{GenerateCommandUsage(currentCommand)}**\n{currentCommand.Summary}\n\n";
+                commandsField += $"**{GenerateCommandUsage(currentCommand, prefix)}**\n{currentCommand.Summary}\n\n";
             }
 
             if (!string.IsNullOrEmpty(submodulesField)) embed.AddField($"Subcategories:", $"{submodulesField}");
@@ -92,11 +92,11 @@ namespace AdvancedBot.Core.Commands
             return embed;
         }
 
-        public EmbedBuilder CreateCommandInfoEmbed(CommandInfo command)
+        public EmbedBuilder CreateCommandInfoEmbed(CommandInfo command, string prefix)
         {
             return new EmbedBuilder()
             {
-                Title = GenerateCommandUsage(command),
+                Title = GenerateCommandUsage(command, prefix),
                 Description = command.Summary,
                 Color = Color.Purple
             };
@@ -175,7 +175,7 @@ namespace AdvancedBot.Core.Commands
             return searchResult.Commands.OrderBy(x => x.Command.Priority).FirstOrDefault().Command;
         }
 
-        public string GenerateCommandUsage(CommandInfo command)
+        public string GenerateCommandUsage(CommandInfo command, string prefix)
         {
             StringBuilder parameters = new StringBuilder();
 
@@ -187,7 +187,7 @@ namespace AdvancedBot.Core.Commands
                 parameters.Append($"{pref}{command.Parameters[i].Name.Underscore().Dasherize()}{suff} ");
             }
             
-            return $"!{command.Aliases[0]} {parameters}";
+            return $"{prefix}{command.Aliases[0]} {parameters}";
         }
     }
 }

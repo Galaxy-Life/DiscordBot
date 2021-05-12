@@ -73,7 +73,8 @@ namespace AdvancedBot.Core.Services.Commands
             if (result.Error == CommandError.UnknownCommand) return;
             else if (result.Error == CommandError.BadArgCount)
             {
-                await SendWrongParameterCountMessage(ctx, cmd.Value);
+                var guild = _accounts.GetOrCreateGuildAccount(ctx.Guild.Id);
+                await SendWrongParameterCountMessage(ctx, cmd.Value, guild.DefaultDisplayPrefix);
                 return;
             }
             
@@ -101,9 +102,9 @@ namespace AdvancedBot.Core.Services.Commands
             await ctx.Channel.SendMessageAsync("", false, embed);
         }
     
-        private async Task SendWrongParameterCountMessage(ICommandContext ctx, CommandInfo command)
+        private async Task SendWrongParameterCountMessage(ICommandContext ctx, CommandInfo command, string prefix)
         {
-            var usage = _commands.GenerateCommandUsage(command);
+            var usage = _commands.GenerateCommandUsage(command, prefix);
 
             var embed = new EmbedBuilder()
             .WithTitle("Wrongly executed, correct example:")

@@ -12,6 +12,7 @@ namespace AdvancedBot.Core.Entities
         public List<string> Prefixes { get; set; }
         public ulong ModRoleId { get; set; }
         public List<CommandSettings> Commands { get; set; }
+        public string DefaultDisplayPrefix => string.IsNullOrEmpty(Prefixes[0]) ? "!" : Prefixes[0];
 
         #endregion
 

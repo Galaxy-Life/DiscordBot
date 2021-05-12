@@ -17,12 +17,13 @@ namespace AdvancedBot.Core.Commands.Modules.Base
         [Summary("Displays information about a specific command or category.")]
         public async Task Help([Remainder]string input)
         {
+            var guild = Accounts.GetOrCreateGuildAccount(Context.Guild.Id);
             var result = Commands.AdvancedSearch(input);
             EmbedBuilder embed;
 
             if (result.Value is null)
-                embed = Commands.CreateModuleInfoEmbed(result.Key);
-            else embed = Commands.CreateCommandInfoEmbed(result.Value);
+                embed = Commands.CreateModuleInfoEmbed(result.Key, guild.DefaultDisplayPrefix);
+            else embed = Commands.CreateCommandInfoEmbed(result.Value, guild.DefaultDisplayPrefix);
 
             await ReplyAsync("", false, embed.Build());
         }
