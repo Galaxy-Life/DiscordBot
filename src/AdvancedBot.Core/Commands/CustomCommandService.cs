@@ -99,7 +99,8 @@ namespace AdvancedBot.Core.Commands
                 Title = GenerateCommandUsage(command, prefix),
                 Description = command.Summary,
                 Color = Color.Purple
-            };
+            }
+            .WithFooter("**Tip:** <> means mandatory, [] means optional");
         }
 
         public KeyValuePair<ModuleInfo, CommandInfo> AdvancedSearch(string input)
