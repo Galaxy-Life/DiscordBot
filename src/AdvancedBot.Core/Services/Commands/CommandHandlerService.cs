@@ -109,7 +109,7 @@ namespace AdvancedBot.Core.Services.Commands
             var embed = new EmbedBuilder()
             .WithTitle("Wrongly executed, correct example:")
             .WithDescription(usage)
-            .WithFooter("**Tip:** <> means mandatory, [] means optional")
+            .WithFooter("Tip: <> means mandatory, [] means optional")
             .WithColor(Color.Red)
             .Build();
 
