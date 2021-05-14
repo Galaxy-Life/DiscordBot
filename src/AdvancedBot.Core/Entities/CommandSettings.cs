@@ -6,6 +6,7 @@ namespace AdvancedBot.Core.Entities
     {
         public string Name { get; set; }
         public bool IsEnabled { get; set; }
+        public bool DeleteOriginalMessage { get; set; }
         public bool ChannelListIsBlacklist { get; set; }
         public bool RolesListIsBlacklist { get; set; }
         public List<ulong> WhitelistedChannels { get; set; }

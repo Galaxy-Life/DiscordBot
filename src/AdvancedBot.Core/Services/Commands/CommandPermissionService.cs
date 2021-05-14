@@ -1,3 +1,4 @@
+using System;
 using AdvancedBot.Core.Commands;
 using AdvancedBot.Core.Entities;
 using Discord.Commands;
@@ -53,6 +54,16 @@ namespace AdvancedBot.Core.Services.Commands
                 DisableWhitelistForModule(guild, result.Key, isChannel);
         }
 
+        internal void ToggleDeleteMessageForCommandOrModule(GuildAccount guild, string input)
+        {
+            var result = _commands.AdvancedSearch(input);
+
+            if (result.Key is null)
+                guild.ToggleDeleteMsgOnCommand(_commands.FormatCommandName(result.Value));
+            else 
+                ToggleDeleteMessageForModule(guild, result.Key);
+        }
+
         public void AddIdToWhitelistForCommandOrModule(GuildAccount guild, string input, ulong id, bool isChannel)
         {
             var result = _commands.AdvancedSearch(input);
@@ -98,6 +109,19 @@ namespace AdvancedBot.Core.Services.Commands
             for (int i = 0; i < module.Submodules.Count; i++)
             {
                 DisableEntireModuleInGuild(guild, module.Submodules[i]);
+            }
+        }
+
+        private void ToggleDeleteMessageForModule(GuildAccount guild, ModuleInfo module)
+        {
+            for (int i = 0; i < module.Commands.Count; i++)
+            {
+                guild.ToggleDeleteMsgOnCommand(_commands.FormatCommandName(module.Commands[i]));
+            }
+
+            for (int i = 0; i < module.Submodules.Count; i++)
+            {
+                ToggleDeleteMessageForModule(guild, module.Submodules[i]);
             }
         }
     

@@ -39,6 +39,18 @@ namespace AdvancedBot.Core.Commands.Modules.Base
             await ReplyAsync($"Successfully disabled all commands associated with `{input}`.");
         }
 
+        [Command("delete")]
+        [Summary("Toggles whether the original message should be deleted after the command ran.")]
+        public async Task ToggleDeleteMessageAsync([Remainder]string input)
+        {
+            var guild = Accounts.GetOrCreateGuildAccount(Context.Guild.Id);
+
+            Permissions.ToggleDeleteMessageForCommandOrModule(guild, input);
+
+            Accounts.SaveGuildAccount(guild);
+            await ReplyAsync($"Successfully toggled message-delete on all commands associated with `{input}`.");
+        }
+
         [Command("modrole")]
         [Summary("Sets the modrole to a certain role.")]
         public async Task SetModRoleAsync(SocketRole role)

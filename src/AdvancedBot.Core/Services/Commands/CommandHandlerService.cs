@@ -59,11 +59,17 @@ namespace AdvancedBot.Core.Services.Commands
 
         private async Task OnCommandExecuted(Optional<CommandInfo> cmd, ICommandContext ctx, IResult result)
         {
+            var guild = _accounts.GetOrCreateGuildAccount(ctx.Guild.Id);
+
             if (result.IsSuccess) 
             {
                 try
                 {
-                    await ctx.Message.AddReactionAsync(new Emoji("✅"));
+                    if (guild.Commands.Find(x => x.Name == _commands.FormatCommandName(cmd.Value)).DeleteOriginalMessage)
+                    {
+                        await ctx.Message.DeleteAsync();
+                    }
+                    else await ctx.Message.AddReactionAsync(new Emoji("✅"));
                 }
                 catch{} // message no longer exists, just ignore
 
@@ -73,7 +79,6 @@ namespace AdvancedBot.Core.Services.Commands
             if (result.Error == CommandError.UnknownCommand) return;
             else if (result.Error == CommandError.BadArgCount)
             {
-                var guild = _accounts.GetOrCreateGuildAccount(ctx.Guild.Id);
                 await SendWrongParameterCountMessage(ctx, cmd.Value, guild.DefaultDisplayPrefix);
                 return;
             }
