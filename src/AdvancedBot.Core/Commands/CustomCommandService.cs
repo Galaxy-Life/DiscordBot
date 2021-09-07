@@ -32,12 +32,12 @@ namespace AdvancedBot.Core.Commands
         {
             var documentation = string.IsNullOrEmpty(_documentationUrl) ? $"N/A" : $"[Click me!]({_documentationUrl})";
             var sourceRepo = string.IsNullOrEmpty(_sourceRepo) ? $"N/A" : $"[Click me!]({_sourceRepo})";
-            var botInvite = _botIsPrivate ? $"Private bot." : $"[Click me!](https://discordapp.com/api/oauth2/authorize?client_id={context.Client.CurrentUser.Id}&permissions=8&scope=bot)";
+            var botInvite = _botIsPrivate ? $"Bot is private" : $"[Click me!](https://discordapp.com/api/oauth2/authorize?client_id={context.Client.CurrentUser.Id}&permissions=8&scope=bot)";
 
             var embed = new EmbedBuilder()
             {
                 Title = "About the bot",
-                Description = $"For a bare list of all commands, execute `!commands`\nFor a bare list of categories, execute `!modules`\n" + 
+                Description = $"For a bare list of all commands, execute `!commands`\nFor a bare list of categories, execute `!modules`\n\n" +
                               $"**Documentation:** {documentation}\n\n**Source code:** {sourceRepo}\n\n" +
                               $"**Made possible by:** {_contributers}\n\n**Invite the bot:** {botInvite}",
                 ThumbnailUrl = context.Client.CurrentUser.GetAvatarUrl(),
