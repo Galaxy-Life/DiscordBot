@@ -130,7 +130,10 @@ namespace AdvancedBot.Core.Commands.Modules.Base
                 Permissions.AddIdToWhitelistForCommandOrModule(guild, input, role.Id, false);
 
                 Accounts.SaveGuildAccount(guild);
-                await ReplyAsync($"Succesfully added {role.Mention} to the list.");
+                await ReplyAsync("", false, new EmbedBuilder()
+                {
+                    Description = $"Succesfully added {role.Mention} to the list of {input}."
+                }.Build());
             }
 
             [Command("remove")][Priority(1)]
@@ -142,7 +145,10 @@ namespace AdvancedBot.Core.Commands.Modules.Base
                 Permissions.RemoveIdFromWhitelistForCommandOrModule(guild, input, role.Id, false);
 
                 Accounts.SaveGuildAccount(guild);
-                await ReplyAsync($"Succesfully removed {role.Mention} from the list.");
+                await ReplyAsync("", false, new EmbedBuilder()
+                {
+                    Description = $"Succesfully removed {role.Mention} from the list of {input}."
+                }.Build());
             }
         }
     
@@ -202,7 +208,10 @@ namespace AdvancedBot.Core.Commands.Modules.Base
                 Permissions.AddIdToWhitelistForCommandOrModule(guild, input, channel.Id, true);
 
                 Accounts.SaveGuildAccount(guild);
-                await ReplyAsync($"Succesfully added {channel.Mention} to the list for `{input}`.");
+                await ReplyAsync("", false, new EmbedBuilder()
+                {
+                    Description = $"Succesfully added {channel.Mention} to the list for {input}."
+                }.Build());
             }
 
             [Command("remove")][Priority(1)]
@@ -214,7 +223,10 @@ namespace AdvancedBot.Core.Commands.Modules.Base
                 Permissions.AddIdToWhitelistForCommandOrModule(guild, input, channel.Id, true);
 
                 Accounts.SaveGuildAccount(guild);
-                await ReplyAsync($"Succesfully removed {channel.Mention} from the list for `{input}`.");
+                await ReplyAsync("", false, new EmbedBuilder()
+                {
+                    Description = $"Succesfully removed {channel.Mention} from the list for {input}."
+                }.Build());
             }
         }
     }
