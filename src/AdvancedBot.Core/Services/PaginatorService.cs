@@ -25,31 +25,11 @@ namespace AdvancedBot.Core.Services
             _activeTimers = new ConcurrentDictionary<ulong, Timer>();
             
             _client = client;
-            _client.ReactionAdded += OnReactionUpdatedAsync;
+            _client.InteractionCreated += OnInteraction;
         }
-
-        private async Task OnReactionUpdatedAsync(Cacheable<IUserMessage, ulong> msg, ISocketMessageChannel channel, SocketReaction reaction)
-        {
-            var message = await msg.GetOrDownloadAsync();
-
-            var paginatedMessage = _activeMessages.Find(x => x.DiscordMessageId == message.Id);
-            if (paginatedMessage is null) return;
-
-            if (reaction.UserId != paginatedMessage.DiscordUserId) return;
-            await message.RemoveReactionAsync(reaction.Emote, reaction.User.Value);
-
-            if (reaction.Emote.Name == _first.Name) await GoToFirstPageAsync(message.Id);
-            else if (reaction.Emote.Name == _previous.Name) await GoToPreviousPageAsync(message.Id);
-            else if (reaction.Emote.Name == _next.Name) await GoToNextPageAsync(message.Id);
-            else if (reaction.Emote.Name == new Emoji("⏭️").Name) await GoToLastPageAsync(message.Id);
-            else return;
-
-            ResetTimer(message.Id);
-        }
-
         public async Task<IUserMessage> HandleNewPaginatedMessageAsync(SocketCommandContext context, IEnumerable<EmbedField> displayFields, IEnumerable<string> displayTexts, Embed embed)
         {
-            var message = await context.Channel.SendMessageAsync("", false, embed);
+            var message = await context.Channel.SendMessageAsync("", false, embed, component: CreateMessageComponents());
             var paginatedMessage = new PaginatedMessage()
             {
                 DiscordMessageId = message.Id,
@@ -63,10 +43,9 @@ namespace AdvancedBot.Core.Services
             _activeMessages.Add(paginatedMessage);
             
             if (paginatedMessage.TotalPages == 1) return message;
-            
-            await AddPaginatorReactionsAsync(message);
+
             AddNewTimer(message.Id);
-            
+
             return message;
         }
 
@@ -92,8 +71,6 @@ namespace AdvancedBot.Core.Services
             var message = channel.GetMessageAsync(paginatorMessage.DiscordMessageId).GetAwaiter().GetResult() as SocketUserMessage;
             if (message is null) return;
 
-            message.RemoveAllReactionsAsync().GetAwaiter().GetResult();
-            
             _activeMessages.Remove(paginatorMessage);
             _activeTimers.TryRemove(messageId, out Timer oldTimer);
             timer.Dispose();
@@ -109,12 +86,44 @@ namespace AdvancedBot.Core.Services
             _activeTimers.TryAdd(messageId, currentTimer);
         }
 
-        private async Task AddPaginatorReactionsAsync(IUserMessage message)
+        private async Task OnInteraction(SocketInteraction interaction)
         {
-            await message.AddReactionAsync(new Emoji("⏮️"));
-            await message.AddReactionAsync(new Emoji("◀️"));
-            await message.AddReactionAsync(new Emoji("▶️"));
-            await message.AddReactionAsync(new Emoji("⏭️"));
+            if (interaction is SocketMessageComponent component)
+            {
+                /* Message hasnt been interacted with in over half a minute */
+                if (_activeMessages.FirstOrDefault(x => x.DiscordMessageId == component.Message.Id) == null)
+                {
+                    await component.ModifyOriginalResponseAsync(x => x.Content = "This message is no longer interactable.");
+                    return;
+                }
+
+                switch (component.Data.CustomId)
+                {
+                    case "first":
+                        await GoToFirstPageAsync(component.Message.Id);
+                        break;
+                    case "previous":
+                        await GoToPreviousPageAsync(component.Message.Id);
+                        break;
+                    case "next":
+                        await GoToNextPageAsync(component.Message.Id);
+                        break;
+                    case "last":
+                        await GoToLastPageAsync(component.Message.Id);
+                        break;
+                }
+            }
+        }
+
+        private MessageComponent CreateMessageComponents()
+        {
+            var builder = new ComponentBuilder()
+                .WithButton("First", "first", ButtonStyle.Secondary, new Emoji("⏮️"))
+                .WithButton("Previous", "previous", ButtonStyle.Secondary, new Emoji("⬅️"))
+                .WithButton("Next", "next", ButtonStyle.Secondary, new Emoji("➡️"))
+                .WithButton("Last", "last", ButtonStyle.Secondary, new Emoji("⏭️"));
+
+            return builder.Build();
         }
 
         private async Task HandleUpdateMessagePagesAsync(PaginatedMessage msg)
