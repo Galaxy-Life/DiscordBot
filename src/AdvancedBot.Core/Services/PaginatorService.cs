@@ -12,9 +12,6 @@ namespace AdvancedBot.Core.Services
 {
     public class PaginatorService
     {
-        private IEmote _next = new Emoji("▶️");
-        private IEmote _previous = new Emoji("◀️");
-        private IEmote _first = new Emoji("⏮️");
         private List<PaginatedMessage> _activeMessages;
         private ConcurrentDictionary<ulong, Timer> _activeTimers;
         private DiscordSocketClient _client;
@@ -29,7 +26,7 @@ namespace AdvancedBot.Core.Services
         }
         public async Task<IUserMessage> HandleNewPaginatedMessageAsync(SocketCommandContext context, IEnumerable<EmbedField> displayFields, IEnumerable<string> displayTexts, Embed embed)
         {
-            var message = await context.Channel.SendMessageAsync("", false, embed, component: CreateMessageComponents());
+            var message = await context.Channel.SendMessageAsync("", false, embed, components: CreateMessageComponents());
             var paginatedMessage = new PaginatedMessage()
             {
                 DiscordMessageId = message.Id,
