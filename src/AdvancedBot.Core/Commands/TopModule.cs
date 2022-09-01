@@ -83,7 +83,7 @@ namespace AdvancedBot.Core.Commands
                 templateEmbed.WithDescription(string.Join("\n", displayTexts.Take(10)));
                 displayItems = displayTexts.Count();
             }
-            else
+            else if (displayFields != null)
             {
                 displayItems = displayFields.Count();
                 var fields = displayFields.Take(10).ToArray();
