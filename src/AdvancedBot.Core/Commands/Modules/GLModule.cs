@@ -35,7 +35,7 @@ namespace AdvancedBot.Core.Commands.Modules
 
             for (int i = 0; i < status.Count; i++)
             {
-                embed.AddField(status[i].Name, status[i].IsOnline ? "✅ Running" : "🛑 Down", true);
+                embed.AddField($"{status[i].Name} ({status[i].Ping}ms)", status[i].IsOnline ? "✅ Running" : "🛑 Down", true);
             }
 
             await ReplyAsync("", false, embed.Build());
