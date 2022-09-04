@@ -8,6 +8,9 @@ using System.Threading.Tasks;
 using AdvancedBot.Core.Commands;
 using AdvancedBot.Core.Services;
 using GL.NET;
+using Discord.Net;
+using Newtonsoft.Json;
+using System.Linq;
 
 namespace AdvancedBot.Core
 {
@@ -59,6 +62,7 @@ namespace AdvancedBot.Core
         private async Task OnReadyAsync()
         {
             await _client.SetGameAsync("Galaxy Life");
+
             //await FirstTimeCommandAdder();
         }
 
@@ -78,35 +82,27 @@ namespace AdvancedBot.Core
 
         private async Task FirstTimeCommandAdder()
         {
-            var statusCommand = new SlashCommandBuilder();
+            var statusCommand = new SlashCommandBuilder() {  IsDMEnabled = false };
             statusCommand.WithName("status");
             statusCommand.WithDescription("Shows the current status of the game servers");
 
-            await _client.CreateGlobalApplicationCommandAsync(statusCommand.Build());
-
-            var profileCommand = new SlashCommandBuilder();
+            var profileCommand = new SlashCommandBuilder() { IsDMEnabled = false };
             profileCommand.WithName("profile");
             profileCommand.WithDescription("Displays a user's Galaxy Life profile");
 
-            await _client.CreateGlobalApplicationCommandAsync(profileCommand.Build());
-
-            var statsCommand = new SlashCommandBuilder();
+            var statsCommand = new SlashCommandBuilder() { IsDMEnabled = false };
             statsCommand.WithName("stats");
             statsCommand.WithDescription("Displays a user's Galaxy Life stats");
 
-            await _client.CreateGlobalApplicationCommandAsync(statsCommand.Build());
-
-            var advancedStatsCommand = new SlashCommandBuilder();
+            var advancedStatsCommand = new SlashCommandBuilder() { IsDMEnabled = false };
             advancedStatsCommand.WithName("advancedstats");
             advancedStatsCommand.WithDescription("Displays a user's extensive Galaxy Life stats");
 
-            await _client.CreateGlobalApplicationCommandAsync(advancedStatsCommand.Build());
-
-            var asCommand = new SlashCommandBuilder();
+            var asCommand = new SlashCommandBuilder() { IsDMEnabled = false };
             asCommand.WithName("as");
             asCommand.WithDescription("Displays a user's extensive Galaxy Life stats");
 
-            await _client.CreateGlobalApplicationCommandAsync(asCommand.Build());
+            await _client.BulkOverwriteGlobalApplicationCommandsAsync(new ApplicationCommandProperties[] { statusCommand.Build(), profileCommand.Build(), statsCommand.Build(), advancedStatsCommand.Build(), asCommand.Build() } );
         }
     }
 }
