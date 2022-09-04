@@ -48,6 +48,11 @@ namespace AdvancedBot.Core.Commands.Modules
         {
             var user = await GetUserByInput(input);
 
+            if (user == null)
+            {
+                throw new Exception($"No user found for {input}");
+            }
+
             var embed = new EmbedBuilder()
                 .WithTitle($"Game Profile of {user.Name}")
                 .WithUrl(user.Avatar)
@@ -65,6 +70,12 @@ namespace AdvancedBot.Core.Commands.Modules
         public async Task ShowUserStatsAsync(string input = "")
         {
             var user = await GetUserByInput(input);
+
+            if (user == null)
+            {
+                throw new Exception($"No user found for {input}");
+            }
+
             var stats = await _client.GetUserStats(user.Id);
 
             //var displayAlliance = user.Alliance == "None" ? "User is not in any alliance." : $"User is part of **{profile.Statistics.Alliance}**.";
@@ -97,6 +108,12 @@ namespace AdvancedBot.Core.Commands.Modules
         public async Task ShowUserAdvancedStatsAsync(string input = "")
         {
             var user = await GetUserByInput(input);
+
+            if (user == null)
+            {
+                throw new Exception($"No user found for {input}");
+            }
+
             var stats = await _client.GetUserStats(user.Id);
 
             //var displayAlliance = user.Alliance == "None" ? "User is not in any alliance." : $"User is part of **{profile.Statistics.Alliance}**.";
