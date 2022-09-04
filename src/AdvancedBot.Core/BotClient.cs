@@ -7,6 +7,8 @@ using System;
 using System.Threading.Tasks;
 using AdvancedBot.Core.Commands;
 using AdvancedBot.Core.Services;
+using GL.NET;
+using SteamKit2;
 
 namespace AdvancedBot.Core
 {
@@ -68,6 +70,8 @@ namespace AdvancedBot.Core
                 .AddSingleton<GuildAccountService>()
                 .AddSingleton<PaginatorService>()
                 .AddSingleton<CommandPermissionService>()
+                .AddSingleton<GLAsyncClient>()
+                .AddSingleton<SteamClient>()
                 .BuildServiceProvider();
         }
     }
