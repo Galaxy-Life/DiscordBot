@@ -3,6 +3,8 @@ using Discord.Commands;
 using Discord.Interactions;
 using GL.NET;
 using GL.NET.Entities;
+using Humanizer.Localisation;
+using Humanizer;
 using System;
 using System.Threading.Tasks;
 
@@ -18,7 +20,7 @@ namespace AdvancedBot.Core.Commands.Modules
             _client = client;
         }
 
-        [SlashCommand("status", "Shows the current status of the flash servers.")]
+        [SlashCommand("status", "Shows the current status of the flash servers")]
         [Command("status")]
         [Discord.Commands.Summary("Shows the current status of the flash servers.")]
         public async Task DisplayServerStatusAsync()
@@ -39,9 +41,9 @@ namespace AdvancedBot.Core.Commands.Modules
             await ReplyAsync("", false, embed.Build());
         }
 
-        [SlashCommand("profile", "Displays a user's GL profile.")]
+        [SlashCommand("profile", "Displays a user's Galaxy Life profile")]
         [Command("profile")]
-        [Discord.Commands.Summary("Displays a user's GL profile.")]
+        [Discord.Commands.Summary("Displays a user's Galaxy Life profile.")]
         public async Task ShowUserProfileAsync(string input = "")
         {
             var user = await GetUserByInput(input);
@@ -51,14 +53,15 @@ namespace AdvancedBot.Core.Commands.Modules
                 .WithUrl(user.Avatar)
                 .WithThumbnailUrl(user.Avatar)
                 .WithDescription($"\nId: **{user.Id}**")
+                .WithFooter("Steam info will be shown here later (need to figure out how first)")
                 .Build();
 
             await ReplyAsync("", false, embed);
         }
 
-        [SlashCommand("stats", "Displays a user's GL stats.")]
+        [SlashCommand("stats", "Displays a user's Galaxy Life stats")]
         [Command("stats")]
-        [Discord.Commands.Summary("Displays a user's GL stats.")]
+        [Discord.Commands.Summary("Displays a user's Galaxy Life stats.")]
         public async Task ShowUserStatsAsync(string input = "")
         {
             var user = await GetUserByInput(input);
@@ -80,6 +83,45 @@ namespace AdvancedBot.Core.Commands.Modules
             .AddField("Is Online", user.Online, true)
             .AddField("Players Attacked", stats.PlayersAttacked, true)
             .WithFooter($"Requested by {Context.User.Username} | {Context.User.Id}")
+            .Build());
+        }
+
+        [SlashCommand("as", "Displays a user's extensive Galaxy Life stats")]
+        public async Task ShowUserAsAsync(string input = "")
+            => await ShowUserAdvancedStatsAsync(input);
+
+        [SlashCommand("advancedstats", "Displays a user's extensive Galaxy Life stats")]
+        [Command("advancedstats")]
+        [Alias("as")]
+        [Discord.Commands.Summary("Displays a user's Galaxy Life stats.")]
+        public async Task ShowUserAdvancedStatsAsync(string input = "")
+        {
+            var user = await GetUserByInput(input);
+            var stats = await _client.GetUserStats(user.Id);
+
+            //var displayAlliance = user.Alliance == "None" ? "User is not in any alliance." : $"User is part of **{profile.Statistics.Alliance}**.";
+
+            await ReplyAsync("", false, new EmbedBuilder()
+            {
+                Title = $"Statistics for {user.Name} ({user.Id})",
+                Color = Color.DarkMagenta,
+                ThumbnailUrl = user.Avatar,
+                Description = $"{"Might be in some alliance idfk :/"}\nUser is level **{user.Level}**.\n\u200b"
+            }
+            .AddField("Level", user.Level, true)
+            .AddField("Players Attacked", stats.PlayersAttacked, true)
+            .AddField("Npcs Attacked", stats.NpcsAttacked, true)
+            .AddField("Chips Spent", FormatNumbers(stats.ChipsSpent), true)
+            .AddField("Coins Spent", FormatNumbers(stats.CoinsSpent), true)
+            .AddField("Minerals Spent", FormatNumbers(stats.MineralsSpent), true)
+            .AddField("Friends Helped", FormatNumbers(stats.FriendsHelped), true)
+            .AddField("Gifts Received", FormatNumbers(stats.GiftsReceived), true)
+            .AddField("Gifts Sent", FormatNumbers(stats.GiftsSent), true)
+            .AddField("PlayTime", TimeSpan.FromMilliseconds(stats.TotalPlayTimeInMs).Humanize(3, minUnit: TimeUnit.Minute), true)
+            .AddField("Nukes Used", stats.NukesUsed, true)
+            .AddField("Obstacles Recycled", stats.ObstaclesRecycled, true)
+            .AddField("Troops trained", stats.TroopsTrained, true)
+            .AddField("Troopsize donated", stats.TroopSizesDonated, true)
             .Build());
         }
 

@@ -57,7 +57,10 @@ namespace AdvancedBot.Core
             => Console.WriteLine($"{msg.Source}: {msg.Message}");
 
         private async Task OnReadyAsync()
-            => await _client.SetGameAsync("Gawaxy Wife uWu");
+        {
+            await _client.SetGameAsync("Galaxy Life");
+            //await FirstTimeCommandAdder();
+        }
 
         private ServiceProvider ConfigureServices()
         {
@@ -71,6 +74,39 @@ namespace AdvancedBot.Core
                 .AddSingleton<CommandPermissionService>()
                 .AddSingleton<GLAsyncClient>()
                 .BuildServiceProvider();
+        }
+
+        private async Task FirstTimeCommandAdder()
+        {
+            var statusCommand = new SlashCommandBuilder();
+            statusCommand.WithName("status");
+            statusCommand.WithDescription("Shows the current status of the game servers");
+
+            await _client.CreateGlobalApplicationCommandAsync(statusCommand.Build());
+
+            var profileCommand = new SlashCommandBuilder();
+            profileCommand.WithName("profile");
+            profileCommand.WithDescription("Displays a user's Galaxy Life profile");
+
+            await _client.CreateGlobalApplicationCommandAsync(profileCommand.Build());
+
+            var statsCommand = new SlashCommandBuilder();
+            statsCommand.WithName("stats");
+            statsCommand.WithDescription("Displays a user's Galaxy Life stats");
+
+            await _client.CreateGlobalApplicationCommandAsync(statsCommand.Build());
+
+            var advancedStatsCommand = new SlashCommandBuilder();
+            advancedStatsCommand.WithName("advancedstats");
+            advancedStatsCommand.WithDescription("Displays a user's extensive Galaxy Life stats");
+
+            await _client.CreateGlobalApplicationCommandAsync(advancedStatsCommand.Build());
+
+            var asCommand = new SlashCommandBuilder();
+            asCommand.WithName("as");
+            asCommand.WithDescription("Displays a user's extensive Galaxy Life stats");
+
+            await _client.CreateGlobalApplicationCommandAsync(asCommand.Build());
         }
     }
 }
