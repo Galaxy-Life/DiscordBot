@@ -58,7 +58,7 @@ namespace AdvancedBot.Core
             => Console.WriteLine($"{msg.Source}: {msg.Message}");
 
         private async Task OnReadyAsync()
-            => await _client.SetGameAsync("Being a bot.");
+            => await _client.SetGameAsync("Gawaxy Wife uWu");
 
         private ServiceProvider ConfigureServices()
         {
