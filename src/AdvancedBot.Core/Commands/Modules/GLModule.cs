@@ -3,7 +3,6 @@ using Discord.Commands;
 using Discord.Interactions;
 using GL.NET;
 using GL.NET.Entities;
-using SteamKit2;
 using System;
 using System.Threading.Tasks;
 
@@ -13,12 +12,10 @@ namespace AdvancedBot.Core.Commands.Modules
     public class GLModule : TopModule
     {
         private GLAsyncClient _client;
-        private SteamClient _steam;
 
-        public GLModule(GLAsyncClient client, SteamClient steam)
+        public GLModule(GLAsyncClient client)
         {
             _client = client;
-            _steam = steam;
         }
 
         [SlashCommand("status", "Shows the current status of the flash servers.")]
