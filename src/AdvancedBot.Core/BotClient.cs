@@ -31,8 +31,8 @@ namespace AdvancedBot.Core
             {
                 CaseSensitiveCommands = false,
                 LogLevel = LogSeverity.Info,
-                BotInviteIsPrivate = true,
-                RepositoryUrl = "https://github.com/svr333/AdvancedBot-Template"
+                BotInviteIsPrivate = false,
+                RepositoryUrl = "https://github.com/Galaxy-Life/DiscordBot"
             });
         }
 
