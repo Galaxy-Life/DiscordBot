@@ -62,6 +62,7 @@ namespace AdvancedBot.Core
         private async Task OnReadyAsync()
         {
             await _client.SetGameAsync("Galaxy Life");
+            Console.WriteLine($"Guild count: {_client.Guilds.Count}");
 
             //await FirstTimeCommandAdder();
         }
