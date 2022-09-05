@@ -7,6 +7,7 @@ using Humanizer.Localisation;
 using Humanizer;
 using System;
 using System.Threading.Tasks;
+using System.Linq;
 
 namespace AdvancedBot.Core.Commands.Modules
 {
@@ -90,7 +91,7 @@ namespace AdvancedBot.Core.Commands.Modules
             .AddField("Chips", user.Chips, true)
             .AddField("Experience", FormatNumbers(user.Score), true)
             .AddField("Starbase", user.Planets[0].HQLevel, true)
-            .AddField("Colonies", user.Planets.Length - 1, true)
+            .AddField("Colonies", user.Planets.Count(x => x != null) - 1, true)
             .AddField("Is Online", user.Online, true)
             .AddField("Players Attacked", stats.PlayersAttacked, true)
             .WithFooter($"Requested by {Context.User.Username} | {Context.User.Id}")
