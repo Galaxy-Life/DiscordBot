@@ -88,7 +88,6 @@ namespace AdvancedBot.Core.Commands.Modules
                 ThumbnailUrl = user.Avatar,
                 Description = $"{"Might be in some alliance idfk :/"}\nUser is level **{user.Level}**.\n\u200b"
             }
-            .AddField("Chips", user.Chips, true)
             .AddField("Experience", FormatNumbers(user.Score), true)
             .AddField("Starbase", user.Planets[0].HQLevel, true)
             .AddField("Colonies", user.Planets.Count(x => x != null) - 1, true)
