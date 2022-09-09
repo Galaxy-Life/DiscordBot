@@ -128,7 +128,6 @@ namespace AdvancedBot.Core.Commands.Modules
             .AddField("Level", user.Level, true)
             .AddField("Players Attacked", stats.PlayersAttacked, true)
             .AddField("Npcs Attacked", stats.NpcsAttacked, true)
-            .AddField("Chips Spent", FormatNumbers(stats.ChipsSpent), true)
             .AddField("Coins Spent", FormatNumbers(stats.CoinsSpent), true)
             .AddField("Minerals Spent", FormatNumbers(stats.MineralsSpent), true)
             .AddField("Friends Helped", FormatNumbers(stats.FriendsHelped), true)
