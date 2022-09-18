@@ -78,6 +78,7 @@ namespace AdvancedBot.Core.Commands.Modules
             }
 
             var stats = await _client.GetUserStats(user.Id);
+            var displayAlliance = string.IsNullOrEmpty(user.AllianceId) ? "User is not in any alliance." : $"User is part of **{user.AllianceId}**.";
 
             //var displayAlliance = user.Alliance == "None" ? "User is not in any alliance." : $"User is part of **{profile.Statistics.Alliance}**.";
 
@@ -86,9 +87,9 @@ namespace AdvancedBot.Core.Commands.Modules
                 Title = $"Statistics for {user.Name} ({user.Id})",
                 Color = Color.DarkMagenta,
                 ThumbnailUrl = user.Avatar,
-                Description = $"{"Might be in some alliance idfk :/"}\nUser is level **{user.Level}**.\n\u200b"
+                Description = $"{displayAlliance}\nUser is level **{user.Level}**.\n\u200b"
             }
-            .AddField("Experience", FormatNumbers(user.Score), true)
+            .AddField("Experience", FormatNumbers(user.Experience), true)
             .AddField("Starbase", user.Planets[0].HQLevel, true)
             .AddField("Colonies", user.Planets.Count(x => x != null) - 1, true)
             .AddField("Is Online", user.Online, true)
