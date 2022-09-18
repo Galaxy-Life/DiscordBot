@@ -8,34 +8,36 @@ using AdvancedBot.Core.Services.DataStorage;
 using AdvancedBot.Core.Services;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using Discord.Interactions;
 
 namespace AdvancedBot.Core.Commands
 {
-    public class TopModule : ModuleBase<SocketCommandContext>
+    public class TopModule : InteractionModuleBase<SocketInteractionContext>
     {
         public GuildAccountService Accounts { get; set; }
-        public CustomCommandService Commands { get; set; }
+        public CustomInteractionService Commands { get; set; }
         public PaginatorService Paginator { get; set; }
-        private CommandInfo _currentCommand;
+        private ICommandInfo _currentCommand;
         [DontInject]
         public string ExpandedCommandName => FormatCommandName(_currentCommand);
 
-        protected override void BeforeExecute(CommandInfo command)
-        {            
+        public override void BeforeExecute(ICommandInfo command)
+        {
+            DeferAsync();
             _currentCommand = command;
             var guild = Accounts.GetOrCreateGuildAccount(Context.Guild.Id);
             
             if (!CommandIsAllowedToRun(guild))
             {
-                Context.Message.AddReactionAsync(new Emoji("⛔"));
+                Context.Interaction.RespondAsync("You're not allowed to execute this!");
                 throw new Exception("User has insuffient permission to execute command.");
             }
         }
 
-        protected override void AfterExecute(CommandInfo command)
+        public override void AfterExecute(ICommandInfo command)
             => base.AfterExecute(command);
 
-        public string FormatCommandName(CommandInfo command)
+        public string FormatCommandName(ICommandInfo command)
             => $"{command.Module.Name}_{command.Name}".ToLower();
 
         private bool CommandIsAllowedToRun(GuildAccount guild)
@@ -67,7 +69,7 @@ namespace AdvancedBot.Core.Commands
 
         private bool UserHasRoleInList(CommandSettings command)
         {
-            var user = (Context.Message.Author as SocketGuildUser);
+            var user = (Context.User as SocketGuildUser);
             var rolesInCommon = user.Roles.Select(x => x.Id).Intersect(command.WhitelistedRoles);
 
             if (!rolesInCommon.Any() || rolesInCommon == null) return false;

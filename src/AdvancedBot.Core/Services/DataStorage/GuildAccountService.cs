@@ -1,17 +1,17 @@
 using System.Collections.Generic;
 using System.Linq;
-using Discord.Commands;
 using AdvancedBot.Core.Entities;
 using AdvancedBot.Core.Commands;
+using Discord.Interactions;
 
 namespace AdvancedBot.Core.Services.DataStorage
 {
     public class GuildAccountService
     {
         private LiteDBHandler _storage;
-        private CustomCommandService _commands;
+        private CustomInteractionService _commands;
 
-        public GuildAccountService(LiteDBHandler storage, CustomCommandService commands)
+        public GuildAccountService(LiteDBHandler storage, CustomInteractionService commands)
         {
             _storage = storage;
             _commands = commands;
@@ -25,7 +25,7 @@ namespace AdvancedBot.Core.Services.DataStorage
         }
 
         private void CreateGuildAccount(ulong id)
-            => SaveGuildAccount(new GuildAccount() { Id = id, Commands = GenerateSettingsForAllCommands(_commands.Commands)} );
+            => SaveGuildAccount(new GuildAccount() { Id = id, Commands = GenerateSettingsForAllCommands(_commands.SlashCommands)} );
 
         private GuildAccount GetGuildAccount(ulong id)
             => _storage.RestoreSingle<GuildAccount>(x => x.Id == id);
@@ -37,7 +37,7 @@ namespace AdvancedBot.Core.Services.DataStorage
             else _storage.Update<GuildAccount>(guild);
         }
 
-        private List<CommandSettings> GenerateSettingsForAllCommands(IEnumerable<CommandInfo> cmds)
+        private List<CommandSettings> GenerateSettingsForAllCommands(IEnumerable<ICommandInfo> cmds)
         {
             var commands = cmds.ToArray();
             var allCommandSettings = new List<CommandSettings>();

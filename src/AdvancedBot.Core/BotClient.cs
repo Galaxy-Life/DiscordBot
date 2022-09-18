@@ -1,6 +1,5 @@
 ﻿using Discord;
 using Discord.WebSocket;
-using AdvancedBot.Core.Services.Commands;
 using AdvancedBot.Core.Services.DataStorage;
 using Microsoft.Extensions.DependencyInjection;
 using System;
@@ -8,19 +7,17 @@ using System.Threading.Tasks;
 using AdvancedBot.Core.Commands;
 using AdvancedBot.Core.Services;
 using GL.NET;
-using Discord.Net;
-using Newtonsoft.Json;
-using System.Linq;
+using System.Reflection;
 
 namespace AdvancedBot.Core
 {
     public class BotClient
     {
         private DiscordSocketClient _client;
-        private CustomCommandService _commands;
+        private CustomInteractionService _interactions;
         private IServiceProvider _services;
 
-        public BotClient(CustomCommandService commands = null, DiscordSocketClient client = null)
+        public BotClient(CustomInteractionService interactions = null, DiscordSocketClient client = null)
         {
             _client = client ?? new DiscordSocketClient(new DiscordSocketConfig
             {
@@ -29,9 +26,8 @@ namespace AdvancedBot.Core
                 MessageCacheSize = 1000
             });
 
-            _commands = commands ?? new CustomCommandService(new CustomCommandServiceConfig
+            _interactions = interactions ?? new CustomInteractionService(_client, new CustomInteractionServiceConfig
             {
-                CaseSensitiveCommands = false,
                 LogLevel = LogSeverity.Info,
                 BotInviteIsPrivate = false,
                 RepositoryUrl = "https://github.com/Galaxy-Life/DiscordBot"
@@ -42,41 +38,39 @@ namespace AdvancedBot.Core
         {
             _services = ConfigureServices();
 
-            _client.Ready += OnReadyAsync;
+            _client.Ready += OnClientReadyAsync;
 
             _client.Log += LogAsync;
-            _commands.Log += LogAsync;
+            _interactions.Log += LogAsync;
 
             var token = Environment.GetEnvironmentVariable("Token");
 
             await Task.Delay(10).ContinueWith(t => _client.LoginAsync(TokenType.Bot, token));
             await _client.StartAsync();
-
-            await _services.GetRequiredService<CommandHandlerService>().InitializeAsync();
+            
             await Task.Delay(-1);
         }
 
         private async Task LogAsync(LogMessage msg)
             => Console.WriteLine($"{msg.Source}: {msg.Message}");
 
-        private async Task OnReadyAsync()
+        private async Task OnClientReadyAsync()
         {
             await _client.SetGameAsync("Galaxy Life");
             Console.WriteLine($"Guild count: {_client.Guilds.Count}");
 
-            //await FirstTimeCommandAdder();
+            await _interactions.AddModulesAsync(Assembly.GetEntryAssembly(), _services);
+            await _interactions.RegisterCommandsGloballyAsync();
         }
 
         private ServiceProvider ConfigureServices()
         {
             return new ServiceCollection()
                 .AddSingleton(_client)
-                .AddSingleton(_commands)
-                .AddSingleton<CommandHandlerService>()
+                .AddSingleton(_interactions)
                 .AddSingleton<LiteDBHandler>()
                 .AddSingleton<GuildAccountService>()
                 .AddSingleton<PaginatorService>()
-                .AddSingleton<CommandPermissionService>()
                 .AddSingleton<GLAsyncClient>()
                 .BuildServiceProvider();
         }

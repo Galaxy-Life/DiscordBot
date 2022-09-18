@@ -1,8 +1,8 @@
-using Discord.Commands;
+using Discord.Interactions;
 
 namespace AdvancedBot.Core.Commands
 {
-    public class CustomCommandServiceConfig : CommandServiceConfig
+    public class CustomInteractionServiceConfig : InteractionServiceConfig
     {
         public string DocumentationUrl { get; set; } = "https://github.com/svr333/AdvancedDiscordBot-Template/wiki";
         public string RepositoryUrl { get; set; } = "https://github.com/svr333/AdvancedBot-Template";

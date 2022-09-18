@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Discord.Commands;
+using Discord.Interactions;
 
 namespace AdvancedBot.Core.Entities
 {
@@ -44,7 +44,7 @@ namespace AdvancedBot.Core.Entities
             else command.WhitelistedRoles.Add(id);
         }
 
-        public void AddNewCommand(CommandInfo command)
+        public void AddNewCommand(ICommandInfo command)
             => Commands.Add(new CommandSettings()
             {
                 Name = $"{command.Module.Name}_{command.Name}".ToLower(),
