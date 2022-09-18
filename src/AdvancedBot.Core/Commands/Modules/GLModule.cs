@@ -141,6 +141,35 @@ namespace AdvancedBot.Core.Commands.Modules
             .Build());
         }
 
+        [SlashCommand("advancedstats", "Displays a user's extensive Galaxy Life stats")]
+        [Command("advancedstats")]
+        [Alias("as")]
+        [Discord.Commands.Summary("Displays a user's Galaxy Life stats.")]
+        public async Task ShowAllianceAsync(string input)
+        {
+            var alliance = await _client.GetAlliance(input);
+
+            if (alliance == null)
+            {
+                throw new Exception($"No alliance found for {input}");
+            }
+
+            await ReplyAsync(embed: new EmbedBuilder()
+            {
+                Title = ""
+            }
+            .WithTitle(alliance.Name)
+            .WithDescription($"<:AFECounselor_Mobius:639094741631369247> Alliance owned by **someone** (00000)\n\u200b")
+            .WithColor(Color.DarkPurple)
+            .WithThumbnailUrl($"")
+            .AddField("Members", alliance.Members.Length, true)
+            .AddField("Warpoints", alliance.WarPoints, true)
+            .AddField("Wars Participated", alliance.WarsWon + alliance.WarsLost, false)
+            .AddField("Wars won", alliance.WarsWon, true)
+            .WithFooter($"Run !members {input} to see its members.")
+            .Build());
+        }
+
         private async Task<User> GetUserByInput(string input)
         {
             if (string.IsNullOrEmpty(input)) input = Context.User.Username;
