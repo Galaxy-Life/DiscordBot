@@ -117,14 +117,14 @@ namespace AdvancedBot.Core.Commands.Modules
 
             var stats = await _client.GetUserStats(user.Id);
 
-            //var displayAlliance = user.Alliance == "None" ? "User is not in any alliance." : $"User is part of **{profile.Statistics.Alliance}**.";
+            var displayAlliance = user.AllianceId == "None" ? "User is not in any alliance." : $"User is part of **{user.AllianceId}**.";
 
             await ReplyAsync("", false, new EmbedBuilder()
             {
                 Title = $"Statistics for {user.Name} ({user.Id})",
                 Color = Color.DarkMagenta,
                 ThumbnailUrl = user.Avatar,
-                Description = $"{"Might be in some alliance idfk :/"}\nUser is level **{user.Level}**.\n\u200b"
+                Description = $"{displayAlliance}\nUser is level **{user.Level}**.\n\u200b"
             }
             .AddField("Level", user.Level, true)
             .AddField("Players Attacked", stats.PlayersAttacked, true)
@@ -142,11 +142,10 @@ namespace AdvancedBot.Core.Commands.Modules
             .Build());
         }
 
-        [SlashCommand("advancedstats", "Displays a user's extensive Galaxy Life stats")]
-        [Command("advancedstats")]
-        [Alias("as")]
+        [SlashCommand("alliance", "Displays a user's extensive Galaxy Life stats")]
+        [Command("alliance")]
         [Discord.Commands.Summary("Displays a user's Galaxy Life stats.")]
-        public async Task ShowAllianceAsync(string input)
+        public async Task ShowAllianceAsync([Remainder]string input)
         {
             var alliance = await _client.GetAlliance(input);
 

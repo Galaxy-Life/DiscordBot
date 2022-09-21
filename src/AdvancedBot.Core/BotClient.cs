@@ -8,9 +8,6 @@ using System.Threading.Tasks;
 using AdvancedBot.Core.Commands;
 using AdvancedBot.Core.Services;
 using GL.NET;
-using Discord.Net;
-using Newtonsoft.Json;
-using System.Linq;
 
 namespace AdvancedBot.Core
 {
