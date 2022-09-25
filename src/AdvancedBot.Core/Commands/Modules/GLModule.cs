@@ -183,10 +183,10 @@ namespace AdvancedBot.Core.Commands.Modules
             }
 
             var owner = alliance.Members.FirstOrDefault(x => x.AllianceRole == AllianceRole.LEADER);
-            var generals = alliance.Members.Where(x => x.AllianceRole == AllianceRole.ADMIN);
+            var captains = alliance.Members.Where(x => x.AllianceRole == AllianceRole.ADMIN);
             var regulars = alliance.Members.Where(x => x.AllianceRole == AllianceRole.REGULAR);
 
-            var formattedGenerals = $"{string.Join(" | ", generals.Select(x => $"**{x.Name}** ({x.Id})"))}\n\u200b";
+            var formattedCaptains = $"{string.Join(" | ", captains.Select(x => $"**{x.Name}** ({x.Id})"))}\n\u200b";
             var formattedMembers = $"{string.Join(", ", regulars.Select(x => x.Name))}";
 
             var embed = new EmbedBuilder()
@@ -194,7 +194,7 @@ namespace AdvancedBot.Core.Commands.Modules
                 .WithColor(Color.DarkGreen)
                 .WithThumbnailUrl($"https://cdn.galaxylifegame.net/content/img/alliance_flag/AllianceLogos/flag_{(int)alliance.Emblem.Shape}_{(int)alliance.Emblem.Pattern}_{(int)alliance.Emblem.Icon}.png")
                 .AddField("Owner", $"**{owner.Name}** ({owner.Id})\n\u200b")
-                .AddField($"Generals ({generals.Count()})", string.IsNullOrEmpty(formattedGenerals) ? "None\n\u200b" : formattedGenerals)
+                .AddField($"Captains ({captains.Count()})", string.IsNullOrEmpty(formattedCaptains) ? "None\n\u200b" : formattedCaptains)
                 .AddField($"Members ({regulars.Count()})", string.IsNullOrEmpty(formattedMembers) ? "None" : formattedMembers)
                 .Build();
 
