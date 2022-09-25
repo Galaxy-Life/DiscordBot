@@ -201,6 +201,41 @@ namespace AdvancedBot.Core.Commands.Modules
             await ReplyAsync(embed: embed);
         }
 
+        [SlashCommand("compare", "Compare stats of two users", false, Discord.Interactions.RunMode.Async)]
+        [Command("compare", RunMode = Discord.Commands.RunMode.Async)]
+        [Discord.Commands.Summary("Compare stats of two users")]
+        public async Task CompareUsersAsync(string input1, string input2)
+        {
+            if (input1.ToLower() == input2.ToLower())
+            {
+                throw new Exception("Please enter two different users to compare.");
+            }
+
+            var baseUser = await GetUserByInput(input1);
+            var secondUser = await GetUserByInput(input2);
+
+            var baseUserStats = await _client.GetUserStats(baseUser.Id);
+            var secondUserStats = await _client.GetUserStats(secondUser.Id);
+
+            var expDifference = Math.Round((decimal)baseUser.Experience / secondUser.Experience, 2);
+
+            await ReplyAsync("", false, new EmbedBuilder()
+            {
+                Title = $"Comparison between {baseUser.Name} & {secondUser.Name}",
+                Description = $"{baseUser.Name} has **{expDifference}x** the experience of {secondUser.Name}\n" +
+                              $"Difference of **{FormatNumbers(Math.Abs((decimal)baseUser.Experience - secondUser.Experience))}** experience.\n\n" +
+                              $"{baseUser.Name} has **{FormatNumbers(baseUser.Experience)}** experience and is level **{baseUser.Level}**.\n" +
+                              $"{secondUser.Name} has **{FormatNumbers(secondUser.Experience)}** experience and is level **{secondUser.Level}**.",
+                Color = expDifference > 1 ? Color.DarkGreen : Color.DarkOrange
+            }
+            .Build());
+        }
+
+        [Command("compare")][Alias("c")]
+        [Discord.Commands.Summary("Compare stats of two users")]
+        public async Task CompareUsersAsync(string userToCompare)
+            => await CompareUsersAsync(Context.User.Username, userToCompare);
+
         private async Task<User> GetUserByInput(string input)
         {
             if (string.IsNullOrEmpty(input)) input = Context.User.Username;
