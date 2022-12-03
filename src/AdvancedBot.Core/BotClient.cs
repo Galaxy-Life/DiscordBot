@@ -1,6 +1,5 @@
 ﻿using Discord;
 using Discord.WebSocket;
-using AdvancedBot.Core.Services.Commands;
 using AdvancedBot.Core.Services.DataStorage;
 using Microsoft.Extensions.DependencyInjection;
 using System;
@@ -8,6 +7,8 @@ using System.Threading.Tasks;
 using AdvancedBot.Core.Commands;
 using AdvancedBot.Core.Services;
 using GL.NET;
+using Discord.Interactions;
+using System.Reflection;
 
 namespace AdvancedBot.Core
 {
@@ -15,6 +16,7 @@ namespace AdvancedBot.Core
     {
         private DiscordSocketClient _client;
         private CustomCommandService _commands;
+        private InteractionService _interactions;
         private IServiceProvider _services;
 
         public BotClient(CustomCommandService commands = null, DiscordSocketClient client = null)
@@ -33,6 +35,8 @@ namespace AdvancedBot.Core
                 BotInviteIsPrivate = false,
                 RepositoryUrl = "https://github.com/Galaxy-Life/DiscordBot"
             });
+
+            _interactions = new InteractionService(_client.Rest, new InteractionServiceConfig());
         }
 
         public async Task InitializeAsync()
@@ -49,19 +53,44 @@ namespace AdvancedBot.Core
             await Task.Delay(10).ContinueWith(t => _client.LoginAsync(TokenType.Bot, token));
             await _client.StartAsync();
 
-            await _services.GetRequiredService<CommandHandlerService>().InitializeAsync();
             await Task.Delay(-1);
         }
 
-        private async Task LogAsync(LogMessage msg)
-            => Console.WriteLine($"{msg.Source}: {msg.Message}");
+        private Task LogAsync(LogMessage msg)
+        {
+            if (msg.Exception != null)
+            {
+                Console.WriteLine($"{msg.Source}: {msg.Exception.Message}");
+            }
+            else
+            {
+                Console.WriteLine($"{msg.Source}: {msg.Message}");
+            }
+
+            return Task.CompletedTask;
+        }
 
         private async Task OnReadyAsync()
         {
             await _client.SetGameAsync("Galaxy Life");
             Console.WriteLine($"Guild count: {_client.Guilds.Count}");
 
-            //await FirstTimeCommandAdder();
+            await _interactions.AddModulesAsync(Assembly.GetExecutingAssembly(), _services);
+            System.Console.WriteLine($"{_interactions.Modules.Count}");
+
+            #if DEBUG
+                Console.WriteLine("Registered all commands to test server");
+                await _interactions.RegisterCommandsToGuildAsync(696343127144923158);
+            #else
+                Console.WriteLine("Registered all commands globally");
+                await _interactions.RegisterCommandsGlobally();
+            #endif
+
+            _client.InteractionCreated += async (x) =>
+            {
+                var context = new SocketInteractionContext(_client, x);
+                await _interactions.ExecuteCommandAsync(context, _services);
+            };
         }
 
         private ServiceProvider ConfigureServices()
@@ -69,38 +98,11 @@ namespace AdvancedBot.Core
             return new ServiceCollection()
                 .AddSingleton(_client)
                 .AddSingleton(_commands)
-                .AddSingleton<CommandHandlerService>()
                 .AddSingleton<LiteDBHandler>()
                 .AddSingleton<GuildAccountService>()
                 .AddSingleton<PaginatorService>()
-                .AddSingleton<CommandPermissionService>()
                 .AddSingleton<GLAsyncClient>()
                 .BuildServiceProvider();
-        }
-
-        private async Task FirstTimeCommandAdder()
-        {
-            var statusCommand = new SlashCommandBuilder() {  IsDMEnabled = false };
-            statusCommand.WithName("status");
-            statusCommand.WithDescription("Shows the current status of the game servers");
-
-            var profileCommand = new SlashCommandBuilder() { IsDMEnabled = false };
-            profileCommand.WithName("profile");
-            profileCommand.WithDescription("Displays a user's Galaxy Life profile");
-
-            var statsCommand = new SlashCommandBuilder() { IsDMEnabled = false };
-            statsCommand.WithName("stats");
-            statsCommand.WithDescription("Displays a user's Galaxy Life stats");
-
-            var advancedStatsCommand = new SlashCommandBuilder() { IsDMEnabled = false };
-            advancedStatsCommand.WithName("advancedstats");
-            advancedStatsCommand.WithDescription("Displays a user's extensive Galaxy Life stats");
-
-            var asCommand = new SlashCommandBuilder() { IsDMEnabled = false };
-            asCommand.WithName("as");
-            asCommand.WithDescription("Displays a user's extensive Galaxy Life stats");
-
-            await _client.BulkOverwriteGlobalApplicationCommandsAsync(new ApplicationCommandProperties[] { statusCommand.Build(), profileCommand.Build(), statsCommand.Build(), advancedStatsCommand.Build(), asCommand.Build() } );
         }
     }
 }

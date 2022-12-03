@@ -12,7 +12,7 @@ using System.Linq;
 namespace AdvancedBot.Core.Commands.Modules
 {
     [Name("gl")]
-    public class GLModule : TopModule
+    public class GLModule : InteractionModuleBase<SocketInteractionContext>
     {
         private GLAsyncClient _client;
 
@@ -23,9 +23,9 @@ namespace AdvancedBot.Core.Commands.Modules
 
         [SlashCommand("status", "Shows the current status of the flash servers")]
         [Command("status")]
-        [Discord.Commands.Summary("Shows the current status of the flash servers.")]
         public async Task DisplayServerStatusAsync()
         {
+            await DeferAsync();
             var status = await _client.GetServerStatus();
 
             var embed = new EmbedBuilder()
@@ -39,7 +39,7 @@ namespace AdvancedBot.Core.Commands.Modules
                 embed.AddField($"{status[i].Name} ({status[i].Ping}ms)", status[i].IsOnline ? "✅ Running" : "🛑 Down", true);
             }
 
-            await ReplyAsync("", false, embed.Build());
+            await ModifyOriginalResponseAsync(x => x.Embed = embed.Build() );
         }
 
         [SlashCommand("profile", "Displays a user's Galaxy Life profile")]
@@ -47,6 +47,7 @@ namespace AdvancedBot.Core.Commands.Modules
         [Discord.Commands.Summary("Displays a user's Galaxy Life profile")]
         public async Task ShowUserProfileAsync(string input = "")
         {
+            await DeferAsync();
             var user = await GetUserByInput(input);
 
             if (user == null)
@@ -62,7 +63,7 @@ namespace AdvancedBot.Core.Commands.Modules
                 .WithFooter("Steam info will be shown here later (need to figure out how first)")
                 .Build();
 
-            await ReplyAsync("", false, embed);
+            await ModifyOriginalResponseAsync(x => x.Embed = embed);
         }
 
         [SlashCommand("stats", "Displays a user's Galaxy Life stats")]
@@ -70,6 +71,7 @@ namespace AdvancedBot.Core.Commands.Modules
         [Discord.Commands.Summary("Displays a user's Galaxy Life stats")]
         public async Task ShowUserStatsAsync(string input = "")
         {
+            await DeferAsync();
             var user = await GetUserByInput(input);
 
             if (user == null)
@@ -82,7 +84,7 @@ namespace AdvancedBot.Core.Commands.Modules
 
             //var displayAlliance = user.Alliance == "None" ? "User is not in any alliance." : $"User is part of **{profile.Statistics.Alliance}**.";
 
-            await ReplyAsync("", false, new EmbedBuilder()
+            await ModifyOriginalResponseAsync(x => x.Embed = new EmbedBuilder()
             {
                 Title = $"Statistics for {user.Name} ({user.Id})",
                 Color = Color.DarkMagenta,
@@ -108,6 +110,7 @@ namespace AdvancedBot.Core.Commands.Modules
         [Discord.Commands.Summary("Displays a user's Galaxy Life stats")]
         public async Task ShowUserAdvancedStatsAsync(string input = "")
         {
+            await DeferAsync();
             var user = await GetUserByInput(input);
 
             if (user == null)
@@ -119,7 +122,7 @@ namespace AdvancedBot.Core.Commands.Modules
 
             var displayAlliance = user.AllianceId == "None" ? "User is not in any alliance." : $"User is part of **{user.AllianceId}**.";
 
-            await ReplyAsync("", false, new EmbedBuilder()
+            await ModifyOriginalResponseAsync(x => x.Embed = new EmbedBuilder()
             {
                 Title = $"Statistics for {user.Name} ({user.Id})",
                 Color = Color.DarkMagenta,
@@ -147,6 +150,7 @@ namespace AdvancedBot.Core.Commands.Modules
         [Discord.Commands.Summary("Displays basic info about an alliance")]
         public async Task ShowAllianceAsync([Remainder]string input)
         {
+            await DeferAsync();
             var alliance = await _client.GetAlliance(input);
 
             if (alliance == null)
@@ -156,7 +160,7 @@ namespace AdvancedBot.Core.Commands.Modules
 
             var owner = alliance.Members.FirstOrDefault(x => x.AllianceRole == AllianceRole.LEADER);
 
-            await ReplyAsync(embed: new EmbedBuilder()
+            await ModifyOriginalResponseAsync(x => x.Embed = new EmbedBuilder()
             .WithTitle(alliance.Name)
             .WithDescription($"<:AFECounselor_Mobius:639094741631369247> Alliance owned by **{owner.Name}** ({owner.Id})\n\u200b")
             .WithColor(Color.DarkPurple)
@@ -175,6 +179,7 @@ namespace AdvancedBot.Core.Commands.Modules
         [Discord.Commands.Summary("Displays a user's Galaxy Life stats.")]
         public async Task ShowAllianceMembersAsync([Remainder]string input)
         {
+            await DeferAsync();
             var alliance = await _client.GetAlliance(input);
 
             if (alliance == null)
@@ -198,7 +203,7 @@ namespace AdvancedBot.Core.Commands.Modules
                 .AddField($"Members ({regulars.Count()})", string.IsNullOrEmpty(formattedMembers) ? "None" : formattedMembers)
                 .Build();
 
-            await ReplyAsync(embed: embed);
+            await ModifyOriginalResponseAsync(x => x.Embed = embed);
         }
 
         [SlashCommand("compare", "Compare stats of two users", false, Discord.Interactions.RunMode.Async)]
@@ -206,6 +211,7 @@ namespace AdvancedBot.Core.Commands.Modules
         [Discord.Commands.Summary("Compare stats of two users")]
         public async Task CompareUsersAsync(string input1, string input2)
         {
+            await DeferAsync();
             if (input1.ToLower() == input2.ToLower())
             {
                 throw new Exception("Please enter two different users to compare.");
@@ -219,7 +225,7 @@ namespace AdvancedBot.Core.Commands.Modules
 
             var expDifference = Math.Round((decimal)baseUser.Experience / secondUser.Experience, 2);
 
-            await ReplyAsync("", false, new EmbedBuilder()
+            await ModifyOriginalResponseAsync(x => x.Embed = new EmbedBuilder()
             {
                 Title = $"Comparison between {baseUser.Name} & {secondUser.Name}",
                 Description = $"{baseUser.Name} has **{expDifference}x** the experience of {secondUser.Name}\n" +

@@ -24,7 +24,7 @@ namespace AdvancedBot.Core.Services
             _client = client;
             _client.InteractionCreated += OnInteraction;
         }
-        public async Task<IUserMessage> HandleNewPaginatedMessageAsync(SocketCommandContext context, IEnumerable<EmbedField> displayFields, IEnumerable<string> displayTexts, Embed embed)
+        public async Task<IUserMessage> HandleNewPaginatedMessageAsync(IInteractionContext context, IEnumerable<EmbedField> displayFields, IEnumerable<string> displayTexts, Embed embed)
         {
             var message = await context.Channel.SendMessageAsync("", false, embed, components: CreateMessageComponents());
             var paginatedMessage = new PaginatedMessage()

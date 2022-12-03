@@ -28,7 +28,7 @@ namespace AdvancedBot.Core.Commands
             _botIsPrivate = config.BotInviteIsPrivate;
         }
 
-        public async Task<IUserMessage> SendBotInfoAsync(ICommandContext context)
+        public async Task<IUserMessage> SendBotInfoAsync(IInteractionContext context)
         {
             var documentation = string.IsNullOrEmpty(_documentationUrl) ? $"N/A" : $"[Click me!]({_documentationUrl})";
             var sourceRepo = string.IsNullOrEmpty(_sourceRepo) ? $"N/A" : $"[Click me!]({_sourceRepo})";

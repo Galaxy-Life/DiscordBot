@@ -1,5 +1,4 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
@@ -8,10 +7,11 @@ using AdvancedBot.Core.Services.DataStorage;
 using AdvancedBot.Core.Services;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using Discord.Interactions;
 
 namespace AdvancedBot.Core.Commands
 {
-    public class TopModule : ModuleBase<SocketCommandContext>
+    public class TopModule : InteractionModuleBase<SocketInteractionContext>
     {
         public GuildAccountService Accounts { get; set; }
         public CustomCommandService Commands { get; set; }
@@ -19,21 +19,6 @@ namespace AdvancedBot.Core.Commands
         private CommandInfo _currentCommand;
         [DontInject]
         public string ExpandedCommandName => FormatCommandName(_currentCommand);
-
-        protected override void BeforeExecute(CommandInfo command)
-        {            
-            _currentCommand = command;
-            var guild = Accounts.GetOrCreateGuildAccount(Context.Guild.Id);
-            
-            if (!CommandIsAllowedToRun(guild))
-            {
-                Context.Message.AddReactionAsync(new Emoji("⛔"));
-                throw new Exception("User has insuffient permission to execute command.");
-            }
-        }
-
-        protected override void AfterExecute(CommandInfo command)
-            => base.AfterExecute(command);
 
         public string FormatCommandName(CommandInfo command)
             => $"{command.Module.Name}_{command.Name}".ToLower();
@@ -67,7 +52,7 @@ namespace AdvancedBot.Core.Commands
 
         private bool UserHasRoleInList(CommandSettings command)
         {
-            var user = (Context.Message.Author as SocketGuildUser);
+            var user = (Context.User as SocketGuildUser);
             var rolesInCommon = user.Roles.Select(x => x.Id).Intersect(command.WhitelistedRoles);
 
             if (!rolesInCommon.Any() || rolesInCommon == null) return false;
