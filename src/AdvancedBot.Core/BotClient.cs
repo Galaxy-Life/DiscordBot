@@ -83,7 +83,7 @@ namespace AdvancedBot.Core
                 await _interactions.RegisterCommandsToGuildAsync(696343127144923158);
             #else
                 Console.WriteLine("Registered all commands globally");
-                await _interactions.RegisterCommandsGlobally();
+                await _interactions.RegisterCommandsGloballyAsync();
             #endif
 
             _client.InteractionCreated += async (x) =>
