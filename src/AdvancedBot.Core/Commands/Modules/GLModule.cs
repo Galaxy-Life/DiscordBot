@@ -94,7 +94,6 @@ namespace AdvancedBot.Core.Commands.Modules
             .AddField("Experience", FormatNumbers(user.Experience), true)
             .AddField("Starbase", user.Planets[0].HQLevel, true)
             .AddField("Colonies", user.Planets.Count(x => x != null) - 1, true)
-            .AddField("Is Online", user.Online, true)
             .AddField("Players Attacked", stats.PlayersAttacked, true)
             .WithFooter($"Requested by {Context.User.Username} | {Context.User.Id}")
             .Build());
