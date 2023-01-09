@@ -28,7 +28,7 @@ namespace AdvancedBot.Core.Commands
             _botIsPrivate = config.BotInviteIsPrivate;
         }
 
-        public async Task<IUserMessage> SendBotInfoAsync(IInteractionContext context)
+        public async Task SendBotInfoAsync(IInteractionContext context)
         {
             var documentation = string.IsNullOrEmpty(_documentationUrl) ? $"N/A" : $"[Click me!]({_documentationUrl})";
             var sourceRepo = string.IsNullOrEmpty(_sourceRepo) ? $"N/A" : $"[Click me!]({_sourceRepo})";
@@ -45,8 +45,7 @@ namespace AdvancedBot.Core.Commands
             .WithFooter(context.User.Username, context.User.GetAvatarUrl())
             .Build();
 
-            var message = await context.Channel.SendMessageAsync("", false, embed);
-            return message;
+            await context.Interaction.ModifyOriginalResponseAsync(x => x.Embed = embed);
         }
 
         public EmbedBuilder CreateModuleInfoEmbed(ModuleInfo module, string prefix)
