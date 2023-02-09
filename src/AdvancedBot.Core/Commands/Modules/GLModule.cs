@@ -82,8 +82,6 @@ namespace AdvancedBot.Core.Commands.Modules
             var stats = await _client.GetUserStats(user.Id);
             var displayAlliance = string.IsNullOrEmpty(user.AllianceId) ? "User is not in any alliance." : $"User is part of **{user.AllianceId}**.";
 
-            //var displayAlliance = user.Alliance == "None" ? "User is not in any alliance." : $"User is part of **{profile.Statistics.Alliance}**.";
-
             await ModifyOriginalResponseAsync(x => x.Embed = new EmbedBuilder()
             {
                 Title = $"Statistics for {user.Name} ({user.Id})",
@@ -119,7 +117,7 @@ namespace AdvancedBot.Core.Commands.Modules
 
             var stats = await _client.GetUserStats(user.Id);
 
-            var displayAlliance = user.AllianceId == "None" ? "User is not in any alliance." : $"User is part of **{user.AllianceId}**.";
+            var displayAlliance = string.IsNullOrEmpty(user.AllianceId) ? "User is not in any alliance." : $"User is part of **{user.AllianceId}**.";
 
             await ModifyOriginalResponseAsync(x => x.Embed = new EmbedBuilder()
             {
