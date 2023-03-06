@@ -59,7 +59,7 @@ namespace AdvancedBot.Core.Commands
             return true;
         }
     
-        public async Task<IUserMessage> SendPaginatedMessageAsync(IEnumerable<EmbedField> displayFields, IEnumerable<string> displayTexts, EmbedBuilder templateEmbed)
+        public async Task SendPaginatedMessageAsync(IEnumerable<EmbedField> displayFields, IEnumerable<string> displayTexts, EmbedBuilder templateEmbed)
         {
             var displayItems = 0;
             
@@ -82,10 +82,8 @@ namespace AdvancedBot.Core.Commands
             templateEmbed.WithTitle($"{templateEmbed.Title} | Page 1");
             templateEmbed.WithFooter($"{templateEmbed.Footer?.Text}\n{Context.User.Username} ({Context.User.Id}) | Total Display Items: {displayItems}");
 
-            var message = await Paginator.HandleNewPaginatedMessageAsync(Context, displayFields, displayTexts, templateEmbed.Build());
-            await Task.Delay(1000);    
-
-            return message;
+            await Paginator.HandleNewPaginatedMessageAsync(Context, displayFields, displayTexts, templateEmbed.Build());
+            await Task.Delay(1000);
         }
     }
 }

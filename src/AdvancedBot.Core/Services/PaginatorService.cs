@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using System.Timers;
 using AdvancedBot.Core.Entities;
 using Discord;
-using Discord.Commands;
+using Discord.Interactions;
 using Discord.WebSocket;
 
 namespace AdvancedBot.Core.Services
@@ -24,13 +24,17 @@ namespace AdvancedBot.Core.Services
             _client = client;
             _client.InteractionCreated += OnInteraction;
         }
-        public async Task<IUserMessage> HandleNewPaginatedMessageAsync(IInteractionContext context, IEnumerable<EmbedField> displayFields, IEnumerable<string> displayTexts, Embed embed)
+        public async Task HandleNewPaginatedMessageAsync(SocketInteractionContext context, IEnumerable<EmbedField> displayFields, IEnumerable<string> displayTexts, Embed embed)
         {
-            var message = await context.Channel.SendMessageAsync("", false, embed, components: CreateMessageComponents());
+            var message = await context.Interaction.GetOriginalResponseAsync();
+            
+            await context.Interaction.ModifyOriginalResponseAsync(x => x.Embed = embed);
+            await context.Interaction.ModifyOriginalResponseAsync(x => x.Components = CreateMessageComponents());
+
             var paginatedMessage = new PaginatedMessage()
             {
                 DiscordMessageId = message.Id,
-                DiscordChannelId = message.Channel.Id,
+                DiscordChannelId = context.Interaction.Channel.Id,
                 DiscordUserId = context.User.Id,
             };
 
@@ -39,11 +43,10 @@ namespace AdvancedBot.Core.Services
 
             _activeMessages.Add(paginatedMessage);
             
-            if (paginatedMessage.TotalPages == 1) return message;
-
-            AddNewTimer(message.Id);
-
-            return message;
+            if (paginatedMessage.TotalPages > 1)
+            {
+                AddNewTimer(message.Id);
+            }
         }
 
         public void AddNewTimer(ulong messageId)
@@ -87,10 +90,12 @@ namespace AdvancedBot.Core.Services
         {
             if (interaction is SocketMessageComponent component)
             {
+                await component.DeferAsync();
+
                 /* Message hasnt been interacted with in over half a minute */
                 if (_activeMessages.FirstOrDefault(x => x.DiscordMessageId == component.Message.Id) == null)
                 {
-                    await component.ModifyOriginalResponseAsync(x => x.Content = "This message is no longer interactable.");
+                    await component.Message.ModifyAsync(x => x.Components = CreateMessageComponents(true));
                     return;
                 }
 
@@ -114,13 +119,13 @@ namespace AdvancedBot.Core.Services
             }
         }
 
-        private MessageComponent CreateMessageComponents()
+        private MessageComponent CreateMessageComponents(bool disabled = false)
         {
             var builder = new ComponentBuilder()
-                .WithButton("First", "first", ButtonStyle.Secondary, new Emoji("⏮️"))
-                .WithButton("Previous", "previous", ButtonStyle.Secondary, new Emoji("⬅️"))
-                .WithButton("Next", "next", ButtonStyle.Secondary, new Emoji("➡️"))
-                .WithButton("Last", "last", ButtonStyle.Secondary, new Emoji("⏭️"));
+                .WithButton("First", "first", ButtonStyle.Secondary, new Emoji("⏮️"), disabled: disabled)
+                .WithButton("Previous", "previous", ButtonStyle.Secondary, new Emoji("⬅️"), disabled: disabled)
+                .WithButton("Next", "next", ButtonStyle.Secondary, new Emoji("➡️"), disabled: disabled)
+                .WithButton("Last", "last", ButtonStyle.Secondary, new Emoji("⏭️"), disabled: disabled);
 
             return builder.Build();
         }
@@ -132,7 +137,7 @@ namespace AdvancedBot.Core.Services
             
             var newEmbed = new EmbedBuilder()
             {
-                Title = $"{oldEmbed.Title.Split('|').First()}| Page {msg.CurrentPage}",
+                Title = $"{oldEmbed.Title.Split('(').First()}(Page {msg.CurrentPage})",
                 Color = oldEmbed.Color,
                 Url = oldEmbed.Url
             }

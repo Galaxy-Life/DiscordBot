@@ -8,6 +8,8 @@ using Humanizer;
 using System;
 using System.Threading.Tasks;
 using System.Linq;
+using System.Collections.Generic;
+using AdvancedBot.Core.Services;
 
 namespace AdvancedBot.Core.Commands.Modules
 {
@@ -15,10 +17,12 @@ namespace AdvancedBot.Core.Commands.Modules
     public class GLModule : InteractionModuleBase<SocketInteractionContext>
     {
         private GLAsyncClient _client;
+        public PaginatorService _paginator;
 
-        public GLModule(GLAsyncClient client)
+        public GLModule(GLAsyncClient client, PaginatorService paginator)
         {
             _client = client;
+            _paginator = paginator;
         }
 
         [SlashCommand("status", "Shows the current status of the flash servers")]
@@ -55,12 +59,13 @@ namespace AdvancedBot.Core.Commands.Modules
                 throw new Exception($"No user found for {input}");
             }
 
+            var steamId = await _client.GetSteamIdByUserId(user.Id) ?? "No steam linked";
+
             var embed = new EmbedBuilder()
                 .WithTitle($"Game Profile of {user.Name}")
                 .WithUrl(user.Avatar)
                 .WithThumbnailUrl(user.Avatar)
-                .WithDescription($"\nId: **{user.Id}**")
-                .WithFooter("Steam info will be shown here later (need to figure out how first)")
+                .WithDescription($"\nId: **{user.Id}**\nSteam Id: **{steamId.Replace("\"", "")}**")
                 .Build();
 
             await ModifyOriginalResponseAsync(x => x.Embed = embed);
@@ -93,7 +98,6 @@ namespace AdvancedBot.Core.Commands.Modules
             .AddField("Starbase", user.Planets[0].HQLevel, true)
             .AddField("Colonies", user.Planets.Count(x => x != null) - 1, true)
             .AddField("Players Attacked", stats.PlayersAttacked, true)
-            .WithFooter($"Requested by {Context.User.Username} | {Context.User.Id}")
             .Build());
         }
 
@@ -157,9 +161,9 @@ namespace AdvancedBot.Core.Commands.Modules
 
             var owner = alliance.Members.FirstOrDefault(x => x.AllianceRole == AllianceRole.LEADER);
 
-            await ModifyOriginalResponseAsync(x => x.Embed = new EmbedBuilder()
+            var embed = new EmbedBuilder()
             .WithTitle(alliance.Name)
-            .WithDescription($"<:AFECounselor_Mobius:639094741631369247> Alliance owned by **{owner.Name}** ({owner.Id})\n\u200b")
+            .WithDescription($"<:AFECounselor_Mobius:1082315024829272154> Alliance owned by **{owner.Name}** ({owner.Id})\n\u200b")
             .WithColor(Color.DarkPurple)
             .WithThumbnailUrl($"https://cdn.galaxylifegame.net/content/img/alliance_flag/AllianceLogos/flag_{(int)alliance.Emblem.Shape}_{(int)alliance.Emblem.Pattern}_{(int)alliance.Emblem.Icon}.png")
             .AddField("Level", alliance.AllianceLevel, true)
@@ -167,8 +171,10 @@ namespace AdvancedBot.Core.Commands.Modules
             .AddField("Warpoints", alliance.WarPoints, true)
             .AddField("Wars Done", alliance.WarsWon + alliance.WarsLost, true)
             .AddField("Wars Won", alliance.WarsWon, true)
-            .WithFooter($"Run !members {input} to see its members.")
-            .Build());
+            .AddField("In War With", alliance.OpponentAllianceId, true)
+            .WithFooter($"Run !members {input} to see its members.");
+
+            await ModifyOriginalResponseAsync(x => x.Embed = embed.Build());
         }
 
         [SlashCommand("members", "Displays a user's extensive Galaxy Life stats")]
@@ -202,6 +208,46 @@ namespace AdvancedBot.Core.Commands.Modules
 
             await ModifyOriginalResponseAsync(x => x.Embed = embed);
         }
+
+        [SlashCommand("lb", "Obtain the in-game leaderboard of a certain statistic")]
+        [Command("lb", RunMode = Discord.Commands.RunMode.Async)]
+        [Discord.Commands.Summary("Obtain the in-game leaderboard of a certain statistic")]
+        public async Task GetLeaderboardAsync([Choice("Xp", "xp"), Choice("Xp From Attack", "attackXp"), Choice("Rivals Won", "rivalsWon")]string type)
+        {
+            await DeferAsync();
+
+            List<string> displayTexts = new List<string>() { "Failed to get information" };
+            var title = "Galaxy Life Leaderboard";
+
+            switch (type)
+            {
+                case "attackXp":
+                    title = "Xp From Attack Leaderboard";
+                    displayTexts = (await _client.GetXpFromAttackLeaderboard()).Select(x => $"<:experience:920289172428849182>{x.Level} **{x.Name}**").ToList();
+                    break;
+                case "rivalsWon":
+                    title = "Rivals Won Leaderboard";
+                    displayTexts = (await _client.GetRivalsWonLeaderboard()).Select(x => $"<:battle:705566339074359336>{x.RivalsWon} **{x.Name}**").ToList();
+                    break;
+                default:
+                case "xp":
+                    title = "Xp Leaderboard";
+                    displayTexts = (await _client.GetXpLeaderboard()).Select(x => $"<:experience:920289172428849182> {x.Level} **{x.Name}**").ToList();
+                    break;
+            }
+
+            for (int i = 0; i < displayTexts.Count(); i++)
+            {
+                displayTexts[i] = $"**#{i + 1}** | {displayTexts[i]}";
+            }
+
+            await SendPaginatedMessageAsync(null, displayTexts, new EmbedBuilder()
+            {
+                Title = title,
+                Color = Color.Purple
+            });
+        }
+
 
         [SlashCommand("compare", "Compare stats of two users", false, Discord.Interactions.RunMode.Async)]
         [Command("compare", RunMode = Discord.Commands.RunMode.Async)]
@@ -251,6 +297,33 @@ namespace AdvancedBot.Core.Commands.Modules
             }
 
             return profile;
+        }
+
+        private async Task SendPaginatedMessageAsync(IEnumerable<EmbedField> displayFields, IEnumerable<string> displayTexts, EmbedBuilder templateEmbed)
+        {
+            var displayItems = 0;
+            
+            if (displayTexts != null)
+            {
+                templateEmbed.WithDescription(string.Join("\n", displayTexts.Take(10)));
+                displayItems = displayTexts.Count();
+            }
+            else if (displayFields != null)
+            {
+                displayItems = displayFields.Count();
+                var fields = displayFields.Take(10).ToArray();
+
+                for (int i = 0; i < fields.Length; i++)
+                {
+                    templateEmbed.AddField(fields[i].Name, fields[i].Value, fields[i].Inline);
+                }
+            }
+
+            templateEmbed.WithTitle($"{templateEmbed.Title} (Page 1)");
+            templateEmbed.WithFooter($"Total of {displayItems} players");
+
+            await _paginator.HandleNewPaginatedMessageAsync(Context, displayFields, displayTexts, templateEmbed.Build());
+            await Task.Delay(1000);
         }
 
         private string FormatNumbers(decimal experiencePoints)
