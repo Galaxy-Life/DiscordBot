@@ -224,11 +224,11 @@ namespace AdvancedBot.Core.Commands.Modules
             {
                 case "attackXp":
                     title = "Xp From Attack Leaderboard";
-                    displayTexts = (await _client.GetXpFromAttackLeaderboard()).Select(x => $"<:experience:920289172428849182>{x.Level} **{x.Name}**").ToList();
+                    displayTexts = (await _client.GetXpFromAttackLeaderboard()).Select(x => $"<:RedExp:1082428998182768701>{x.Level} **{x.Name}**").ToList();
                     break;
                 case "rivalsWon":
                     title = "Rivals Won Leaderboard";
-                    displayTexts = (await _client.GetRivalsWonLeaderboard()).Select(x => $"<:battle:705566339074359336>{x.RivalsWon} **{x.Name}**").ToList();
+                    displayTexts = (await _client.GetRivalsWonLeaderboard()).Select(x => $"<:pistol:1082429024963395674>{x.RivalsWon} **{x.Name}**").ToList();
                     break;
                 default:
                 case "xp":
