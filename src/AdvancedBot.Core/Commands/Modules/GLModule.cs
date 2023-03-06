@@ -66,6 +66,7 @@ namespace AdvancedBot.Core.Commands.Modules
                 .WithUrl(user.Avatar)
                 .WithThumbnailUrl(user.Avatar)
                 .WithDescription($"\nId: **{user.Id}**\nSteam Id: **{steamId.Replace("\"", "")}**")
+                .WithFooter("I figured out how to add steam info!!!!!!!!")
                 .Build();
 
             await ModifyOriginalResponseAsync(x => x.Embed = embed);
