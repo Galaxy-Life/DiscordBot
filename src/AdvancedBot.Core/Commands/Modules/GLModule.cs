@@ -85,8 +85,15 @@ namespace AdvancedBot.Core.Commands.Modules
                 throw new Exception($"No user found for {input}");
             }
 
+            var displayAlliance = "User is not in any alliance.";
+
+            if (string.IsNullOrEmpty(user.AllianceId))
+            {
+                var alliance = await _client.GetAlliance(user.AllianceId);
+                displayAlliance = $"User is in **{alliance.Name}**.";
+            }
+
             var stats = await _client.GetUserStats(user.Id);
-            var displayAlliance = string.IsNullOrEmpty(user.AllianceId) ? "User is not in any alliance." : $"User is part of **{user.AllianceId}**.";
 
             await ModifyOriginalResponseAsync(x => x.Embed = new EmbedBuilder()
             {
