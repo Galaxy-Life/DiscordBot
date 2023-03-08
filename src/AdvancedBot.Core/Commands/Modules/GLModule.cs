@@ -63,13 +63,16 @@ namespace AdvancedBot.Core.Commands.Modules
 
             var embed = new EmbedBuilder()
                 .WithTitle($"Game Profile of {user.Name}")
-                .WithUrl(user.Avatar)
                 .WithThumbnailUrl(user.Avatar)
                 .WithDescription($"\nId: **{user.Id}**\nSteam Id: **{steamId.Replace("\"", "")}**")
-                .WithFooter("I figured out how to add steam info!!!!!!!!")
-                .Build();
+                .WithFooter("I figured out how to add steam info!!!!!!!!");
 
-            await ModifyOriginalResponseAsync(x => x.Embed = embed);
+            if (steamId != "No steam linked")
+            {
+                embed.WithUrl($"https://steamcommunity.com/profiles/{steamId.Replace("\"", "")}");
+            }
+
+            await ModifyOriginalResponseAsync(x => x.Embed = embed.Build());
         }
 
         [SlashCommand("stats", "Displays a user's Galaxy Life stats")]
