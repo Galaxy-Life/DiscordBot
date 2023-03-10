@@ -44,6 +44,7 @@ namespace AdvancedBot.Core
             _services = ConfigureServices();
 
             _client.Ready += OnReadyAsync;
+            _interactions.SlashCommandExecuted += OnSlashCommandExecuted;
 
             _client.Log += LogAsync;
             _commands.Log += LogAsync;
@@ -76,7 +77,7 @@ namespace AdvancedBot.Core
             Console.WriteLine($"Guild count: {_client.Guilds.Count}");
 
             await _interactions.AddModulesAsync(Assembly.GetExecutingAssembly(), _services);
-            System.Console.WriteLine($"{_interactions.Modules.Count}");
+            System.Console.WriteLine($"Modules count: {_interactions.Modules.Count}");
 
             #if DEBUG
                 Console.WriteLine("Registered all commands to test server");
@@ -91,6 +92,14 @@ namespace AdvancedBot.Core
                 var context = new SocketInteractionContext(_client, x);
                 await _interactions.ExecuteCommandAsync(context, _services);
             };
+        }
+
+        private async Task OnSlashCommandExecuted(SlashCommandInfo cmd, IInteractionContext context, IResult result)
+        {
+            if (!result.IsSuccess)
+            {
+                await context.Interaction.ModifyOriginalResponseAsync(x => x.Content = result.ErrorReason);
+            }
         }
 
         private ServiceProvider ConfigureServices()

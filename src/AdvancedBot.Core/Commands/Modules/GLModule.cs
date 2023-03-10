@@ -56,7 +56,8 @@ namespace AdvancedBot.Core.Commands.Modules
 
             if (user == null)
             {
-                throw new Exception($"No user found for {input}");
+                await ModifyOriginalResponseAsync(x => x.Content = $"<:shrugR:945740284308893696> No user found for **{input}**");
+                return;
             }
 
             var steamId = await _client.GetSteamIdByUserId(user.Id) ?? "No steam linked";
@@ -85,7 +86,8 @@ namespace AdvancedBot.Core.Commands.Modules
 
             if (user == null)
             {
-                throw new Exception($"No user found for {input}");
+                await ModifyOriginalResponseAsync(x => x.Content = $"<:shrugR:945740284308893696> No user found for **{input}**");
+                return;
             }
 
             var displayAlliance = "User is not in any alliance.";
@@ -127,7 +129,8 @@ namespace AdvancedBot.Core.Commands.Modules
 
             if (user == null)
             {
-                throw new Exception($"No user found for {input}");
+                await ModifyOriginalResponseAsync(x => x.Content = $"<:shrugR:945740284308893696> No user found for **{input}**");
+                return;
             }
 
             var stats = await _client.GetUserStats(user.Id);
@@ -167,7 +170,8 @@ namespace AdvancedBot.Core.Commands.Modules
 
             if (alliance == null)
             {
-                throw new Exception($"No alliance found for {input}");
+                await ModifyOriginalResponseAsync(x => x.Content = $"<:shrugR:945740284308893696> No alliance found for **{input}**");
+                return;
             }
 
             var owner = alliance.Members.FirstOrDefault(x => x.AllianceRole == AllianceRole.LEADER);
@@ -198,7 +202,8 @@ namespace AdvancedBot.Core.Commands.Modules
 
             if (alliance == null)
             {
-                throw new Exception($"No alliance found for {input}");
+                await ModifyOriginalResponseAsync(x => x.Content = $"<:shrugR:945740284308893696> No alliance found for **{input}**");
+                return;
             }
 
             var owner = alliance.Members.FirstOrDefault(x => x.AllianceRole == AllianceRole.LEADER);
@@ -247,6 +252,12 @@ namespace AdvancedBot.Core.Commands.Modules
                     break;
             }
 
+            if (displayTexts.Count == 0)
+            {
+                await ModifyOriginalResponseAsync(x => x.Content = $"<:BAAWorker_Happy:943308706555260928> Servers are still loading the leaderboard, please be patient!");
+                return;
+            }
+
             for (int i = 0; i < displayTexts.Count(); i++)
             {
                 displayTexts[i] = $"**#{i + 1}** | {displayTexts[i]}";
@@ -268,7 +279,7 @@ namespace AdvancedBot.Core.Commands.Modules
             await DeferAsync();
             if (input1.ToLower() == input2.ToLower())
             {
-                throw new Exception("Please enter two different users to compare.");
+                await ModifyOriginalResponseAsync(x => x.Content = $"You cannot compare a user to itself!");
             }
 
             var baseUser = await GetUserByInput(input1);
