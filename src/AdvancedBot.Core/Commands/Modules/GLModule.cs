@@ -92,7 +92,7 @@ namespace AdvancedBot.Core.Commands.Modules
 
             var displayAlliance = "User is not in any alliance.";
 
-            if (string.IsNullOrEmpty(user.AllianceId))
+            if (!string.IsNullOrEmpty(user.AllianceId))
             {
                 var alliance = await _client.GetAlliance(user.AllianceId);
                 displayAlliance = $"User is in **{alliance.Name}**.";
