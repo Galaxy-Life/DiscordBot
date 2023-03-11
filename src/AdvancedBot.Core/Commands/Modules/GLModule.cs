@@ -285,6 +285,18 @@ namespace AdvancedBot.Core.Commands.Modules
             var baseUser = await GetUserByInput(input1);
             var secondUser = await GetUserByInput(input2);
 
+            if (baseUser == null)
+            {
+                await ModifyOriginalResponseAsync(x => x.Content = $"<:shrugR:945740284308893696> No user found for **{input1}**");
+                return;
+            }
+
+            if (secondUser == null)
+            {
+                await ModifyOriginalResponseAsync(x => x.Content = $"<:shrugR:945740284308893696> No user found for **{input2}**");
+                return;
+            }
+
             var baseUserStats = await _client.GetUserStats(baseUser.Id);
             var secondUserStats = await _client.GetUserStats(secondUser.Id);
 
