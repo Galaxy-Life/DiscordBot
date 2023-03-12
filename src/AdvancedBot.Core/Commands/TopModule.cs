@@ -14,14 +14,14 @@ namespace AdvancedBot.Core.Commands
         public CustomCommandService Commands { get; set; }
         public PaginatorService Paginator { get; set; }
 
-        public override async Task BeforeExecuteAsync(ICommandInfo command)
+        public override Task BeforeExecuteAsync(ICommandInfo command)
         {
-            
+            return Task.CompletedTask;
         }
 
-        public override async Task AfterExecuteAsync(ICommandInfo command)
+        public override Task AfterExecuteAsync(ICommandInfo command)
         {
-
+            return Task.CompletedTask;
         }
 
     
