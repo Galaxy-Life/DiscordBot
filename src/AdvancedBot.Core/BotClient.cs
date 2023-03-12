@@ -103,7 +103,7 @@ namespace AdvancedBot.Core
         {
             if (!result.IsSuccess)
             {
-                await context.Interaction.ModifyOriginalResponseAsync(x => x.Content = result.ErrorReason);
+                await context.Interaction.ModifyOriginalResponseAsync(x => x.Content = $"⛔ {result.ErrorReason}");
             }
 
             var id = context.Interaction.IsDMInteraction ? context.User.Id : context.Guild.Id;

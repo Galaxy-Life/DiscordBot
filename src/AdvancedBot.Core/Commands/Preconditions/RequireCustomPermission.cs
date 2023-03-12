@@ -14,16 +14,22 @@ namespace AdvancedBot.Core.Commands.Preconditions
         {
             _permission = permission;
         }
-        public override Task<PreconditionResult> CheckPermissionsAsync(ICommandContext context, CommandInfo command, IServiceProvider services)
+
+        public override async Task<PreconditionResult> CheckPermissionsAsync(ICommandContext context, CommandInfo command, IServiceProvider services)
         {
-            if (context.User.Id == 202095042372829184) return Task.FromResult(PreconditionResult.FromSuccess());
+            if (context.User.Id == (await context.Client.GetApplicationInfoAsync()).Owner.Id)
+            {
+                return PreconditionResult.FromSuccess();
+            }
 
             var guildUser = context.User as SocketGuildUser;
 
             if (guildUser.GuildPermissions.Has(_permission) || guildUser.GuildPermissions.Has(GuildPermission.Administrator))
-                return Task.FromResult(PreconditionResult.FromSuccess());
+            {
+                return PreconditionResult.FromSuccess();
+            }
 
-            return Task.FromResult(PreconditionResult.FromError("Insufficient permissions."));
+            return PreconditionResult.FromError("You do not have enough permissions");
         }
     }
 }
