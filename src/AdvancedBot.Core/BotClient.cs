@@ -8,6 +8,7 @@ using AdvancedBot.Core.Commands;
 using AdvancedBot.Core.Services;
 using Discord.Interactions;
 using System.Reflection;
+using AdvancedBot.Core.Entities;
 
 namespace AdvancedBot.Core
 {
@@ -17,6 +18,7 @@ namespace AdvancedBot.Core
         private CustomCommandService _commands;
         private IServiceProvider _services;
         private InteractionService _interactions;
+        private AccountService _accounts;
 
         public BotClient(CustomCommandService commands = null, DiscordSocketClient client = null)
         {
@@ -40,9 +42,12 @@ namespace AdvancedBot.Core
 
         public async Task InitializeAsync()
         {
+            Console.Title = $"Launching Discord Bot...";
             _services = ConfigureServices();
+            _accounts = _services.GetRequiredService<AccountService>();
 
             _client.Ready += OnReadyAsync;
+            _interactions.SlashCommandExecuted += OnSlashCommandExecuted;
 
             _client.Log += LogAsync;
             _commands.Log += LogAsync;
@@ -71,10 +76,13 @@ namespace AdvancedBot.Core
 
         private async Task OnReadyAsync()
         {
+            Console.Title = $"Running Discord Bot: {_client.CurrentUser.Username}";
             await _client.SetGameAsync("Being a bot");
             Console.WriteLine($"Guild count: {_client.Guilds.Count}");
 
             await _interactions.AddModulesAsync(Assembly.GetExecutingAssembly(), _services);
+            Console.WriteLine($"Modules count: {_interactions.Modules.Count}");
+            Console.WriteLine($"SlashCommands count: {_interactions.SlashCommands.Count}");
 
             #if DEBUG
                 Console.WriteLine("Registered all commands to test server");
@@ -91,13 +99,41 @@ namespace AdvancedBot.Core
             };
         }
 
+        private async Task OnSlashCommandExecuted(SlashCommandInfo cmd, IInteractionContext context, IResult result)
+        {
+            if (!result.IsSuccess)
+            {
+                await context.Interaction.ModifyOriginalResponseAsync(x => x.Content = result.ErrorReason);
+            }
+
+            var id = context.Interaction.IsDMInteraction ? context.User.Id : context.Guild.Id;
+            var acc = _accounts.GetOrCreateAccount(id, !context.Interaction.IsDMInteraction);
+
+            var cmdInfo = acc.CommandInfos.Find(x => x.Name == cmd.Name);
+
+            if (cmdInfo == null)
+            {
+                acc.CommandInfos.Add(new CommandInfo(cmd.Name));
+                cmdInfo = acc.CommandInfos.Find(x => x.Name == cmd.Name);
+            }
+
+            cmdInfo.TimesRun++;
+
+            if (!result.IsSuccess)
+            {
+                cmdInfo.TimesFailed++;
+            }
+
+            _accounts.SaveAccount(acc);
+        }
+
         private ServiceProvider ConfigureServices()
         {
             return new ServiceCollection()
                 .AddSingleton(_client)
                 .AddSingleton(_commands)
                 .AddSingleton<LiteDBHandler>()
-                .AddSingleton<GuildAccountService>()
+                .AddSingleton<AccountService>()
                 .AddSingleton<PaginatorService>()
                 .BuildServiceProvider();
         }

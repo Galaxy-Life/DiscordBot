@@ -10,13 +10,13 @@ namespace AdvancedBot.Core.Commands
 {
     public class TopModule : InteractionModuleBase<SocketInteractionContext>
     {
-        public GuildAccountService Accounts { get; set; }
+        public AccountService Accounts { get; set; }
         public CustomCommandService Commands { get; set; }
         public PaginatorService Paginator { get; set; }
 
-        public override Task BeforeExecuteAsync(ICommandInfo command)
+        public override async Task BeforeExecuteAsync(ICommandInfo command)
         {
-            return Task.CompletedTask;
+            await DeferAsync();
         }
 
         public override Task AfterExecuteAsync(ICommandInfo command)
@@ -45,8 +45,15 @@ namespace AdvancedBot.Core.Commands
                 }
             }
 
-            templateEmbed.WithTitle($"{templateEmbed.Title} (Page 1)");
-            templateEmbed.WithFooter($"Total of {displayItems} players");
+            if (displayItems == 0)
+            {
+                await Context.Interaction.ModifyOriginalResponseAsync(x => x.Content = "Nothing to display here");
+                return;
+            }
+            else if (displayItems > 10)
+            {
+                templateEmbed.WithTitle($"{templateEmbed.Title} (Page 1)");
+            }
 
             await Paginator.HandleNewPaginatedMessageAsync(Context, displayFields, displayTexts, templateEmbed.Build());
             await Task.Delay(1000);
