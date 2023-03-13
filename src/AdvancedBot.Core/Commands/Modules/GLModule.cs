@@ -50,25 +50,49 @@ namespace AdvancedBot.Core.Commands.Modules
         [Discord.Commands.Summary("Displays a user's Galaxy Life profile")]
         public async Task ShowUserProfileAsync(string input = "")
         {
-            var user = await GetUserByInput(input);
+            var phoenixUser = await GetPhoenixUserByInput(input);
 
-            if (user == null)
+            if (phoenixUser == null)
             {
                 await ModifyOriginalResponseAsync(x => x.Content = $"<:shrugR:945740284308893696> No user found for **{input}**");
                 return;
             }
 
-            var steamId = await _client.GetSteamIdByUserId(user.Id) ?? "No steam linked";
+            var user = await GetUserByInput(input);
+
+            if (user == null && phoenixUser.Role != PhoenixRole.Banned)
+            {
+                await ModifyOriginalResponseAsync(x => x.Content = $"The name {phoenixUser.UserName} breathes and lives, but has never played Galaxy Life!");
+                return;
+            }
+
+            var steamId = phoenixUser.SteamId ?? "No steam linked";
+            var roleText = phoenixUser.Role == PhoenixRole.Banned ? "**This user has been banned!!**\n\n"
+                : phoenixUser.Role == PhoenixRole.Donator ? "This user is a Donator\n\n"
+                : phoenixUser.Role == PhoenixRole.Staff ? "This user is a Staff Member\n\n"
+                : phoenixUser.Role == PhoenixRole.Administrator ? "This user is an Admin\n\n"
+                : "";
+
+            var color = phoenixUser.Role == PhoenixRole.Banned ? Color.DarkerGrey
+                : phoenixUser.Role == PhoenixRole.Donator ? new Color(15710778)
+                : phoenixUser.Role == PhoenixRole.Staff ? new Color(2605694)
+                : phoenixUser.Role == PhoenixRole.Administrator ? Color.DarkRed
+                : Color.Default;
 
             var embed = new EmbedBuilder()
-                .WithTitle($"Game Profile of {user.Name}")
-                .WithThumbnailUrl(user.Avatar)
-                .WithDescription($"\nId: **{user.Id}**\nSteam Id: **{steamId.Replace("\"", "")}**")
-                .WithFooter("I figured out how to add steam info!!!!!!!!");
+                .WithTitle($"Profile of {phoenixUser.UserName}")
+                .WithDescription($"{roleText}Id: **{phoenixUser.UserId}**\nSteam Id: **{steamId.Replace("\"", "")}**")
+                .WithColor(color)
+                .WithFooter($"Account created on {phoenixUser.Created.GetValueOrDefault().ToString("dd MMMM yyyy a\\t HH:mm")}");
 
-            if (steamId != "No steam linked")
+            if (phoenixUser.SteamId != null)
             {
                 embed.WithUrl($"https://steamcommunity.com/profiles/{steamId.Replace("\"", "")}");
+            }
+
+            if (user != null)
+            {
+                embed.WithThumbnailUrl(user.Avatar);
             }
 
             await ModifyOriginalResponseAsync(x => x.Embed = embed.Build());
@@ -324,31 +348,25 @@ namespace AdvancedBot.Core.Commands.Modules
             return profile;
         }
 
-        private async Task SendPaginatedMessageAsync(IEnumerable<EmbedField> displayFields, IEnumerable<string> displayTexts, EmbedBuilder templateEmbed)
+        private async Task<PhoenixUser> GetPhoenixUserByInput(string input)
         {
-            var displayItems = 0;
-            
-            if (displayTexts != null)
-            {
-                templateEmbed.WithDescription(string.Join("\n", displayTexts.Take(10)));
-                displayItems = displayTexts.Count();
-            }
-            else if (displayFields != null)
-            {
-                displayItems = displayFields.Count();
-                var fields = displayFields.Take(10).ToArray();
+            if (string.IsNullOrEmpty(input)) input = Context.User.Username;
+            PhoenixUser profile = null;
 
-                for (int i = 0; i < fields.Length; i++)
-                {
-                    templateEmbed.AddField(fields[i].Name, fields[i].Value, fields[i].Inline);
-                }
+            try
+            {
+                profile = await _client.GetPhoenixUserAsync(input);
+            }
+            catch (System.Exception)
+            {
             }
 
-            templateEmbed.WithTitle($"{templateEmbed.Title} (Page 1)");
-            templateEmbed.WithFooter($"Total of {displayItems} players");
+            if (profile == null)
+            {
+                profile = await _client.GetPhoenixUserByNameAsync(input);
+            }
 
-            await _paginator.HandleNewPaginatedMessageAsync(Context, displayFields, displayTexts, templateEmbed.Build());
-            await Task.Delay(1000);
+            return profile;
         }
 
         private string FormatNumbers(decimal experiencePoints)
