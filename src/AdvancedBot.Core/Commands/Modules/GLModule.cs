@@ -14,12 +14,12 @@ using AdvancedBot.Core.Services;
 namespace AdvancedBot.Core.Commands.Modules
 {
     [Name("gl")]
-    public class GLModule : InteractionModuleBase<SocketInteractionContext>
+    public class GLModule : TopModule
     {
-        private GLAsyncClient _client;
+        private GLClient _client;
         public PaginatorService _paginator;
 
-        public GLModule(GLAsyncClient client, PaginatorService paginator)
+        public GLModule(GLClient client, PaginatorService paginator)
         {
             _client = client;
             _paginator = paginator;
@@ -29,7 +29,6 @@ namespace AdvancedBot.Core.Commands.Modules
         [Command("status")]
         public async Task DisplayServerStatusAsync()
         {
-            await DeferAsync();
             var status = await _client.GetServerStatus();
 
             var embed = new EmbedBuilder()
@@ -51,7 +50,6 @@ namespace AdvancedBot.Core.Commands.Modules
         [Discord.Commands.Summary("Displays a user's Galaxy Life profile")]
         public async Task ShowUserProfileAsync(string input = "")
         {
-            await DeferAsync();
             var user = await GetUserByInput(input);
 
             if (user == null)
@@ -81,7 +79,6 @@ namespace AdvancedBot.Core.Commands.Modules
         [Discord.Commands.Summary("Displays a user's Galaxy Life stats")]
         public async Task ShowUserStatsAsync(string input = "")
         {
-            await DeferAsync();
             var user = await GetUserByInput(input);
 
             if (user == null)
@@ -124,7 +121,6 @@ namespace AdvancedBot.Core.Commands.Modules
         [Discord.Commands.Summary("Displays a user's Galaxy Life stats")]
         public async Task ShowUserAdvancedStatsAsync(string input = "")
         {
-            await DeferAsync();
             var user = await GetUserByInput(input);
 
             if (user == null)
@@ -165,7 +161,6 @@ namespace AdvancedBot.Core.Commands.Modules
         [Discord.Commands.Summary("Displays basic info about an alliance")]
         public async Task ShowAllianceAsync([Remainder]string input)
         {
-            await DeferAsync();
             var alliance = await _client.GetAlliance(input);
 
             if (alliance == null)
@@ -197,7 +192,6 @@ namespace AdvancedBot.Core.Commands.Modules
         [Discord.Commands.Summary("Displays a user's Galaxy Life stats.")]
         public async Task ShowAllianceMembersAsync([Remainder]string input)
         {
-            await DeferAsync();
             var alliance = await _client.GetAlliance(input);
 
             if (alliance == null)
@@ -230,8 +224,6 @@ namespace AdvancedBot.Core.Commands.Modules
         [Discord.Commands.Summary("Obtain the in-game leaderboard of a certain statistic")]
         public async Task GetLeaderboardAsync([Choice("Xp", "xp"), Choice("Xp From Attack", "attackXp"), Choice("Rivals Won", "rivalsWon")]string type)
         {
-            await DeferAsync();
-
             List<string> displayTexts = new List<string>() { "Failed to get information" };
             var title = "Galaxy Life Leaderboard";
 
@@ -276,7 +268,6 @@ namespace AdvancedBot.Core.Commands.Modules
         [Discord.Commands.Summary("Compare stats of two users")]
         public async Task CompareUsersAsync(string input1, string input2)
         {
-            await DeferAsync();
             if (input1.ToLower() == input2.ToLower())
             {
                 await ModifyOriginalResponseAsync(x => x.Content = $"You cannot compare a user to itself!");

@@ -9,6 +9,7 @@ using AdvancedBot.Core.Services;
 using Discord.Interactions;
 using System.Reflection;
 using AdvancedBot.Core.Entities;
+using GL.NET;
 
 namespace AdvancedBot.Core
 {
@@ -135,6 +136,7 @@ namespace AdvancedBot.Core
                 .AddSingleton<LiteDBHandler>()
                 .AddSingleton<AccountService>()
                 .AddSingleton<PaginatorService>()
+                .AddSingleton<GLClient>()
                 .BuildServiceProvider();
         }
     }
