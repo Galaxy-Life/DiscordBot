@@ -29,7 +29,6 @@ namespace AdvancedBot.Core.Services
             var message = await context.Interaction.GetOriginalResponseAsync();
             
             await context.Interaction.ModifyOriginalResponseAsync(x => x.Embed = embed);
-            await context.Interaction.ModifyOriginalResponseAsync(x => x.Components = CreateMessageComponents());
 
             var paginatedMessage = new PaginatedMessage()
             {
@@ -45,6 +44,7 @@ namespace AdvancedBot.Core.Services
             
             if (paginatedMessage.TotalPages > 1)
             {
+                await context.Interaction.ModifyOriginalResponseAsync(x => x.Components = CreateMessageComponents());
                 AddNewTimer(message.Id);
             }
         }

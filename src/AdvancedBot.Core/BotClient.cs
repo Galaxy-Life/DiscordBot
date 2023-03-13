@@ -6,9 +6,9 @@ using System;
 using System.Threading.Tasks;
 using AdvancedBot.Core.Commands;
 using AdvancedBot.Core.Services;
-using GL.NET;
 using Discord.Interactions;
 using System.Reflection;
+using AdvancedBot.Core.Entities;
 
 namespace AdvancedBot.Core
 {
@@ -16,8 +16,9 @@ namespace AdvancedBot.Core
     {
         private DiscordSocketClient _client;
         private CustomCommandService _commands;
-        private InteractionService _interactions;
         private IServiceProvider _services;
+        private InteractionService _interactions;
+        private AccountService _accounts;
 
         public BotClient(CustomCommandService commands = null, DiscordSocketClient client = null)
         {
@@ -41,7 +42,9 @@ namespace AdvancedBot.Core
 
         public async Task InitializeAsync()
         {
+            Console.Title = $"Launching Discord Bot...";
             _services = ConfigureServices();
+            _accounts = _services.GetRequiredService<AccountService>();
 
             _client.Ready += OnReadyAsync;
             _interactions.SlashCommandExecuted += OnSlashCommandExecuted;
@@ -73,11 +76,13 @@ namespace AdvancedBot.Core
 
         private async Task OnReadyAsync()
         {
+            Console.Title = $"Running Discord Bot: {_client.CurrentUser.Username}";
             await _client.SetGameAsync("Galaxy Life");
             Console.WriteLine($"Guild count: {_client.Guilds.Count}");
 
             await _interactions.AddModulesAsync(Assembly.GetExecutingAssembly(), _services);
-            System.Console.WriteLine($"Modules count: {_interactions.Modules.Count}");
+            Console.WriteLine($"Modules count: {_interactions.Modules.Count}");
+            Console.WriteLine($"SlashCommands count: {_interactions.SlashCommands.Count}");
 
             #if DEBUG
                 Console.WriteLine("Registered all commands to test server");
@@ -98,8 +103,28 @@ namespace AdvancedBot.Core
         {
             if (!result.IsSuccess)
             {
-                await context.Interaction.ModifyOriginalResponseAsync(x => x.Content = result.ErrorReason);
+                await context.Interaction.ModifyOriginalResponseAsync(x => x.Content = $"⛔ {result.ErrorReason}");
             }
+
+            var id = context.Interaction.IsDMInteraction ? context.User.Id : context.Guild.Id;
+            var acc = _accounts.GetOrCreateAccount(id, !context.Interaction.IsDMInteraction);
+
+            var cmdInfo = acc.CommandInfos.Find(x => x.Name == cmd.Name);
+
+            if (cmdInfo == null)
+            {
+                acc.CommandInfos.Add(new CommandInfo(cmd.Name));
+                cmdInfo = acc.CommandInfos.Find(x => x.Name == cmd.Name);
+            }
+
+            cmdInfo.TimesRun++;
+
+            if (!result.IsSuccess)
+            {
+                cmdInfo.TimesFailed++;
+            }
+
+            _accounts.SaveAccount(acc);
         }
 
         private ServiceProvider ConfigureServices()
@@ -108,9 +133,8 @@ namespace AdvancedBot.Core
                 .AddSingleton(_client)
                 .AddSingleton(_commands)
                 .AddSingleton<LiteDBHandler>()
-                .AddSingleton<GuildAccountService>()
+                .AddSingleton<AccountService>()
                 .AddSingleton<PaginatorService>()
-                .AddSingleton<GLAsyncClient>()
                 .BuildServiceProvider();
         }
     }
