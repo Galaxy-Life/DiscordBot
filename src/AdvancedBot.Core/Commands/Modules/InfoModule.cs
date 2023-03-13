@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Interactions;
@@ -20,14 +21,13 @@ namespace AdvancedBot.Core.Commands.Modules
             var guild = Accounts.GetOrCreateAccount(id, !Context.Interaction.IsDMInteraction);
 
             var fields = new List<EmbedField>();
+            var commands = guild.CommandInfos.OrderByDescending(x => x.TimesRun).ToArray();
 
-            for (int i = 0; i < guild.CommandInfos.Count; i++)
+            for (int i = 0; i < commands.Length; i++)
             {
-                var info = guild.CommandInfos[i];
-
                 fields.Add(new EmbedFieldBuilder()
-                            .WithName(info.Name)
-                            .WithValue($"Executed {info.TimesRun} times ({info.TimesFailed} fails)")
+                            .WithName(commands[i].Name)
+                            .WithValue($"Executed {commands[i].TimesRun} times ({commands[i].TimesFailed} fails)")
                             .Build());
             }
 
