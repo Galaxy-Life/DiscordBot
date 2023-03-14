@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Linq;
 using System.Collections.Generic;
 using AdvancedBot.Core.Services;
+using System.Globalization;
 
 namespace AdvancedBot.Core.Commands.Modules
 {
@@ -330,12 +331,11 @@ namespace AdvancedBot.Core.Commands.Modules
             if (string.IsNullOrEmpty(input)) input = Context.User.Username;
             PhoenixUser profile = null;
 
-            try
+            var digitString = new String(input.Where(Char.IsDigit).ToArray());
+
+            if (digitString.Length == input.Length)
             {
                 profile = await _client.GetPhoenixUserAsync(input);
-            }
-            catch (System.Exception)
-            {
             }
 
             if (profile == null)

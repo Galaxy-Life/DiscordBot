@@ -10,6 +10,7 @@ using Discord.Interactions;
 using System.Reflection;
 using AdvancedBot.Core.Entities;
 using GL.NET;
+using System.Linq;
 
 namespace AdvancedBot.Core
 {
@@ -20,6 +21,7 @@ namespace AdvancedBot.Core
         private IServiceProvider _services;
         private InteractionService _interactions;
         private AccountService _accounts;
+        private GLClient _glClient;
 
         public BotClient(CustomCommandService commands = null, DiscordSocketClient client = null)
         {
@@ -39,6 +41,9 @@ namespace AdvancedBot.Core
             });
 
             _interactions = new InteractionService(_client.Rest, new InteractionServiceConfig());
+
+            var creds = Environment.GetEnvironmentVariable("PhoenixApiCred").Split(';');
+            _glClient = new GLClient(creds[0], creds[1]);
         }
 
         public async Task InitializeAsync()
@@ -85,12 +90,22 @@ namespace AdvancedBot.Core
             Console.WriteLine($"Modules count: {_interactions.Modules.Count}");
             Console.WriteLine($"SlashCommands count: {_interactions.SlashCommands.Count}");
 
+            var moderationModule = _interactions.Modules.First(x => x.Name == "ModerationModule");
+
             #if DEBUG
                 Console.WriteLine("Registered all commands to test server");
                 await _interactions.RegisterCommandsToGuildAsync(696343127144923158);
+                //await _interactions.AddModulesToGuildAsync(696343127144923158, false, moderationModule);
             #else
                 Console.WriteLine("Registered all commands globally");
                 await _interactions.RegisterCommandsGloballyAsync();
+
+                var guildIds = new List<ulong>() { 696343127144923158, 590594963419430925, 954416303198863410 };
+
+                for (int i = 0; i < guildIds.Count; i++)
+                {
+                    await _interactions.AddModulesToGuildAsync(guildIds[i], false, moderationModule);
+                }
             #endif
 
             _client.InteractionCreated += async (x) =>
@@ -136,7 +151,7 @@ namespace AdvancedBot.Core
                 .AddSingleton<LiteDBHandler>()
                 .AddSingleton<AccountService>()
                 .AddSingleton<PaginatorService>()
-                .AddSingleton<GLClient>()
+                .AddSingleton(_glClient)
                 .BuildServiceProvider();
         }
     }
