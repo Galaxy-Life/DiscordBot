@@ -1,5 +1,4 @@
 ﻿using Discord;
-using Discord.Commands;
 using Discord.Interactions;
 using GL.NET;
 using GL.NET.Entities;
@@ -13,7 +12,6 @@ using AdvancedBot.Core.Services;
 
 namespace AdvancedBot.Core.Commands.Modules
 {
-    [Name("gl")]
     public class GLModule : TopModule
     {
         private GLClient _client;
@@ -26,7 +24,6 @@ namespace AdvancedBot.Core.Commands.Modules
         }
 
         [SlashCommand("status", "Shows the current status of the flash servers")]
-        [Command("status")]
         public async Task DisplayServerStatusAsync()
         {
             var status = await _client.GetServerStatus();
@@ -46,8 +43,6 @@ namespace AdvancedBot.Core.Commands.Modules
         }
 
         [SlashCommand("profile", "Displays a user's Galaxy Life profile")]
-        [Command("profile")]
-        [Discord.Commands.Summary("Displays a user's Galaxy Life profile")]
         public async Task ShowUserProfileAsync(string input = "")
         {
             var phoenixUser = await GetPhoenixUserByInput(input);
@@ -99,8 +94,6 @@ namespace AdvancedBot.Core.Commands.Modules
         }
 
         [SlashCommand("stats", "Displays a user's Galaxy Life stats")]
-        [Command("stats")]
-        [Discord.Commands.Summary("Displays a user's Galaxy Life stats")]
         public async Task ShowUserStatsAsync(string input = "")
         {
             var user = await GetUserByInput(input);
@@ -140,9 +133,6 @@ namespace AdvancedBot.Core.Commands.Modules
             => await ShowUserAdvancedStatsAsync(input);
 
         [SlashCommand("advancedstats", "Displays a user's extensive Galaxy Life stats")]
-        [Command("advancedstats")]
-        [Alias("as")]
-        [Discord.Commands.Summary("Displays a user's Galaxy Life stats")]
         public async Task ShowUserAdvancedStatsAsync(string input = "")
         {
             var user = await GetUserByInput(input);
@@ -181,9 +171,7 @@ namespace AdvancedBot.Core.Commands.Modules
         }
 
         [SlashCommand("alliance", "Displays basic info about an alliance")]
-        [Command("alliance")]
-        [Discord.Commands.Summary("Displays basic info about an alliance")]
-        public async Task ShowAllianceAsync([Remainder]string input)
+        public async Task ShowAllianceAsync(string input)
         {
             var alliance = await _client.GetAlliance(input);
 
@@ -212,9 +200,7 @@ namespace AdvancedBot.Core.Commands.Modules
         }
 
         [SlashCommand("members", "Displays a user's extensive Galaxy Life stats")]
-        [Command("members")]
-        [Discord.Commands.Summary("Displays a user's Galaxy Life stats.")]
-        public async Task ShowAllianceMembersAsync([Remainder]string input)
+        public async Task ShowAllianceMembersAsync(string input)
         {
             var alliance = await _client.GetAlliance(input);
 
@@ -244,8 +230,6 @@ namespace AdvancedBot.Core.Commands.Modules
         }
 
         [SlashCommand("lb", "Obtain the in-game leaderboard of a certain statistic")]
-        [Command("lb", RunMode = Discord.Commands.RunMode.Async)]
-        [Discord.Commands.Summary("Obtain the in-game leaderboard of a certain statistic")]
         public async Task GetLeaderboardAsync([Choice("Xp", "xp"), Choice("Xp From Attack", "attackXp"), Choice("Rivals Won", "rivalsWon")]string type)
         {
             List<string> displayTexts = new List<string>() { "Failed to get information" };
@@ -288,8 +272,6 @@ namespace AdvancedBot.Core.Commands.Modules
 
 
         [SlashCommand("compare", "Compare stats of two users", false, Discord.Interactions.RunMode.Async)]
-        [Command("compare", RunMode = Discord.Commands.RunMode.Async)]
-        [Discord.Commands.Summary("Compare stats of two users")]
         public async Task CompareUsersAsync(string input1, string input2)
         {
             if (input1.ToLower() == input2.ToLower())
@@ -328,11 +310,6 @@ namespace AdvancedBot.Core.Commands.Modules
             }
             .Build());
         }
-
-        [Command("compare")][Alias("c")]
-        [Discord.Commands.Summary("Compare stats of two users")]
-        public async Task CompareUsersAsync(string userToCompare)
-            => await CompareUsersAsync(Context.User.Username, userToCompare);
 
         private async Task<User> GetUserByInput(string input)
         {
