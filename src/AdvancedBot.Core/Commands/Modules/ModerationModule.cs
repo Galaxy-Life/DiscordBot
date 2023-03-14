@@ -22,7 +22,6 @@ namespace AdvancedBot.Core.Commands.Modules
         [SlashCommand("ban", "Tries to ban a user")]
         public async Task TryBanUserAsync(uint userId, string reason)
         {
-            await DeferAsync();
             var user = await _client.GetPhoenixUserAsync(userId);
 
             if (user.Role == PhoenixRole.Banned)
@@ -49,10 +48,9 @@ namespace AdvancedBot.Core.Commands.Modules
         [SlashCommand("unban", "Tries to unban a user")]
         public async Task TryUnbanUserAsync(uint userId)
         {
-            await DeferAsync();
             var user = await _client.GetPhoenixUserAsync(userId);
 
-            if (user.Role == PhoenixRole.Banned)
+            if (user.Role != PhoenixRole.Banned)
             {
                 await ModifyOriginalResponseAsync(x => x.Content = $"{user.UserName} ({user.UserId}) is not banned!");
                 return;

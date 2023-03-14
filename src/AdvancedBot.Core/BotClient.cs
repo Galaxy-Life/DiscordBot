@@ -90,22 +90,14 @@ namespace AdvancedBot.Core
             Console.WriteLine($"Modules count: {_interactions.Modules.Count}");
             Console.WriteLine($"SlashCommands count: {_interactions.SlashCommands.Count}");
 
-            var moderationModule = _interactions.Modules.First(x => x.Name == "ModerationModule");
-
             #if DEBUG
                 Console.WriteLine("Registered all commands to test server");
-                await _interactions.RegisterCommandsToGuildAsync(696343127144923158);
-                //await _interactions.AddModulesToGuildAsync(696343127144923158, false, moderationModule);
+                await _interactions.RegisterCommandsToGuildAsync(696343127144923158, false);
             #else
+            var devModule = _interactions.Modules.First(x => x.Name == "DevModule");
+                await _interactions.AddModulesToGuildAsync(696343127144923158, false, devModule);
                 Console.WriteLine("Registered all commands globally");
                 await _interactions.RegisterCommandsGloballyAsync();
-
-                var guildIds = new List<ulong>() { 696343127144923158, 590594963419430925, 954416303198863410 };
-
-                for (int i = 0; i < guildIds.Count; i++)
-                {
-                    await _interactions.AddModulesToGuildAsync(guildIds[i], false, moderationModule);
-                }
             #endif
 
             _client.InteractionCreated += async (x) =>
@@ -119,6 +111,11 @@ namespace AdvancedBot.Core
         {
             if (!result.IsSuccess)
             {
+                if (result.Error == InteractionCommandError.UnmetPrecondition)
+                {
+                    await context.Interaction.DeferAsync();
+                }
+
                 await context.Interaction.ModifyOriginalResponseAsync(x => x.Content = $"⛔ {result.ErrorReason}");
             }
 
@@ -148,6 +145,7 @@ namespace AdvancedBot.Core
             return new ServiceCollection()
                 .AddSingleton(_client)
                 .AddSingleton(_commands)
+                .AddSingleton(_interactions)
                 .AddSingleton<LiteDBHandler>()
                 .AddSingleton<AccountService>()
                 .AddSingleton<PaginatorService>()

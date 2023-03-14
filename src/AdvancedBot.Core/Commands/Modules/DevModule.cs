@@ -7,10 +7,18 @@ using Discord.Interactions;
 
 namespace AdvancedBot.Core.Commands.Modules
 {
+    [DontAutoRegister]
+    [RequireOwner]
     public class DevModule : TopModule
     {
+        private InteractionService _interactions;
+
+        public DevModule(InteractionService interactions)
+        {
+            _interactions = interactions;
+        }
+
         [SlashCommand("allstats", "Shows combined stats from all servers")]
-        [RequireOwner]
         public async Task ShowAllStatsAsync([Choice("All", "all"), Choice("Dms", "dms"), Choice("Guilds", "guilds")]string type)
         {
             Account[] accounts;
@@ -46,6 +54,16 @@ namespace AdvancedBot.Core.Commands.Modules
             };
 
             await SendPaginatedMessageAsync(fields, null, templateEmbed);
+        }
+
+        [SlashCommand("addmoderationtoguild", "Adds moderation command to guild")]
+        [EnabledInDm(false)]
+        public async Task AddModerationModuleToGuildAsync(ulong guildId)
+        {
+            var moderationModule = _interactions.Modules.First(x => x.Name == "ModerationModule");
+            await _interactions.AddModulesToGuildAsync(guildId, false, moderationModule);
+
+            await ModifyOriginalResponseAsync(x => x.Content = $"Added moderation module to guild");
         }
 
         private List<CommandStats> CalculateCommandStatsOnAccounts(Account[] accounts)
