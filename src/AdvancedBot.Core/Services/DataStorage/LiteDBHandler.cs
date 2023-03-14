@@ -8,51 +8,43 @@ namespace AdvancedBot.Core.Services.DataStorage
 {
     public class LiteDBHandler
     {
-        private string _dbFileName = "Data.db";
+        private const string _dbFileName = "Data.db";
+        private LiteDatabase _db = new LiteDatabase(_dbFileName);
 
         public void Store<T>(T item)
         {
-            using (var db = new LiteDatabase(_dbFileName))
-            {
-                var collection = db.GetCollection<T>();
-                collection.Insert(item);
-            }
+            var collection = _db.GetCollection<T>();
+            collection.Insert(item);
         }
 
         public void Update<T>(T item)
         {
-            using (var db = new LiteDatabase(_dbFileName))
-            {
-                var collection = db.GetCollection<T>();
-                collection.Update(item);
-            }
+            var collection = _db.GetCollection<T>();
+            collection.Update(item);
         }
 
         public IEnumerable<T> RestoreMany<T>(Expression<Func<T, bool>> predicate)
         {
-            using (var db = new LiteDatabase(_dbFileName))
-            {
-                var collection = db.GetCollection<T>();
-                return collection.Find(predicate);
-            }
+            var collection = _db.GetCollection<T>();
+            return collection.Find(predicate);
+        }
+
+        public IEnumerable<T> RestoreAll<T>()
+        {
+            var collection = _db.GetCollection<T>();
+            return collection.FindAll();
         }
 
         public T RestoreSingle<T>(Expression<Func<T, bool>> predicate)
         {
-            using (var db = new LiteDatabase(_dbFileName))
-            {
-                var collection = db.GetCollection<T>();
-                return collection.Find(predicate).FirstOrDefault();
-            }
+            var collection = _db.GetCollection<T>();
+            return collection.Find(predicate).FirstOrDefault();
         }
 
         public bool Exists<T>(Expression<Func<T, bool>> predicate)
         {
-            using (var db = new LiteDatabase(_dbFileName))
-            {
-                var collection = db.GetCollection<T>();
-                return collection.Exists(predicate);
-            }
+            var collection = _db.GetCollection<T>();
+            return collection.Exists(predicate);
         }
     }
 }

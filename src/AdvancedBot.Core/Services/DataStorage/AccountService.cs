@@ -1,5 +1,8 @@
 using AdvancedBot.Core.Entities;
 using AdvancedBot.Core.Commands;
+using System.Linq;
+using System.Linq.Expressions;
+using System;
 
 namespace AdvancedBot.Core.Services.DataStorage
 {
@@ -25,6 +28,16 @@ namespace AdvancedBot.Core.Services.DataStorage
             }
             
             return _storage.RestoreSingle<Account>(x => x.Id == id);
+        }
+
+        public Account[] GetAllAccounts()
+        {
+            return _storage.RestoreAll<Account>().ToArray();
+        }
+
+        public Account[] GetManyAccounts(Expression<Func<Account, bool>> predicate)
+        {
+            return _storage.RestoreMany(predicate).ToArray();
         }
 
         public void SaveAccount(Account account)

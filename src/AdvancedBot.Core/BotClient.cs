@@ -125,12 +125,12 @@ namespace AdvancedBot.Core
             var id = context.Interaction.IsDMInteraction ? context.User.Id : context.Guild.Id;
             var acc = _accounts.GetOrCreateAccount(id, !context.Interaction.IsDMInteraction);
 
-            var cmdInfo = acc.CommandInfos.Find(x => x.Name == cmd.Name);
+            var cmdInfo = acc.CommandStats.Find(x => x.Name == cmd.Name);
 
             if (cmdInfo == null)
             {
-                acc.CommandInfos.Add(new CommandInfo(cmd.Name));
-                cmdInfo = acc.CommandInfos.Find(x => x.Name == cmd.Name);
+                acc.CommandStats.Add(new CommandStats(cmd.Name));
+                cmdInfo = acc.CommandStats.Find(x => x.Name == cmd.Name);
             }
 
             cmdInfo.TimesRun++;

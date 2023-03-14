@@ -2,12 +2,12 @@ using System;
 
 namespace AdvancedBot.Core.Entities
 {
-    public class CommandInfo
+    public class CommandStats
     {
         [Obsolete]
-        public CommandInfo() {}
+        public CommandStats() {}
 
-        public CommandInfo(string name)
+        public CommandStats(string name)
         {
             Name = name;
         }

@@ -9,7 +9,7 @@ namespace AdvancedBot.Core.Entities
 
         public bool IsGuild { get; set; }
 
-        public List<CommandInfo> CommandInfos { get; set; } = new List<CommandInfo>();
+        public List<CommandStats> CommandStats { get; set; } = new List<CommandStats>();
 
         [Obsolete]
         public Account() {}

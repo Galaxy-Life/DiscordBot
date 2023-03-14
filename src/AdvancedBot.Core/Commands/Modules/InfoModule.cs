@@ -21,7 +21,7 @@ namespace AdvancedBot.Core.Commands.Modules
             var guild = Accounts.GetOrCreateAccount(id, !Context.Interaction.IsDMInteraction);
 
             var fields = new List<EmbedField>();
-            var commands = guild.CommandInfos.OrderByDescending(x => x.TimesRun).ToArray();
+            var commands = guild.CommandStats.OrderByDescending(x => x.TimesRun).ToArray();
 
             for (int i = 0; i < commands.Length; i++)
             {
