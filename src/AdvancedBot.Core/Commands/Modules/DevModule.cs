@@ -57,7 +57,7 @@ namespace AdvancedBot.Core.Commands.Modules
             await SendPaginatedMessageAsync(fields, null, templateEmbed);
         }
 
-        [SlashCommand("addmoderationtoguild", "Adds moderation command to guild")]
+        [SlashCommand("addmoderationmoduletoguild", "Adds moderation command to guild")]
         [EnabledInDm(false)]
         public async Task AddModerationModuleToGuildAsync(string guildId)
         {
