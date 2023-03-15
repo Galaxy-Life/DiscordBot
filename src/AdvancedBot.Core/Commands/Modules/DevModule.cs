@@ -58,10 +58,10 @@ namespace AdvancedBot.Core.Commands.Modules
 
         [SlashCommand("addmoderationtoguild", "Adds moderation command to guild")]
         [EnabledInDm(false)]
-        public async Task AddModerationModuleToGuildAsync(ulong guildId)
+        public async Task AddModerationModuleToGuildAsync(string guildId)
         {
             var moderationModule = _interactions.Modules.First(x => x.Name == "ModerationModule");
-            await _interactions.AddModulesToGuildAsync(guildId, false, moderationModule);
+            await _interactions.AddModulesToGuildAsync(ulong.Parse(guildId), false, moderationModule);
 
             await ModifyOriginalResponseAsync(x => x.Content = $"Added moderation module to guild");
         }
