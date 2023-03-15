@@ -10,7 +10,6 @@ using Discord.Interactions;
 using System.Reflection;
 using AdvancedBot.Core.Entities;
 using GL.NET;
-using System.Linq;
 
 namespace AdvancedBot.Core
 {

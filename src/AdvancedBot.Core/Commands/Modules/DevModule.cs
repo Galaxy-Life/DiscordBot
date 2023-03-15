@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AdvancedBot.Core.Commands.Preconditions;
 using AdvancedBot.Core.Entities;
 using Discord;
 using Discord.Interactions;
@@ -8,7 +9,7 @@ using Discord.Interactions;
 namespace AdvancedBot.Core.Commands.Modules
 {
     [DontAutoRegister]
-    [RequireOwner]
+    [RequirePrivateList]
     public class DevModule : TopModule
     {
         private InteractionService _interactions;
