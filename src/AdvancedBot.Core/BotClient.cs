@@ -94,6 +94,8 @@ namespace AdvancedBot.Core
                 Console.WriteLine("Registered all commands to test server");
                 await _interactions.RegisterCommandsToGuildAsync(696343127144923158, false);
             #else
+                var devModule = _interactions.Modules.First(x => x.Name == "DevModule");
+                await _interactions.AddModulesToGuildAsync(696343127144923158, true, devModule);
                 Console.WriteLine("Registered all commands globally");
                 await _interactions.RegisterCommandsGloballyAsync();
             #endif
