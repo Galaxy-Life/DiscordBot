@@ -18,11 +18,10 @@ namespace AdvancedBot.Core.Services
 
         public void LogGameAction(LogAction action, ulong discordModId, uint victimGameId, string reason = "")
         {
+            _id++;
             var log = new Log(_id, action, discordModId, victimGameId, reason);
 
             _storage.Store(log);
-
-            _id++;
         }
     }
 }
