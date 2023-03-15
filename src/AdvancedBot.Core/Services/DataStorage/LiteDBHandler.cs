@@ -35,6 +35,12 @@ namespace AdvancedBot.Core.Services.DataStorage
             return collection.FindAll();
         }
 
+        public int RestoreCount<T>()
+        {
+            var collection = _db.GetCollection<T>();
+            return collection.Count();
+        }
+
         public T RestoreSingle<T>(Expression<Func<T, bool>> predicate)
         {
             var collection = _db.GetCollection<T>();

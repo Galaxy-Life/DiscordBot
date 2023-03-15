@@ -150,6 +150,7 @@ namespace AdvancedBot.Core
                 .AddSingleton<AccountService>()
                 .AddSingleton<PaginatorService>()
                 .AddSingleton(_glClient)
+                .AddSingleton<LogService>()
                 .BuildServiceProvider();
         }
     }

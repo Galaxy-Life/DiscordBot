@@ -1,5 +1,7 @@
 using System.Threading.Tasks;
 using AdvancedBot.Core.Commands.Preconditions;
+using AdvancedBot.Core.Entities.Enums;
+using AdvancedBot.Core.Services;
 using Discord;
 using Discord.Interactions;
 using GL.NET;
@@ -13,10 +15,12 @@ namespace AdvancedBot.Core.Commands.Modules
     public class ModerationModule : TopModule
     {
         private GLClient _client;
+        private LogService _log;
 
-        public ModerationModule(GLClient client)
+        public ModerationModule(GLClient client, LogService log)
         {
             _client = client;
+            _log = log;
         }
 
         [SlashCommand("ban", "Tries to ban a user")]
@@ -35,6 +39,8 @@ namespace AdvancedBot.Core.Commands.Modules
                 await ModifyOriginalResponseAsync(x => x.Content = $"Failed to ban {user.UserName} ({user.UserId}).");
                 return;
             }
+
+            _log.LogGameAction(LogAction.Ban, Context.User.Id, userId, reason);
 
             var embed = new EmbedBuilder()
             {
@@ -61,6 +67,8 @@ namespace AdvancedBot.Core.Commands.Modules
                 await ModifyOriginalResponseAsync(x => x.Content = $"Failed to unban {user.UserName} ({user.UserId}).");
                 return;
             }
+
+            _log.LogGameAction(LogAction.Ban, Context.User.Id, userId);
 
             var embed = new EmbedBuilder()
             {
