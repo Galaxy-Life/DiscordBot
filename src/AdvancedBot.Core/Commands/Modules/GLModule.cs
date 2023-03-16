@@ -194,8 +194,12 @@ namespace AdvancedBot.Core.Commands.Modules
             .AddField("Warpoints", alliance.WarPoints, true)
             .AddField("Wars Done", alliance.WarsWon + alliance.WarsLost, true)
             .AddField("Wars Won", alliance.WarsWon, true)
-            .AddField("In War With", alliance.OpponentAllianceId, true)
             .WithFooter($"Run !members {input} to see its members.");
+
+            if (alliance.InWar)
+            {
+                embed.AddField("In War With", alliance.OpponentAllianceId, true);
+            }
 
             await ModifyOriginalResponseAsync(x => x.Embed = embed.Build());
         }

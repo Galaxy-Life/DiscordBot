@@ -140,8 +140,7 @@ namespace AdvancedBot.Core.Services
                 Title = $"{oldEmbed.Title.Split('(').First()}(Page {msg.CurrentPage})",
                 Color = oldEmbed.Color,
                 Url = oldEmbed.Url
-            }
-            .WithFooter(oldEmbed.Footer.Value.Text, oldEmbed.Footer.Value.IconUrl);
+            };
 
             if (msg.DisplayMessages != null)
             {
