@@ -9,19 +9,20 @@ using System.Threading.Tasks;
 using System.Linq;
 using System.Collections.Generic;
 using AdvancedBot.Core.Services;
-using System.Globalization;
+using AdvancedBot.Core.Entities.Enums;
 
 namespace AdvancedBot.Core.Commands.Modules
 {
     public class GLModule : TopModule
     {
         private GLClient _client;
-        public PaginatorService _paginator;
+        private LogService _log;
 
-        public GLModule(GLClient client, PaginatorService paginator)
+
+        public GLModule(GLClient client, LogService log)
         {
             _client = client;
-            _paginator = paginator;
+            _log = log;
         }
 
         [SlashCommand("status", "Shows the current status of the flash servers")]
@@ -92,6 +93,114 @@ namespace AdvancedBot.Core.Commands.Modules
             }
 
             await ModifyOriginalResponseAsync(x => x.Embed = embed.Build());
+
+            if (!PowerUsers.Contains(Context.User.Id))
+            {
+                return;
+            }
+
+            var components = CreateBanComponent(phoenixUser.Role == PhoenixRole.Banned, phoenixUser.UserName, user.Id);
+
+            await ModifyOriginalResponseAsync(x => x.Components = components);
+        }
+
+        [ComponentInteraction("ban:*,*")]
+        public async Task OnBanComponent(string username, string userId)
+        {
+            if (!PowerUsers.Contains(Context.User.Id))
+            {
+                await DeferAsync();
+                await FollowupAsync("You're not allowed to do this!", ephemeral: true);
+                return;
+            }
+
+            await Context.Interaction.RespondWithModalAsync<BanModal>($"ban_menu:{username},{userId}", null, x => x.Title = $"Banning {username} ({userId})");
+        }
+
+        [ComponentInteraction("unban:*,*")]
+        public async Task OnUnbanComponent(string username, string userId)
+        {
+            await DeferAsync();
+
+            if (!PowerUsers.Contains(Context.User.Id))
+            {
+                await FollowupAsync("You're not allowed to do this!", ephemeral: true);
+                return;
+            }
+
+            if (!await _client.TryUnbanUser(userId))
+            {
+                await FollowupAsync($"Failed to unban {username} ({userId}).", ephemeral: true);
+                return;
+            }
+
+            var components = CreateBanComponent(false, username, userId);
+            await ModifyOriginalResponseAsync(x => x.Components = components);
+
+            _log.LogGameAction(LogAction.Ban, Context.User.Id, uint.Parse(userId));
+
+            var embed = new EmbedBuilder()
+            {
+                Title = $"{username} ({userId}) is no longer banned in-game!",
+                Color = Color.Green
+            };
+
+            await FollowupAsync(embed: embed.Build());
+        }
+
+        public class BanModal : IModal
+        {
+            public string Title => $"Banning User";
+
+            [InputLabel("Ban Reason:")]
+            [ModalTextInput("ban_reason", TextInputStyle.Paragraph, "L bozo")]
+            public string BanReason { get; set; }
+        }
+
+        [ModalInteraction("ban_menu:*,*")]
+        public async Task BanModalResponse(string username, string userId, BanModal modal)
+        {
+            await DeferAsync();
+
+            if (string.IsNullOrEmpty(modal.BanReason))
+            {
+                await RespondAsync("Cannot ban without a valid ban reason", ephemeral: true);
+            }
+
+            if (!await _client.TryBanUser(userId, modal.BanReason))
+            {
+                await FollowupAsync($"Failed to ban {username} ({userId}).", ephemeral: true);
+                return;
+            }
+
+            var components = CreateBanComponent(true, username, userId);
+            await ModifyOriginalResponseAsync(x => x.Components = components);
+
+            _log.LogGameAction(LogAction.Ban, Context.User.Id, uint.Parse(userId), modal.BanReason);
+
+            var embed = new EmbedBuilder()
+            {
+                Title = $"{username} ({userId}) is now banned in-game!",
+                Color = Color.Red
+            };
+
+            await FollowupAsync(embed: embed.Build());
+        }
+
+        private MessageComponent CreateBanComponent(bool isBanned, string username, string userId)
+        {
+            var components = new ComponentBuilder();
+
+            if (isBanned)
+            {
+                components.WithButton("Unban", $"unban:{username},{userId}", ButtonStyle.Success, Emote.Parse("<:AABStarling_happy:946859412763578419>"));
+            }
+            else
+            {
+                components.WithButton("Ban", $"ban:{username},{userId}", ButtonStyle.Danger, Emote.Parse("<:ABEKamikaze:943323658837958686>"));
+            }
+
+            return components.Build();
         }
 
         [SlashCommand("stats", "Displays a user's Galaxy Life stats")]

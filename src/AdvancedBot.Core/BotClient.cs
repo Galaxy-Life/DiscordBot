@@ -40,7 +40,7 @@ namespace AdvancedBot.Core
                 RepositoryUrl = "https://github.com/Galaxy-Life/DiscordBot"
             });
 
-            _interactions = new InteractionService(_client.Rest, new InteractionServiceConfig());
+            _interactions = new InteractionService(_client.Rest, new InteractionServiceConfig() { UseCompiledLambda = true });
 
             var creds = Environment.GetEnvironmentVariable("PhoenixApiCred").Split(';');
             _glClient = new GLClient(creds[0], creds[1]);
@@ -64,6 +64,11 @@ namespace AdvancedBot.Core
             await _client.StartAsync();
 
             await Task.Delay(-1);
+        }
+
+        private async Task OnModalExecuted(ModalCommandInfo arg1, IInteractionContext arg2, IResult arg3)
+        {
+            System.Console.WriteLine("a");
         }
 
         private Task LogAsync(LogMessage msg)

@@ -58,7 +58,7 @@ namespace AdvancedBot.Core.Services
             _activeTimers.TryAdd(messageId, timer);
         }
 
-        private void DisposeActivePaginatorMessage(object timerObj, ElapsedEventArgs e)
+        private async void DisposeActivePaginatorMessage(object timerObj, ElapsedEventArgs e)
         {
             var timer = timerObj as Timer;
             
@@ -67,9 +67,11 @@ namespace AdvancedBot.Core.Services
 
             var paginatorMessage = _activeMessages.First(x => x.DiscordMessageId == messageId);
             
-            var channel = _client.GetChannel(paginatorMessage.DiscordChannelId) as SocketTextChannel;
-            var message = channel.GetMessageAsync(paginatorMessage.DiscordMessageId).GetAwaiter().GetResult() as SocketUserMessage;
+            var channel = await _client.GetChannelAsync(paginatorMessage.DiscordChannelId) as SocketTextChannel;
+            var message = await channel.GetMessageAsync(paginatorMessage.DiscordMessageId) as SocketUserMessage;
             if (message is null) return;
+
+            await message.ModifyAsync(x => x.Components = CreateMessageComponents(true));
 
             _activeMessages.Remove(paginatorMessage);
             _activeTimers.TryRemove(messageId, out Timer oldTimer);
@@ -90,14 +92,13 @@ namespace AdvancedBot.Core.Services
         {
             if (interaction is SocketMessageComponent component)
             {
-                await component.DeferAsync();
-
-                /* Message hasnt been interacted with in over half a minute */
+                // Not our message to handle
                 if (_activeMessages.FirstOrDefault(x => x.DiscordMessageId == component.Message.Id) == null)
                 {
-                    await component.Message.ModifyAsync(x => x.Components = CreateMessageComponents(true));
                     return;
                 }
+
+                await component.DeferAsync();
 
                 switch (component.Data.CustomId)
                 {
