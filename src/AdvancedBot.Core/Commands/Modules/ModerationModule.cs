@@ -78,5 +78,49 @@ namespace AdvancedBot.Core.Commands.Modules
 
             await ModifyOriginalResponseAsync(x => x.Embed = embed.Build() );
         }
+
+        [SlashCommand("addbeta", "Adds GL Beta to a user")]
+        public async Task AddBetaToUserAsync(uint userId)
+        {
+            var user = await _client.GetPhoenixUserAsync(userId);
+
+            if (!await _client.AddGlBeta(userId))
+            {
+                await ModifyOriginalResponseAsync(x => x.Content = $"Failed to add beta access to {user.UserName} ({user.UserId})");
+                return;
+            }
+
+            _log.LogGameAction(LogAction.AddBeta, Context.User.Id, userId);
+
+            var embed = new EmbedBuilder()
+            {
+                Title = $"{user.UserName} ({user.UserId}) now has access to beta",
+                Color = Color.Green
+            };
+
+            await ModifyOriginalResponseAsync(x => x.Embed = embed.Build() );
+        }
+
+        [SlashCommand("removebeta", "Adds GL Beta to a user")]
+        public async Task RemoveBetaFromUserAsync(uint userId)
+        {
+            var user = await _client.GetPhoenixUserAsync(userId);
+
+            if (!await _client.RemoveGlBeta(userId))
+            {
+                await ModifyOriginalResponseAsync(x => x.Content = $"Failed to remove beta access to {user.UserName} ({user.UserId})");
+                return;
+            }
+
+            _log.LogGameAction(LogAction.RemoveBeta, Context.User.Id, userId);
+
+            var embed = new EmbedBuilder()
+            {
+                Title = $"{user.UserName} ({user.UserId}) no longer has beta access",
+                Color = Color.Red
+            };
+
+            await ModifyOriginalResponseAsync(x => x.Embed = embed.Build() );
+        }
     }
 }

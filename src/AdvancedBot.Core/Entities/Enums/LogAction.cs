@@ -4,5 +4,7 @@ namespace AdvancedBot.Core.Entities.Enums
     {
         Ban,
         Unban,
+        AddBeta,
+        RemoveBeta
     }
 }
