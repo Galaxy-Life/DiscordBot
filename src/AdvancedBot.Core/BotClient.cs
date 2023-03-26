@@ -10,7 +10,7 @@ using Discord.Interactions;
 using System.Reflection;
 using AdvancedBot.Core.Entities;
 using GL.NET;
-using System.Linq;
+using System.IO;
 
 namespace AdvancedBot.Core
 {
@@ -66,25 +66,6 @@ namespace AdvancedBot.Core
             await Task.Delay(-1);
         }
 
-        private async Task OnModalExecuted(ModalCommandInfo arg1, IInteractionContext arg2, IResult arg3)
-        {
-            System.Console.WriteLine("a");
-        }
-
-        private Task LogAsync(LogMessage msg)
-        {
-            if (msg.Exception != null)
-            {
-                Console.WriteLine($"{msg.Source}: {msg.Exception.Message}");
-            }
-            else
-            {
-                Console.WriteLine($"{msg.Source}: {msg.Message}");
-            }
-
-            return Task.CompletedTask;
-        }
-
         private async Task OnReadyAsync()
         {
             Console.Title = $"Running Discord Bot: {_client.CurrentUser.Username}";
@@ -110,6 +91,28 @@ namespace AdvancedBot.Core
                 var context = new SocketInteractionContext(_client, x);
                 await _interactions.ExecuteCommandAsync(context, _services);
             };
+
+            _glClient.ErrorThrown += OnGLErrorThrown;
+        }
+
+        private async void OnGLErrorThrown(object sender, ErrorEventArgs e)
+        {
+            var exception = e.GetException();
+            await LogAsync(new LogMessage(LogSeverity.Critical, "GL.NET", exception.Message, exception));
+        }
+
+        private Task LogAsync(LogMessage msg)
+        {
+            if (msg.Exception != null)
+            {
+                Console.WriteLine($"{msg.Source}: {msg.Exception.Message}");
+            }
+            else
+            {
+                Console.WriteLine($"{msg.Source}: {msg.Message}");
+            }
+
+            return Task.CompletedTask;
         }
 
         private async Task OnSlashCommandExecuted(SlashCommandInfo cmd, IInteractionContext context, IResult result)
@@ -121,7 +124,15 @@ namespace AdvancedBot.Core
                     await context.Interaction.DeferAsync();
                 }
 
-                await context.Interaction.ModifyOriginalResponseAsync(x => x.Content = $"⛔ {result.ErrorReason}");
+                try
+                {
+                    await context.Interaction.ModifyOriginalResponseAsync(x => x.Content = $"⛔ {result.ErrorReason}");
+                }
+                catch (Exception)
+                {
+                    // failed because took to long to respond
+                    await context.Channel.SendMessageAsync($"⛔ {result.ErrorReason}");
+                }
             }
 
             var id = context.Interaction.IsDMInteraction ? context.User.Id : context.Guild.Id;
@@ -151,10 +162,10 @@ namespace AdvancedBot.Core
                 .AddSingleton(_client)
                 .AddSingleton(_commands)
                 .AddSingleton(_interactions)
+                .AddSingleton(_glClient)
                 .AddSingleton<LiteDBHandler>()
                 .AddSingleton<AccountService>()
                 .AddSingleton<PaginatorService>()
-                .AddSingleton(_glClient)
                 .AddSingleton<LogService>()
                 .BuildServiceProvider();
         }

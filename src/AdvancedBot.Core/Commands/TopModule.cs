@@ -5,14 +5,18 @@ using AdvancedBot.Core.Services;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using Discord.Interactions;
+using GL.NET.Entities;
+using GL.NET;
+using System;
 
 namespace AdvancedBot.Core.Commands
 {
     public class TopModule : InteractionModuleBase<SocketInteractionContext>
     {
         public AccountService Accounts { get; set; }
-        public CustomCommandService Commands { get; set; }
+        public GLClient GLClient { get; set; }
         public PaginatorService Paginator { get; set; }
+        public LogService LogService { get; set; }
 
         public readonly List<ulong> PowerUsers = new List<ulong>() { 209801906237865984, 202095042372829184, 942849642931032164 };
 
@@ -31,7 +35,7 @@ namespace AdvancedBot.Core.Commands
             return Task.CompletedTask;
         }
 
-        public async Task SendPaginatedMessageAsync(IEnumerable<EmbedField> displayFields, IEnumerable<string> displayTexts, EmbedBuilder templateEmbed)
+        protected async Task SendPaginatedMessageAsync(IEnumerable<EmbedField> displayFields, IEnumerable<string> displayTexts, EmbedBuilder templateEmbed)
         {
             var displayItems = 0;
             
@@ -63,6 +67,41 @@ namespace AdvancedBot.Core.Commands
 
             await Paginator.HandleNewPaginatedMessageAsync(Context, displayFields, displayTexts, templateEmbed.Build());
             await Task.Delay(1000);
+        }
+
+        protected async Task<PhoenixUser> GetPhoenixUserByInput(string input, bool full = false)
+        {
+            if (string.IsNullOrEmpty(input)) input = Context.User.Username;
+            PhoenixUser user = null;
+
+            var digitString = new String(input.Where(Char.IsDigit).ToArray());
+
+            // extra check to see if all characters were numbers
+            if (digitString.Length == input.Length)
+            {
+                if (full)
+                {
+                    user = await GLClient.GetFullPhoenixUserAsync(input);
+                }
+                else
+                {
+                    user = await GLClient.GetPhoenixUserAsync(input);
+                }
+            }
+
+            // try to get user by name
+            if (user == null)
+            {
+                user = await GLClient.GetPhoenixUserByNameAsync(input);
+            }
+
+            // get user by id after getting it by name
+            if (user != null && full)
+            {
+                user = await GLClient.GetFullPhoenixUserAsync(user.UserId);
+            }
+
+            return user;
         }
     }
 }

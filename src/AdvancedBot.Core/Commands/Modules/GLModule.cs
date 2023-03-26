@@ -15,20 +15,10 @@ namespace AdvancedBot.Core.Commands.Modules
 {
     public class GLModule : TopModule
     {
-        private GLClient _client;
-        private LogService _log;
-
-
-        public GLModule(GLClient client, LogService log)
-        {
-            _client = client;
-            _log = log;
-        }
-
         [SlashCommand("status", "Shows the current status of the flash servers")]
         public async Task DisplayServerStatusAsync()
         {
-            var status = await _client.GetServerStatus();
+            var status = await GLClient.GetServerStatus();
 
             var embed = new EmbedBuilder()
             {
@@ -70,11 +60,11 @@ namespace AdvancedBot.Core.Commands.Modules
                 : phoenixUser.Role == PhoenixRole.Administrator ? "This user is an Admin\n\n"
                 : "";
 
-            var color = phoenixUser.Role == PhoenixRole.Banned ? Color.DarkerGrey
+            var color = phoenixUser.Role == PhoenixRole.Banned ? Color.Default
                 : phoenixUser.Role == PhoenixRole.Donator ? new Color(15710778)
                 : phoenixUser.Role == PhoenixRole.Staff ? new Color(2605694)
                 : phoenixUser.Role == PhoenixRole.Administrator ? Color.DarkRed
-                : Color.Default;
+                : Color.LightGrey;
 
             var embed = new EmbedBuilder()
                 .WithTitle($"Profile of {phoenixUser.UserName}")
@@ -128,7 +118,7 @@ namespace AdvancedBot.Core.Commands.Modules
                 return;
             }
 
-            if (!await _client.TryUnbanUser(userId))
+            if (!await GLClient.TryUnbanUser(userId))
             {
                 await FollowupAsync($"Failed to unban {username} ({userId}).", ephemeral: true);
                 return;
@@ -137,7 +127,7 @@ namespace AdvancedBot.Core.Commands.Modules
             var components = CreateBanComponent(false, username, userId);
             await ModifyOriginalResponseAsync(x => x.Components = components);
 
-            _log.LogGameAction(LogAction.Ban, Context.User.Id, uint.Parse(userId));
+            LogService.LogGameAction(LogAction.Ban, Context.User.Id, uint.Parse(userId));
 
             var embed = new EmbedBuilder()
             {
@@ -167,7 +157,7 @@ namespace AdvancedBot.Core.Commands.Modules
                 await RespondAsync("Cannot ban without a valid ban reason", ephemeral: true);
             }
 
-            if (!await _client.TryBanUser(userId, modal.BanReason))
+            if (!await GLClient.TryBanUser(userId, modal.BanReason))
             {
                 await FollowupAsync($"Failed to ban {username} ({userId}).", ephemeral: true);
                 return;
@@ -176,7 +166,7 @@ namespace AdvancedBot.Core.Commands.Modules
             var components = CreateBanComponent(true, username, userId);
             await ModifyOriginalResponseAsync(x => x.Components = components);
 
-            _log.LogGameAction(LogAction.Ban, Context.User.Id, uint.Parse(userId), modal.BanReason);
+            LogService.LogGameAction(LogAction.Ban, Context.User.Id, uint.Parse(userId), modal.BanReason);
 
             var embed = new EmbedBuilder()
             {
@@ -218,11 +208,11 @@ namespace AdvancedBot.Core.Commands.Modules
 
             if (!string.IsNullOrEmpty(user.AllianceId))
             {
-                var alliance = await _client.GetAlliance(user.AllianceId);
+                var alliance = await GLClient.GetAlliance(user.AllianceId);
                 displayAlliance = $"User is in **{alliance.Name}**.";
             }
 
-            var stats = await _client.GetUserStats(user.Id);
+            var stats = await GLClient.GetUserStats(user.Id);
 
             await ModifyOriginalResponseAsync(x => x.Embed = new EmbedBuilder()
             {
@@ -253,7 +243,7 @@ namespace AdvancedBot.Core.Commands.Modules
                 return;
             }
 
-            var stats = await _client.GetUserStats(user.Id);
+            var stats = await GLClient.GetUserStats(user.Id);
 
             var displayAlliance = string.IsNullOrEmpty(user.AllianceId) ? "User is not in any alliance." : $"User is part of **{user.AllianceId}**.";
 
@@ -283,7 +273,7 @@ namespace AdvancedBot.Core.Commands.Modules
         [SlashCommand("alliance", "Displays basic info about an alliance")]
         public async Task ShowAllianceAsync(string input)
         {
-            var alliance = await _client.GetAlliance(input);
+            var alliance = await GLClient.GetAlliance(input);
 
             if (alliance == null)
             {
@@ -316,7 +306,7 @@ namespace AdvancedBot.Core.Commands.Modules
         [SlashCommand("members", "Displays a user's extensive Galaxy Life stats")]
         public async Task ShowAllianceMembersAsync(string input)
         {
-            var alliance = await _client.GetAlliance(input);
+            var alliance = await GLClient.GetAlliance(input);
 
             if (alliance == null)
             {
@@ -353,16 +343,16 @@ namespace AdvancedBot.Core.Commands.Modules
             {
                 case "attackXp":
                     title = "Xp From Attack Leaderboard";
-                    displayTexts = (await _client.GetXpFromAttackLeaderboard()).Select(x => $"<:RedExp:1082428998182768701>{x.Level} **{x.Name}**").ToList();
+                    displayTexts = (await GLClient.GetXpFromAttackLeaderboard()).Select(x => $"<:RedExp:1082428998182768701>{x.Level} **{x.Name}**").ToList();
                     break;
                 case "rivalsWon":
                     title = "Rivals Won Leaderboard";
-                    displayTexts = (await _client.GetRivalsWonLeaderboard()).Select(x => $"<:pistol:1082429024963395674>{x.RivalsWon} **{x.Name}**").ToList();
+                    displayTexts = (await GLClient.GetRivalsWonLeaderboard()).Select(x => $"<:pistol:1082429024963395674>{x.RivalsWon} **{x.Name}**").ToList();
                     break;
                 default:
                 case "xp":
                     title = "Xp Leaderboard";
-                    displayTexts = (await _client.GetXpLeaderboard()).Select(x => $"<:experience:920289172428849182> {x.Level} **{x.Name}**").ToList();
+                    displayTexts = (await GLClient.GetXpLeaderboard()).Select(x => $"<:experience:920289172428849182> {x.Level} **{x.Name}**").ToList();
                     break;
             }
 
@@ -408,8 +398,8 @@ namespace AdvancedBot.Core.Commands.Modules
                 return;
             }
 
-            var baseUserStats = await _client.GetUserStats(baseUser.Id);
-            var secondUserStats = await _client.GetUserStats(secondUser.Id);
+            var baseUserStats = await GLClient.GetUserStats(baseUser.Id);
+            var secondUserStats = await GLClient.GetUserStats(secondUser.Id);
 
             var expDifference = Math.Round((decimal)baseUser.Experience / secondUser.Experience, 2);
 
@@ -429,31 +419,11 @@ namespace AdvancedBot.Core.Commands.Modules
         {
             if (string.IsNullOrEmpty(input)) input = Context.User.Username;
 
-            var profile = await _client.GetUserById(input);
+            var profile = await GLClient.GetUserById(input);
 
             if (profile == null)
             {
-                profile = await _client.GetUserByName(input);
-            }
-
-            return profile;
-        }
-
-        private async Task<PhoenixUser> GetPhoenixUserByInput(string input)
-        {
-            if (string.IsNullOrEmpty(input)) input = Context.User.Username;
-            PhoenixUser profile = null;
-
-            var digitString = new String(input.Where(Char.IsDigit).ToArray());
-
-            if (digitString.Length == input.Length)
-            {
-                profile = await _client.GetPhoenixUserAsync(input);
-            }
-
-            if (profile == null)
-            {
-                profile = await _client.GetPhoenixUserByNameAsync(input);
+                profile = await GLClient.GetUserByName(input);
             }
 
             return profile;

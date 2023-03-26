@@ -8,10 +8,17 @@ namespace AdvancedBot.Core.Commands.Modules
 {
     public class InfoModule : TopModule
     {
+        private CustomCommandService _commands;
+
+        public InfoModule(CustomCommandService commands)
+        {
+            _commands = commands;
+        }
+
         [SlashCommand("help", "Gives basic info about the bot")]
         public async Task DisplayBotInfoAsync()
         {
-            await Commands.SendBotInfoAsync(Context);
+            await _commands.SendBotInfoAsync(Context);
         }
 
         [SlashCommand("serverstats", "Shows guild stats related to the bot")]
