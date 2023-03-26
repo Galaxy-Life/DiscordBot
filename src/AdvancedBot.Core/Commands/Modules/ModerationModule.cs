@@ -26,7 +26,7 @@ namespace AdvancedBot.Core.Commands.Modules
             }
 
             var steamId = user.SteamId ?? "No steam linked";
-            var roleText = user.Role == PhoenixRole.Banned ? $"**This user has been banned!!**\nBan Reason:**{user.BanReason}**\n\n"
+            var roleText = user.Role == PhoenixRole.Banned ? $"**This user has been banned!!**\nBan Reason: **{user.BanReason}**\n\n"
                 : user.Role == PhoenixRole.Donator ? "This user is a Donator\n\n"
                 : user.Role == PhoenixRole.Staff ? "This user is a Staff Member\n\n"
                 : user.Role == PhoenixRole.Administrator ? "This user is an Admin\n\n"
@@ -116,9 +116,16 @@ namespace AdvancedBot.Core.Commands.Modules
         {
             var user = await GLClient.GetFullPhoenixUserAsync(userId);
 
+            if (user.Email == email)
+            {
+                await ModifyOriginalResponseAsync(x => x.Content = $"{user.UserName} ({user.UserId}) already has `{user.Email}` as their email!");
+                return;
+            }
+
             if (!await GLClient.TryUpdateEmail(userId, email))
             {
                 await ModifyOriginalResponseAsync(x => x.Content = $"Could not update email for {user.UserName} ({user.UserId})");
+                return;
             }
 
             LogService.LogGameAction(LogAction.UpdateEmail, Context.User.Id, userId, $"{user.Email}:{email}");
@@ -138,9 +145,16 @@ namespace AdvancedBot.Core.Commands.Modules
         {
             var user = await GLClient.GetFullPhoenixUserAsync(userId);
 
+            if (user.UserName == username)
+            {
+                await ModifyOriginalResponseAsync(x => x.Content = $"{user.UserId} already has `{user.UserName}` as their email!");
+                return;
+            }
+
             if (!await GLClient.TryUpdateUsername(userId, username))
             {
                 await ModifyOriginalResponseAsync(x => x.Content = $"Could not update username for {user.UserName} ({user.UserId})");
+                return;
             }
 
             LogService.LogGameAction(LogAction.UpdateEmail, Context.User.Id, userId, $"{user.UserName}:{username}");
