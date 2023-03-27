@@ -14,7 +14,7 @@ namespace AdvancedBot.Core.Commands
     public class TopModule : InteractionModuleBase<SocketInteractionContext>
     {
         public AccountService Accounts { get; set; }
-        public GLClient GLClient { get; set; }
+        public AuthorizedGLClient GLClient { get; set; }
         public PaginatorService Paginator { get; set; }
         public LogService LogService { get; set; }
 

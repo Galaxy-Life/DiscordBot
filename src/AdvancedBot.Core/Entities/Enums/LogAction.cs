@@ -7,6 +7,12 @@ namespace AdvancedBot.Core.Entities.Enums
         AddBeta,
         RemoveBeta,
         UpdateEmail,
-        UpdateName
+        UpdateName,
+        GetFull,
+        GetChipsBought,
+        AddChips,
+        AddItem,
+        KickOffline,
+        Reset
     }
 }
