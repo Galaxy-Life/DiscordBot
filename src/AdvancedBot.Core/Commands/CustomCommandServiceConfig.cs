@@ -8,5 +8,6 @@ namespace AdvancedBot.Core.Commands
         public string RepositoryUrl { get; set; } = "https://github.com/svr333/AdvancedBot-Template";
         public string Contributers { get; set; } = "<@202095042372829184>";
         public bool BotInviteIsPrivate { get; set; } = false;
+        public ulong LogChannelId { get; set; }
     }
 }

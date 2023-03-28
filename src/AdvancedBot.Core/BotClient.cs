@@ -11,6 +11,7 @@ using System.Reflection;
 using AdvancedBot.Core.Entities;
 using GL.NET;
 using System.IO;
+using System.Linq;
 
 namespace AdvancedBot.Core
 {
@@ -37,7 +38,8 @@ namespace AdvancedBot.Core
                 CaseSensitiveCommands = false,
                 LogLevel = LogSeverity.Info,
                 BotInviteIsPrivate = false,
-                RepositoryUrl = "https://github.com/Galaxy-Life/DiscordBot"
+                RepositoryUrl = "https://github.com/Galaxy-Life/DiscordBot",
+                LogChannelId = 1090274237572468796
             });
 
             _interactions = new InteractionService(_client.Rest, new InteractionServiceConfig() { UseCompiledLambda = true });
@@ -80,8 +82,8 @@ namespace AdvancedBot.Core
                 Console.WriteLine("Registered all commands to test server");
                 await _interactions.RegisterCommandsToGuildAsync(696343127144923158, false);
             #else
-                //var devModule = _interactions.Modules.First(x => x.Name == "DevModule");
-                //await _interactions.AddModulesToGuildAsync(696343127144923158, true, devModule);
+                var devModule = _interactions.Modules.First(x => x.Name == "DevModule");
+                await _interactions.AddModulesToGuildAsync(696343127144923158, true, devModule);
                 Console.WriteLine("Registered all commands globally");
                 await _interactions.RegisterCommandsGloballyAsync();
             #endif

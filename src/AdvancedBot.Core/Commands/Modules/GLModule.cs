@@ -127,7 +127,7 @@ namespace AdvancedBot.Core.Commands.Modules
             var components = CreateBanComponent(false, username, userId);
             await ModifyOriginalResponseAsync(x => x.Components = components);
 
-            LogService.LogGameAction(LogAction.Ban, Context.User.Id, uint.Parse(userId));
+            await LogService.LogGameActionAsync(LogAction.Unban, Context.User.Id, uint.Parse(userId));
 
             var embed = new EmbedBuilder()
             {
@@ -166,7 +166,7 @@ namespace AdvancedBot.Core.Commands.Modules
             var components = CreateBanComponent(true, username, userId);
             await ModifyOriginalResponseAsync(x => x.Components = components);
 
-            LogService.LogGameAction(LogAction.Ban, Context.User.Id, uint.Parse(userId), modal.BanReason);
+            await LogService.LogGameActionAsync(LogAction.Ban, Context.User.Id, uint.Parse(userId), modal.BanReason);
 
             var embed = new EmbedBuilder()
             {

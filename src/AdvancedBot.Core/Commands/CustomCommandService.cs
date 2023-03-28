@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -13,6 +12,7 @@ namespace AdvancedBot.Core.Commands
     public class CustomCommandService : CommandService
     {
         public PaginatorService Paginator { get; set; }
+        public ulong LogChannelId;
         private readonly string _documentationUrl;
         private readonly string _sourceRepo;
         private readonly string _contributers;
@@ -26,6 +26,7 @@ namespace AdvancedBot.Core.Commands
             _sourceRepo = config.RepositoryUrl;
             _contributers = config.Contributers;
             _botIsPrivate = config.BotInviteIsPrivate;
+            LogChannelId = config.LogChannelId;
         }
 
         public async Task SendBotInfoAsync(IInteractionContext context)

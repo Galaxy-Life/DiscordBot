@@ -3,8 +3,11 @@ using System.Linq;
 using System.Threading.Tasks;
 using AdvancedBot.Core.Commands.Preconditions;
 using AdvancedBot.Core.Entities;
+using AdvancedBot.Core.Entities.Enums;
+using AdvancedBot.Core.Services.DataStorage;
 using Discord;
 using Discord.Interactions;
+using Discord.WebSocket;
 
 namespace AdvancedBot.Core.Commands.Modules
 {
@@ -13,10 +16,14 @@ namespace AdvancedBot.Core.Commands.Modules
     public class DevModule : TopModule
     {
         private InteractionService _interactions;
+        private LiteDBHandler _storage;
+        private CustomCommandService _commands;
 
-        public DevModule(InteractionService interactions)
+        public DevModule(InteractionService interactions, LiteDBHandler storage, CustomCommandService commands)
         {
             _interactions = interactions;
+            _storage = storage;
+            _commands = commands;
         }
 
         [SlashCommand("allstats", "Shows combined stats from all servers")]
@@ -57,14 +64,46 @@ namespace AdvancedBot.Core.Commands.Modules
             await SendPaginatedMessageAsync(fields, null, templateEmbed);
         }
 
-        [SlashCommand("addmoderationmoduletoguild", "Adds moderation command to guild")]
+        [SlashCommand("addmoduletoguild", "Adds moderation command to guild")]
         [EnabledInDm(false)]
-        public async Task AddModerationModuleToGuildAsync(string guildId)
+        public async Task AddModerationModuleToGuildAsync(string guildId, string modulename)
         {
-            var moderationModule = _interactions.Modules.First(x => x.Name == "ModerationModule");
-            await _interactions.AddModulesToGuildAsync(ulong.Parse(guildId), false, moderationModule);
+            var module = _interactions.Modules.First(x => x.Name.ToLower() == modulename.ToLower());
+            
+            if (module == null)
+            {
+                await ModifyOriginalResponseAsync(x => x.Content = $"Could not find {modulename}");
+                return;
+            }
 
-            await ModifyOriginalResponseAsync(x => x.Content = $"Added moderation module to guild");
+            await _interactions.AddModulesToGuildAsync(ulong.Parse(guildId), false, (ModuleInfo)module);
+            await ModifyOriginalResponseAsync(x => x.Content = $"Added {module.Name} module to guild with {module.SlashCommands.Count}");
+        }
+
+        [SlashCommand("temp", "post all")]
+        public async Task TempCommand()
+        {
+            var logs = _storage.RestoreAll<Log>().ToArray();
+            var unbanLogs = logs.Where(x => x.Type == LogAction.Ban && string.IsNullOrEmpty(x.Reason)).ToArray();
+
+            for (int i = 0; i < unbanLogs.Length; i++)
+            {
+                unbanLogs[i].Type = LogAction.Unban;
+                _storage.Update(unbanLogs[i]);
+            }
+
+            logs = _storage.RestoreAll<Log>().ToArray();
+
+            var channel = await Context.Client.GetChannelAsync(_commands.LogChannelId) as ISocketMessageChannel;
+
+            for (int i = 0; i < logs.Length; i++)
+            {
+                var user = await GLClient.GetUserById(logs[i].VictimGameId.ToString());
+
+                await channel.SendMessageAsync(embed: LogService.GetEmbedForLog(logs[i], user));
+            }
+
+            await ModifyOriginalResponseAsync(x => x.Content = "Done");
         }
 
         private List<CommandStats> CalculateCommandStatsOnAccounts(Account[] accounts)

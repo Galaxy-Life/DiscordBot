@@ -24,6 +24,8 @@ namespace AdvancedBot.Core.Commands.Modules
                 return;
             }
 
+            await LogService.LogGameActionAsync(LogAction.GetFull, Context.User.Id, user.UserId);
+
             var steamId = user.SteamId ?? "No steam linked";
             var roleText = user.Role == PhoenixRole.Banned ? $"**This user has been banned!!**\nBan Reason: **{user.BanReason}**\n\n"
                 : user.Role == PhoenixRole.Donator ? "This user is a Donator\n\n"
@@ -79,7 +81,7 @@ namespace AdvancedBot.Core.Commands.Modules
 
             await GLClient.TryKickUserOfflineAsync(userId.ToString());
 
-            LogService.LogGameAction(LogAction.Ban, Context.User.Id, userId, reason);
+            await LogService.LogGameActionAsync(LogAction.Ban, Context.User.Id, userId, reason);
 
             var embed = new EmbedBuilder()
             {
@@ -113,7 +115,7 @@ namespace AdvancedBot.Core.Commands.Modules
                 return;
             }
 
-            LogService.LogGameAction(LogAction.Ban, Context.User.Id, userId);
+            await LogService.LogGameActionAsync(LogAction.Unban, Context.User.Id, userId);
 
             var embed = new EmbedBuilder()
             {
@@ -147,7 +149,7 @@ namespace AdvancedBot.Core.Commands.Modules
                 return;
             }
 
-            LogService.LogGameAction(LogAction.UpdateEmail, Context.User.Id, userId, $"{user.Email}:{email}");
+            await LogService.LogGameActionAsync(LogAction.UpdateEmail, Context.User.Id, userId, $"{user.Email}:{email}");
 
             var embed = new EmbedBuilder()
             {
@@ -182,7 +184,7 @@ namespace AdvancedBot.Core.Commands.Modules
                 return;
             }
 
-            LogService.LogGameAction(LogAction.UpdateEmail, Context.User.Id, userId, $"{user.UserName}:{username}");
+            await LogService.LogGameActionAsync(LogAction.UpdateName, Context.User.Id, userId, $"{user.UserName}:{username}");
 
             var embed = new EmbedBuilder()
             {
@@ -211,7 +213,7 @@ namespace AdvancedBot.Core.Commands.Modules
                 return;
             }
 
-            LogService.LogGameAction(LogAction.AddBeta, Context.User.Id, userId);
+            await LogService.LogGameActionAsync(LogAction.AddBeta, Context.User.Id, userId);
 
             var embed = new EmbedBuilder()
             {
@@ -239,7 +241,7 @@ namespace AdvancedBot.Core.Commands.Modules
                 return;
             }
 
-            LogService.LogGameAction(LogAction.RemoveBeta, Context.User.Id, userId);
+            await LogService.LogGameActionAsync(LogAction.RemoveBeta, Context.User.Id, userId);
 
             var embed = new EmbedBuilder()
             {
@@ -267,7 +269,7 @@ namespace AdvancedBot.Core.Commands.Modules
                 return;
             }
 
-            LogService.LogGameAction(LogAction.GiveRole, Context.User.Id, userId, role.ToString());
+            await LogService.LogGameActionAsync(LogAction.GiveRole, Context.User.Id, userId, role.ToString());
 
             var roleText = role == PhoenixRole.Donator ? "a Donator\n\n"
                 : role == PhoenixRole.Staff ? "a Staff Member\n\n"
@@ -296,7 +298,7 @@ namespace AdvancedBot.Core.Commands.Modules
 
             var chipsBought = await GLClient.GetChipsBoughtAsync(userId.ToString());
 
-            LogService.LogGameAction(LogAction.GetChipsBought, Context.User.Id, userId);
+            await LogService.LogGameActionAsync(LogAction.GetChipsBought, Context.User.Id, userId);
 
             var embed = new EmbedBuilder()
             {
@@ -325,7 +327,7 @@ namespace AdvancedBot.Core.Commands.Modules
                 return;
             }
 
-            LogService.LogGameAction(LogAction.AddChips, Context.User.Id, userId, amount.ToString());
+            await LogService.LogGameActionAsync(LogAction.AddChips, Context.User.Id, userId, amount.ToString());
 
             var embed = new EmbedBuilder()
             {
@@ -353,7 +355,7 @@ namespace AdvancedBot.Core.Commands.Modules
                 return;
             }
 
-            LogService.LogGameAction(LogAction.AddItem, Context.User.Id, userId, $"{sku}:{amount}");
+            await LogService.LogGameActionAsync(LogAction.AddItem, Context.User.Id, userId, $"{sku}:{amount}");
 
             var embed = new EmbedBuilder()
             {
@@ -381,7 +383,7 @@ namespace AdvancedBot.Core.Commands.Modules
                 return;
             }
 
-            LogService.LogGameAction(LogAction.KickOffline, Context.User.Id, userId);
+            await LogService.LogGameActionAsync(LogAction.KickOffline, Context.User.Id, userId);
 
             var embed = new EmbedBuilder()
             {
@@ -409,7 +411,7 @@ namespace AdvancedBot.Core.Commands.Modules
                 return;
             }
 
-            LogService.LogGameAction(LogAction.Reset, Context.User.Id, userId);
+            await LogService.LogGameActionAsync(LogAction.Reset, Context.User.Id, userId);
 
             var embed = new EmbedBuilder()
             {

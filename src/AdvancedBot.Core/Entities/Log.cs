@@ -5,6 +5,7 @@ namespace AdvancedBot.Core.Entities
 {
     public class Log
     {
+        public Log() {}
         public Log(int id, LogAction type, ulong discordModId, uint victimGameId, string reason)
         {
             Id = id;
