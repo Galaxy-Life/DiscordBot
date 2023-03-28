@@ -4,7 +4,6 @@ using AdvancedBot.Core.Entities.Enums;
 using AdvancedBot.Core.Services;
 using Discord;
 using Discord.Interactions;
-using GL.NET;
 using GL.NET.Entities;
 
 namespace AdvancedBot.Core.Commands.Modules
@@ -246,6 +245,39 @@ namespace AdvancedBot.Core.Commands.Modules
             {
                 Title = $"{user.UserName} ({user.UserId}) no longer has beta access",
                 Color = Color.Red
+            };
+
+            await ModifyOriginalResponseAsync(x => x.Embed = embed.Build() );
+        }
+
+        [SlashCommand("giverole", "Gives a certain user a role")]
+        public async Task GiveRoleAsync(uint userId, PhoenixRole role)
+        {
+            var user = await GLClient.GetPhoenixUserAsync(userId);
+
+            if (user == null)
+            {
+                await ModifyOriginalResponseAsync(x => x.Content = $"No user found for **{userId}**");
+                return;
+            }
+
+            if (!await GLClient.GiveRoleAsync(userId, role))
+            {
+                await ModifyOriginalResponseAsync(x => x.Content = $"Failed to give {role} to {user.UserName} ({user.UserId})");
+                return;
+            }
+
+            LogService.LogGameAction(LogAction.GiveRole, Context.User.Id, userId, role.ToString());
+
+            var roleText = role == PhoenixRole.Donator ? "a Donator\n\n"
+                : role == PhoenixRole.Staff ? "a Staff Member\n\n"
+                : role == PhoenixRole.Administrator ? "an Admin\n\n"
+                : role.ToString();
+
+            var embed = new EmbedBuilder()
+            {
+                Title = $"{user.UserName} ({user.UserId}) is now {roleText}",
+                Color = Color.Blue
             };
 
             await ModifyOriginalResponseAsync(x => x.Embed = embed.Build() );

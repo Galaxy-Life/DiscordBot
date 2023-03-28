@@ -13,6 +13,7 @@ namespace AdvancedBot.Core.Entities.Enums
         AddChips,
         AddItem,
         KickOffline,
-        Reset
+        Reset,
+        GiveRole
     }
 }
