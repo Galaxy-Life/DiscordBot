@@ -11,7 +11,6 @@ using System.Reflection;
 using AdvancedBot.Core.Entities;
 using GL.NET;
 using System.IO;
-using System.Linq;
 
 namespace AdvancedBot.Core
 {
@@ -167,6 +166,7 @@ namespace AdvancedBot.Core
                 .AddSingleton<AccountService>()
                 .AddSingleton<PaginatorService>()
                 .AddSingleton<LogService>()
+                .AddSingleton<ChannelCounterService>()
                 .BuildServiceProvider();
         }
     }

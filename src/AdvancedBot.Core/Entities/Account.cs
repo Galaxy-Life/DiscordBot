@@ -10,6 +10,7 @@ namespace AdvancedBot.Core.Entities
         public bool IsGuild { get; set; }
 
         public List<CommandStats> CommandStats { get; set; } = new List<CommandStats>();
+        public List<ChannelCounter> ChannelCounters { get; set; } = new List<ChannelCounter>();
 
         [Obsolete]
         public Account() {}
