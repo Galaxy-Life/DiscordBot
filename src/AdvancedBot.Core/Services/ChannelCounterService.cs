@@ -145,7 +145,7 @@ namespace AdvancedBot.Core.Services
 
                 for (int j = 0; j < guilds[i].ChannelCounters.Count; j++)
                 {
-                    await UpdateChannelAsync(guilds[i], guilds[i].ChannelCounters[i]);
+                    await UpdateChannelAsync(guilds[i], guilds[i].ChannelCounters[j]);
                 }
             }
             
