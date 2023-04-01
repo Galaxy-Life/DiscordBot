@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using AdvancedBot.Core.Commands.Preconditions;
 using AdvancedBot.Core.Entities.Enums;
@@ -5,6 +8,7 @@ using AdvancedBot.Core.Services;
 using Discord;
 using Discord.Interactions;
 using GL.NET.Entities;
+using Humanizer;
 
 namespace AdvancedBot.Core.Commands.Modules
 {
@@ -16,6 +20,45 @@ namespace AdvancedBot.Core.Commands.Modules
         [Group("alliance", "All commands handling in-game alliance related actions")]
         public class AllianceModerationModule : TopModule
         {
+            [SlashCommand("warlogs", "Get warlogs of an alliance")]
+            public async Task GetAllianceWarlogs(string allianceName)
+            {
+                var alliance = await GLClient.GetAlliance(allianceName);
+
+                if (alliance == null)
+                {
+                    await ModifyOriginalResponseAsync(x => x.Content = $"<:shrugR:945740284308893696> No alliance found for **{allianceName}**");
+                    return;
+                }
+
+                var warlogs = await GLClient.GetAllianceWarlogs(alliance.Id);
+                var texts = new List<string>();
+                var wins = warlogs.Count(x => x.WinnerId == alliance.Id);
+
+                for (int i = 0; i < warlogs.Count; i++)
+                {
+                    var log = warlogs[i];
+                    var endDate = new DateTime(1970, 1, 1).AddMilliseconds(log.WarEndTime);
+                    var duration = TimeSpan.FromMilliseconds(log.WarEndTime - log.WarStartTime);
+
+                    var statusText = warlogs[i].WinnerId == alliance.Id ? "**Won** against" : "**Lost** against";
+                    var dateText = $"ended **{endDate.ToString("dd/MM/yyyy (HH:mm)")}**";
+                    var durationText = duration.Days == 3 ? $"" : $"(KO after {(TimeSpan.FromDays(3) - duration).Humanize(3)})";
+
+                    texts.Add($"{statusText} **{log.EnemyAllianceName}** {dateText}\n"
+                    + $"**{log.SelfAllianceWarScore}**wp versus **{log.EnemyAllianceWarScore}**wp {durationText}\n");
+                }
+
+                var winLossRatio = wins / (warlogs.Count - wins == 0 ? 1 : warlogs.Count - wins);
+
+                var templateEmbed = new EmbedBuilder()
+                {
+                    Title = $"Warlogs for {alliance.Name}"
+                }.WithFooter($"W/L ratio: {wins}/{warlogs.Count - wins} ({winLossRatio})");
+
+                await SendPaginatedMessageAsync(null, texts, templateEmbed);
+            }
+
             [SlashCommand("rename", "Renames an alliance")]
             public async Task RenameAllianceAsync(string allianceName, string newAllianceName)
             {

@@ -143,6 +143,11 @@ namespace AdvancedBot.Core.Services
                 Url = oldEmbed.Url
             };
 
+            if (oldEmbed.Footer != null)
+            {
+                newEmbed.WithFooter(oldEmbed.Footer.Value.Text, oldEmbed.Footer.Value.IconUrl);
+            }
+
             if (msg.DisplayMessages != null)
             {
                 // get correct messages to display

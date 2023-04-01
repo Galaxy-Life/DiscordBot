@@ -70,7 +70,7 @@ namespace AdvancedBot.Core.Commands.Modules
             }
 
             await _interactions.AddModulesToGuildAsync(ulong.Parse(guildId), false, (ModuleInfo)module);
-            await ModifyOriginalResponseAsync(x => x.Content = $"Added {module.Name} module to guild with {module.SlashCommands.Count}");
+            await ModifyOriginalResponseAsync(x => x.Content = $"Added {module.Name} module to guild with {module.SlashCommands.Count} commands");
         }
 
         private List<CommandStats> CalculateCommandStatsOnAccounts(Account[] accounts)
