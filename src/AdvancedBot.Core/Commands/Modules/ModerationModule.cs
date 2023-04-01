@@ -52,7 +52,7 @@ namespace AdvancedBot.Core.Commands.Modules
                 await ModifyOriginalResponseAsync(x => x.Embed = embed.Build());
             }
 
-            [SlashCommand("makeOwner", "Makes a user owner of an alliance")]
+            [SlashCommand("makeowner", "Makes a user owner of an alliance")]
             public async Task MakeUserOwnerOfAllianceAsync(string allianceName, uint userId)
             {
                 var alliance = await GLClient.GetAlliance(allianceName);
@@ -88,7 +88,7 @@ namespace AdvancedBot.Core.Commands.Modules
                 await ModifyOriginalResponseAsync(x => x.Embed = embed.Build());
             }
 
-            [SlashCommand("removeUser", "Removes a user from an alliance")]
+            [SlashCommand("removeuser", "Removes a user from an alliance")]
             public async Task RemoveUserFromAllianceAsync(string allianceName, uint userId)
             {
                 var alliance = await GLClient.GetAlliance(allianceName);
