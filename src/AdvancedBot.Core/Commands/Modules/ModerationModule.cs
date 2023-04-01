@@ -14,7 +14,7 @@ namespace AdvancedBot.Core.Commands.Modules
     public class ModerationModule : TopModule
     {
         [Group("alliance", "All commands handling in-game alliance related actions")]
-        public class AllianceModerationModule : ModerationModule
+        public class AllianceModerationModule : TopModule
         {
             [SlashCommand("rename", "Renames an alliance")]
             public async Task RenameAllianceAsync(string allianceName, string newAllianceName)
