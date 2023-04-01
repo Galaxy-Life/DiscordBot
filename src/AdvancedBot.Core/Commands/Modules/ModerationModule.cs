@@ -13,6 +13,118 @@ namespace AdvancedBot.Core.Commands.Modules
     [Group("game", "All commands handling in-game actions")]
     public class ModerationModule : TopModule
     {
+        [Group("alliance", "All commands handling in-game alliance related actions")]
+        public class AllianceModerationModule : ModerationModule
+        {
+            [SlashCommand("rename", "Renames an alliance")]
+            public async Task RenameAllianceAsync(string allianceName, string newAllianceName)
+            {
+                var alliance = await GLClient.GetAlliance(allianceName);
+
+                if (alliance == null)
+                {
+                    await ModifyOriginalResponseAsync(x => x.Content = $"<:shrugR:945740284308893696> No alliance found for **{allianceName}**");
+                    return;
+                }
+
+                var checkAlliance = await GLClient.GetAlliance(newAllianceName);
+
+                if (checkAlliance != null)
+                {
+                    await ModifyOriginalResponseAsync(x => x.Content = $"<:shrugR:945740284308893696> Alliance with name **{newAllianceName}** already exists!");
+                    return;
+                }
+
+                if (!await GLClient.RenameAllianceAsync(alliance.Id, newAllianceName))
+                {
+                    await ModifyOriginalResponseAsync(x => x.Content = $"Failed to rename **{allianceName}** to **{newAllianceName}**");
+                    return;
+                }
+                
+                await LogService.LogGameActionAsync(LogAction.RenameAlliance, Context.User.Id, 0, $"{alliance.Name}:{newAllianceName}");
+
+                var embed = new EmbedBuilder()
+                {
+                    Title = $"{alliance.Name} is now called {newAllianceName}",
+                    Color = Color.Blue
+                };
+
+                await ModifyOriginalResponseAsync(x => x.Embed = embed.Build());
+            }
+
+            [SlashCommand("makeOwner", "Makes a user owner of an alliance")]
+            public async Task MakeUserOwnerOfAllianceAsync(string allianceName, uint userId)
+            {
+                var alliance = await GLClient.GetAlliance(allianceName);
+
+                if (alliance == null)
+                {
+                    await ModifyOriginalResponseAsync(x => x.Content = $"<:shrugR:945740284308893696> No alliance found for **{allianceName}**");
+                    return;
+                }
+
+                var user = await GLClient.GetUserById(userId.ToString());
+
+                if (user == null || user.AllianceId != alliance.Id)
+                {
+                    await ModifyOriginalResponseAsync(x => x.Content = $"This user was not found in this alliance");
+                    return;
+                }
+
+                if (!await GLClient.MakeUserOwnerInAllianceAsync(alliance.Id, userId.ToString()))
+                {
+                    await ModifyOriginalResponseAsync(x => x.Content = $"Failed to make {user.Name} owner of **{alliance.Name}**");
+                    return;
+                }
+
+                await LogService.LogGameActionAsync(LogAction.MakeUserAllianceOwner, Context.User.Id, userId, allianceName);
+
+                var embed = new EmbedBuilder()
+                {
+                    Title = $"{alliance.Name} is now owner of **{alliance.Name}**",
+                    Color = Color.Green
+                };
+
+                await ModifyOriginalResponseAsync(x => x.Embed = embed.Build());
+            }
+
+            [SlashCommand("removeUser", "Removes a user from an alliance")]
+            public async Task RemoveUserFromAllianceAsync(string allianceName, uint userId)
+            {
+                var alliance = await GLClient.GetAlliance(allianceName);
+
+                if (alliance == null)
+                {
+                    await ModifyOriginalResponseAsync(x => x.Content = $"<:shrugR:945740284308893696> No alliance found for **{allianceName}**");
+                    return;
+                }
+
+                var user = await GLClient.GetUserById(userId.ToString());
+
+                if (user == null || user.AllianceId != alliance.Id)
+                {
+                    await ModifyOriginalResponseAsync(x => x.Content = $"This user was not found in this alliance");
+                    return;
+                }
+
+                if (!await GLClient.KickUserFromAllianceAsync(alliance.Id, userId.ToString()))
+                {
+                    await ModifyOriginalResponseAsync(x => x.Content = $"Failed to kick {user.Name} from **{alliance.Name}**");
+                    return;
+                }
+
+                await LogService.LogGameActionAsync(LogAction.RemoveUserFromAlliance, Context.User.Id, userId, allianceName);
+
+                var embed = new EmbedBuilder()
+                {
+                    Title = $"{alliance.Name} is now owner of **{alliance.Name}**",
+                    Color = Color.Red
+                };
+
+                await ModifyOriginalResponseAsync(x => x.Embed = embed.Build());
+            }
+        }
+
         [SlashCommand("getfull", "Get full information about a user")]
         public async Task GetFullUserAsync(string input)
         {

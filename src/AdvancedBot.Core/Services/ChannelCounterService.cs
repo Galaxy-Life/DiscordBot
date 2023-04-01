@@ -121,7 +121,7 @@ namespace AdvancedBot.Core.Services
             switch (counter.Type)
             {
                 case ChannelCounterType.FlashStatus:
-                    string newName = $"Flash Status: {_serverStatus}";
+                    string newName = $"Server Status: {_serverStatus}";
                     if (channel.Name != newName)
                         await channel.ModifyAsync(x => x.Name = newName);
                     break;
