@@ -49,8 +49,13 @@ namespace AdvancedBot.Core.Services
                 Title = $"Case {log.Id} ({log.Type.Humanize()})",
                 Color = GetColorBasedOnAction(log.Type)
             }
-            .AddField("Moderator", $"<@{log.DiscordModId}>", true)
-            .AddField("Victim", $"{victim.Name} ({victim.Id})", true);
+            .AddField("Moderator", $"<@{log.DiscordModId}>", true);
+
+            // if alliance action this can be null
+            if (victim != null)
+            {
+                embed.AddField("Victim", $"{victim.Name} ({victim.Id})", true);
+            }
 
             switch (log.Type)
             {
@@ -71,6 +76,7 @@ namespace AdvancedBot.Core.Services
                     break;
                 case LogAction.UpdateEmail:
                 case LogAction.UpdateName:
+                case LogAction.RenameAlliance:
                     var splits = log.Reason.Split(':');
                     embed.AddField("From", splits[0]);
                     embed.AddField("To", splits[1], true);
@@ -81,6 +87,11 @@ namespace AdvancedBot.Core.Services
                 case LogAction.AddItem:
                     var splitties = log.Reason.Split(':');
                     embed.AddField("Item added", $"{splitties[1]}x item {splitties[0]}");
+                    break;
+                case LogAction.RemoveUserFromAlliance:
+                case LogAction.MakeUserAllianceOwner:
+                case LogAction.GetWarlogs:
+                    embed.AddField("Alliance", log.Reason);
                     break;
             }
 
@@ -95,6 +106,7 @@ namespace AdvancedBot.Core.Services
                 case LogAction.Reset:
                 case LogAction.KickOffline:
                 case LogAction.RemoveBeta:
+                case LogAction.RemoveUserFromAlliance:
                     return Color.Red;
                 case LogAction.Unban:
                 case LogAction.AddBeta:
@@ -104,9 +116,12 @@ namespace AdvancedBot.Core.Services
                 case LogAction.UpdateName:
                 case LogAction.GetFull:
                 case LogAction.GetChipsBought:
+                case LogAction.MakeUserAllianceOwner:
+                case LogAction.GetWarlogs:
                     return new Color(15710778);
                 case LogAction.AddChips:
                 case LogAction.AddItem:
+                case LogAction.RenameAlliance:
                 default:
                     return Color.Blue;
             }

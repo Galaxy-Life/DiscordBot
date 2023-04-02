@@ -18,5 +18,6 @@ namespace AdvancedBot.Core.Entities.Enums
         RenameAlliance = 13,
         RemoveUserFromAlliance = 14,
         MakeUserAllianceOwner = 15,
+        GetWarlogs = 16,
     }
 }

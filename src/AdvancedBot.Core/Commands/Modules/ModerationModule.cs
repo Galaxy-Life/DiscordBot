@@ -51,6 +51,8 @@ namespace AdvancedBot.Core.Commands.Modules
 
                 var winLossRatio = wins / (warlogs.Count - wins == 0 ? 1 : warlogs.Count - wins);
 
+                await LogService.LogGameActionAsync(LogAction.GetWarlogs, Context.User.Id, 0, alliance.Id);
+
                 var templateEmbed = new EmbedBuilder()
                 {
                     Title = $"Warlogs for {alliance.Name}"
