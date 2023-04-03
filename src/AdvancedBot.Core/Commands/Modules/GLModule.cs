@@ -209,6 +209,13 @@ namespace AdvancedBot.Core.Commands.Modules
             if (!string.IsNullOrEmpty(user.AllianceId))
             {
                 var alliance = await GLClient.GetAlliance(user.AllianceId);
+
+                // can happen due to 24hour player delay
+                if (alliance == null)
+                {
+                    displayAlliance = "User has recently changed alliance, please wait for it to update";
+                }
+
                 displayAlliance = $"User is in **{alliance.Name}**.";
             }
 
