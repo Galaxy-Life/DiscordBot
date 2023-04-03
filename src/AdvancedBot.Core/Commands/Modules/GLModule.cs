@@ -215,8 +215,10 @@ namespace AdvancedBot.Core.Commands.Modules
                 {
                     displayAlliance = "User has recently changed alliance, please wait for it to update";
                 }
-
-                displayAlliance = $"User is in **{alliance.Name}**.";
+                else
+                {
+                    displayAlliance = $"User is in **{alliance.Name}**.";
+                }
             }
 
             var stats = await GLClient.GetUserStats(user.Id);
