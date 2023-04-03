@@ -12,7 +12,7 @@ using Humanizer;
 namespace AdvancedBot.Core.Services
 {
     public class LogService
-    {s
+    {
         private int _id = 0;
         private LiteDBHandler _storage;
         private CustomCommandService _commands;
