@@ -17,6 +17,7 @@ namespace AdvancedBot.Core.Commands
         public AuthorizedGLClient GLClient { get; set; }
         public PaginatorService Paginator { get; set; }
         public LogService LogService { get; set; }
+        public ModerationService ModService { get; set; }
 
         public readonly List<ulong> PowerUsers = new List<ulong>() { 209801906237865984, 202095042372829184, 942849642931032164, 362271714702262273 };
 

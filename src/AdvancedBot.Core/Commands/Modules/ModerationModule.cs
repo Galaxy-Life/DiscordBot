@@ -216,71 +216,57 @@ namespace AdvancedBot.Core.Commands.Modules
         [SlashCommand("ban", "Tries to ban a user")]
         public async Task TryBanUserAsync(uint userId, string reason)
         {
-            var user = await GLClient.GetPhoenixUserAsync(userId);
+            var result = await ModService.BanUserAsync(Context.User.Id, userId, reason);
 
-            if (user == null)
+            switch (result.Type)
             {
-                await ModifyOriginalResponseAsync(x => x.Content = $"No user found for **{userId}**");
-                return;
+                case ModResultType.Success:
+                    var embed = new EmbedBuilder()
+                    {
+                        Title = $"{result.PhoenixUser.UserName} ({result.PhoenixUser.UserId}) is now banned in-game!",
+                        Color = Color.Red
+                    };
+
+                    await ModifyOriginalResponseAsync(x => x.Embed = embed.Build());
+                    break;
+                case ModResultType.NotFound:
+                    await ModifyOriginalResponseAsync(x => x.Content = $"No user found for **{userId}**");
+                    break;
+                case ModResultType.AlreadyDone:
+                    await ModifyOriginalResponseAsync(x => x.Content = $"{result.PhoenixUser.UserName} ({result.PhoenixUser.UserId}) is already banned!");
+                    break;
+                case ModResultType.BackendError:
+                    await ModifyOriginalResponseAsync(x => x.Content = $"Failed to ban {result.PhoenixUser.UserName} ({result.PhoenixUser.UserId}).");
+                    break;
             }
-
-            if (user.Role == PhoenixRole.Banned)
-            {
-                await ModifyOriginalResponseAsync(x => x.Content = $"{user.UserName} ({user.UserId}) is already banned!");
-                return;
-            }
-
-            if (!await GLClient.TryBanUser(userId, reason))
-            {
-                await ModifyOriginalResponseAsync(x => x.Content = $"Failed to ban {user.UserName} ({user.UserId}).");
-                return;
-            }
-
-            await GLClient.TryKickUserOfflineAsync(userId.ToString());
-
-            await LogService.LogGameActionAsync(LogAction.Ban, Context.User.Id, userId, reason);
-
-            var embed = new EmbedBuilder()
-            {
-                Title = $"{user.UserName} ({user.UserId}) is now banned in-game!",
-                Color = Color.Red
-            };
-
-            await ModifyOriginalResponseAsync(x => x.Embed = embed.Build() );
         }
 
         [SlashCommand("unban", "Tries to unban a user")]
         public async Task TryUnbanUserAsync(uint userId)
         {
-            var user = await GLClient.GetPhoenixUserAsync(userId);
+            var result = await ModService.UnbanUserAsync(Context.User.Id, userId);
 
-            if (user == null)
+            switch (result.Type)
             {
-                await ModifyOriginalResponseAsync(x => x.Content = $"No user found for **{userId}**");
-                return;
+                case ModResultType.Success:
+                    var embed = new EmbedBuilder()
+                    {
+                        Title = $"{result.PhoenixUser.UserName} ({result.PhoenixUser.UserId}) is no longer banned in-game!",
+                        Color = Color.Green
+                    };
+
+                    await ModifyOriginalResponseAsync(x => x.Embed = embed.Build());
+                    break;
+                case ModResultType.NotFound:
+                    await ModifyOriginalResponseAsync(x => x.Content = $"No user found for **{userId}**");
+                    break;
+                case ModResultType.AlreadyDone:
+                    await ModifyOriginalResponseAsync(x => x.Content = $"{result.PhoenixUser.UserName} ({result.PhoenixUser.UserId}) is not banned!");
+                    break;
+                case ModResultType.BackendError:
+                    await ModifyOriginalResponseAsync(x => x.Content = $"Failed to unban {result.PhoenixUser.UserName} ({result.PhoenixUser.UserId}).");
+                    break;
             }
-
-            if (user.Role != PhoenixRole.Banned)
-            {
-                await ModifyOriginalResponseAsync(x => x.Content = $"{user.UserName} ({user.UserId}) is not banned!");
-                return;
-            }
-
-            if (!await GLClient.TryUnbanUser(userId))
-            {
-                await ModifyOriginalResponseAsync(x => x.Content = $"Failed to unban {user.UserName} ({user.UserId}).");
-                return;
-            }
-
-            await LogService.LogGameActionAsync(LogAction.Unban, Context.User.Id, userId);
-
-            var embed = new EmbedBuilder()
-            {
-                Title = $"{user.UserName} ({user.UserId}) is no longer banned in-game!",
-                Color = Color.Green
-            };
-
-            await ModifyOriginalResponseAsync(x => x.Embed = embed.Build() );
         }
 
         [SlashCommand("updateemail", "Update a user's email")]
@@ -356,171 +342,157 @@ namespace AdvancedBot.Core.Commands.Modules
         [SlashCommand("addbeta", "Adds GL Beta to a user")]
         public async Task AddBetaToUserAsync(uint userId)
         {
-            var user = await GLClient.GetPhoenixUserAsync(userId);
+            var result = await ModService.AddBetaToUserAsync(Context.User.Id, userId);
 
-            if (user == null)
+            switch (result.Type)
             {
-                await ModifyOriginalResponseAsync(x => x.Content = $"No user found for **{userId}**");
-                return;
+                case ModResultType.Success:
+                    var embed = new EmbedBuilder()
+                    {
+                        Title = $"{result.PhoenixUser.UserName} ({result.PhoenixUser.UserId}) now has access to beta",
+                        Color = Color.Green
+                    };
+
+                    await ModifyOriginalResponseAsync(x => x.Embed = embed.Build());
+                    break;
+                case ModResultType.NotFound:
+                    await ModifyOriginalResponseAsync(x => x.Content = $"No user found for **{userId}**");
+                    break;
+                case ModResultType.BackendError:
+                    await ModifyOriginalResponseAsync(x => x.Content = $"Failed to add beta access to {result.PhoenixUser.UserName} ({result.PhoenixUser.UserId})");
+                    break;
             }
-
-            if (!await GLClient.AddGlBeta(userId))
-            {
-                await ModifyOriginalResponseAsync(x => x.Content = $"Failed to add beta access to {user.UserName} ({user.UserId})");
-                return;
-            }
-
-            await LogService.LogGameActionAsync(LogAction.AddBeta, Context.User.Id, userId);
-
-            var embed = new EmbedBuilder()
-            {
-                Title = $"{user.UserName} ({user.UserId}) now has access to beta",
-                Color = Color.Green
-            };
-
-            await ModifyOriginalResponseAsync(x => x.Embed = embed.Build() );
         }
 
         [SlashCommand("removebeta", "Removes GL Beta to a user")]
         public async Task RemoveBetaFromUserAsync(uint userId)
         {
-            var user = await GLClient.GetPhoenixUserAsync(userId);
+            var result = await ModService.RemoveBetaFromUserAsync(Context.User.Id, userId);
 
-            if (user == null)
+            switch (result.Type)
             {
-                await ModifyOriginalResponseAsync(x => x.Content = $"No user found for **{userId}**");
-                return;
+                case ModResultType.Success:
+                    var embed = new EmbedBuilder()
+                    {
+                        Title = $"{result.PhoenixUser.UserName} ({result.PhoenixUser.UserId}) no longer has beta access",
+                        Color = Color.Green
+                    };
+
+                    await ModifyOriginalResponseAsync(x => x.Embed = embed.Build());
+                    break;
+                case ModResultType.NotFound:
+                    await ModifyOriginalResponseAsync(x => x.Content = $"No user found for **{userId}**");
+                    break;
+                case ModResultType.BackendError:
+                    await ModifyOriginalResponseAsync(x => x.Content = $"Failed to remove beta access to {result.PhoenixUser.UserName} ({result.PhoenixUser.UserId})");
+                    break;
             }
-
-            if (!await GLClient.RemoveGlBeta(userId))
-            {
-                await ModifyOriginalResponseAsync(x => x.Content = $"Failed to remove beta access to {user.UserName} ({user.UserId})");
-                return;
-            }
-
-            await LogService.LogGameActionAsync(LogAction.RemoveBeta, Context.User.Id, userId);
-
-            var embed = new EmbedBuilder()
-            {
-                Title = $"{user.UserName} ({user.UserId}) no longer has beta access",
-                Color = Color.Red
-            };
-
-            await ModifyOriginalResponseAsync(x => x.Embed = embed.Build() );
         }
 
         [SlashCommand("giverole", "Gives a certain user a role")]
         public async Task GiveRoleAsync(uint userId, PhoenixRole role)
         {
-            var user = await GLClient.GetPhoenixUserAsync(userId);
+            var result = await ModService.GiveRoleAsync(Context.User.Id, userId, role);
 
-            if (user == null)
-            {
-                await ModifyOriginalResponseAsync(x => x.Content = $"No user found for **{userId}**");
-                return;
-            }
-
-            if (!await GLClient.GiveRoleAsync(userId, role))
-            {
-                await ModifyOriginalResponseAsync(x => x.Content = $"Failed to give {role} to {user.UserName} ({user.UserId})");
-                return;
-            }
-
-            await LogService.LogGameActionAsync(LogAction.GiveRole, Context.User.Id, userId, role.ToString());
-
-            var roleText = role == PhoenixRole.Donator ? "a Donator\n\n"
-                : role == PhoenixRole.Staff ? "a Staff Member\n\n"
-                : role == PhoenixRole.Administrator ? "an Admin\n\n"
+            var roleText = role == PhoenixRole.Donator ? "a Donator"
+                : role == PhoenixRole.Staff ? "a Staff Member"
+                : role == PhoenixRole.Administrator ? "an Admin"
                 : role.ToString();
 
-            var embed = new EmbedBuilder()
+            switch (result.Type)
             {
-                Title = $"{user.UserName} ({user.UserId}) is now {roleText}",
-                Color = Color.Blue
-            };
+                case ModResultType.Success:
+                    var embed = new EmbedBuilder()
+                    {
+                        Title = $"{result.PhoenixUser.UserName} ({result.PhoenixUser.UserId}) is now {roleText}",
+                        Color = Color.Blue
+                    };
 
-            await ModifyOriginalResponseAsync(x => x.Embed = embed.Build() );
+                    await ModifyOriginalResponseAsync(x => x.Embed = embed.Build());
+                    break;
+                case ModResultType.NotFound:
+                    await ModifyOriginalResponseAsync(x => x.Content = $"No user found for **{userId}**");
+                    break;
+                case ModResultType.AlreadyDone:
+                    await ModifyOriginalResponseAsync(x => x.Content = $"User is already {roleText}!");
+                    break;
+                case ModResultType.BackendError:
+                    await ModifyOriginalResponseAsync(x => x.Content = $"Failed to give {role} to {result.PhoenixUser.UserName} ({result.PhoenixUser.UserId})");
+                    break;
+            }
         }
 
         [SlashCommand("chipsbought", "Gets chips bought from a user")]
         public async Task GetChipsBoughtAsync(uint userId)
         {
-            var user = await GLClient.GetPhoenixUserAsync(userId);
+            var result = await ModService.GetChipsBoughtAsync(Context.User.Id, userId);
 
-            if (user == null)
+            switch (result.Type)
             {
-                await ModifyOriginalResponseAsync(x => x.Content = $"No user found for **{userId}**");
-                return;
+                case ModResultType.Success:
+                    var embed = new EmbedBuilder()
+                    {
+                        Title = $"{result.User.Name} ({result.User.Id})",
+                        Description = $"**{result.IntValue}** chips bought",
+                        Color = Color.Blue
+                    };
+
+                    await ModifyOriginalResponseAsync(x => x.Embed = embed.Build());
+                    break;
+                case ModResultType.NotFound:
+                    await ModifyOriginalResponseAsync(x => x.Content = $"No user found for **{userId}**");
+                    break;
             }
-
-            var chipsBought = await GLClient.GetChipsBoughtAsync(userId.ToString());
-
-            await LogService.LogGameActionAsync(LogAction.GetChipsBought, Context.User.Id, userId);
-
-            var embed = new EmbedBuilder()
-            {
-                Title = $"{user.UserName} ({user.UserId})",
-                Description = $"**{chipsBought}** chips bought",
-                Color = Color.Blue
-            };
-
-            await ModifyOriginalResponseAsync(x => x.Embed = embed.Build() );
         }
 
         [SlashCommand("addchips", "Adds chips to a user")]
         public async Task AddChipsToUserAsync(uint userId, int amount)
         {
-            var user = await GLClient.GetPhoenixUserAsync(userId);
+            var result = await ModService.AddChipsAsync(Context.User.Id, userId, amount);
 
-            if (user == null)
+            switch (result.Type)
             {
-                await ModifyOriginalResponseAsync(x => x.Content = $"No user found for **{userId}**");
-                return;
+                case ModResultType.Success:
+                    var embed = new EmbedBuilder()
+                    {
+                        Title = $"Added {amount} chips to {result.User.Name} ({result.User.Id})",
+                        Color = Color.Blue
+                    };
+
+                    await ModifyOriginalResponseAsync(x => x.Embed = embed.Build());
+                    break;
+                case ModResultType.NotFound:
+                    await ModifyOriginalResponseAsync(x => x.Content = $"No user found for **{userId}**");
+                    break;
+                case ModResultType.BackendError:
+                    await ModifyOriginalResponseAsync(x => x.Content = $"Failed to add chips to {result.User.Name} ({result.User.Id})");
+                    break;
             }
-            
-            if (!await GLClient.TryAddChipsToUserAsync(userId.ToString(), amount))
-            {
-                await ModifyOriginalResponseAsync(x => x.Content = $"Failed to add chips to {user.UserName} ({user.UserId})");
-                return;
-            }
-
-            await LogService.LogGameActionAsync(LogAction.AddChips, Context.User.Id, userId, amount.ToString());
-
-            var embed = new EmbedBuilder()
-            {
-                Title = $"Added {amount} chips to {user.UserName} ({user.UserId})",
-                Color = Color.Blue
-            };
-
-            await ModifyOriginalResponseAsync(x => x.Embed = embed.Build() );
         }
 
         [SlashCommand("additem", "Adds an item a user")]
         public async Task AddItemsToUserAsync(uint userId, string sku, int amount)
         {
-            var user = await GLClient.GetPhoenixUserAsync(userId);
+            var result = await ModService.AddItemsAsync(Context.User.Id, userId, sku, amount);
 
-            if (user == null)
+            switch (result.Type)
             {
-                await ModifyOriginalResponseAsync(x => x.Content = $"No user found for **{userId}**");
-                return;
+                case ModResultType.Success:
+                    var embed = new EmbedBuilder()
+                    {
+                        Title = $"Added item {sku} {amount}x to {result.User.Name} ({result.User.Id})",
+                        Color = Color.Blue
+                    };
+
+                    await ModifyOriginalResponseAsync(x => x.Embed = embed.Build());
+                    break;
+                case ModResultType.NotFound:
+                    await ModifyOriginalResponseAsync(x => x.Content = $"No user found for **{userId}**");
+                    break;
+                case ModResultType.BackendError:
+                    await ModifyOriginalResponseAsync(x => x.Content = $"Failed to add item with id {sku} to {result.User.Name} ({result.User.Id})");
+                    break;
             }
-            
-            if (!await GLClient.TryAddItemToUserAsync(userId.ToString(), sku, amount))
-            {
-                await ModifyOriginalResponseAsync(x => x.Content = $"Failed to add item with id {sku} to {user.UserName} ({user.UserId})");
-                return;
-            }
-
-            await LogService.LogGameActionAsync(LogAction.AddItem, Context.User.Id, userId, $"{sku}:{amount}");
-
-            var embed = new EmbedBuilder()
-            {
-                Title = $"Added item {sku} {amount}x to {user.UserName} ({user.UserId})",
-                Color = Color.Blue
-            };
-
-            await ModifyOriginalResponseAsync(x => x.Embed = embed.Build() );
         }
 
         [SlashCommand("kick", "Force kicks a user offline")]

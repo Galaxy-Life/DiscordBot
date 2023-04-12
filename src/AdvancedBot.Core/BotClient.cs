@@ -38,7 +38,7 @@ namespace AdvancedBot.Core
                 LogLevel = LogSeverity.Info,
                 BotInviteIsPrivate = false,
                 RepositoryUrl = "https://github.com/Galaxy-Life/DiscordBot",
-                LogChannelId = 1090274237572468796
+                LogChannelId = 697920194559082547
             });
 
             _interactions = new InteractionService(_client.Rest, new InteractionServiceConfig() { UseCompiledLambda = true });
@@ -167,6 +167,7 @@ namespace AdvancedBot.Core
                 .AddSingleton<PaginatorService>()
                 .AddSingleton<LogService>()
                 .AddSingleton<ChannelCounterService>()
+                .AddSingleton<ModerationService>()
                 .BuildServiceProvider();
         }
     }
