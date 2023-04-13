@@ -8,6 +8,7 @@ using Discord.Interactions;
 using GL.NET.Entities;
 using GL.NET;
 using System;
+using AdvancedBot.Core.Entities;
 
 namespace AdvancedBot.Core.Commands
 {
@@ -17,7 +18,6 @@ namespace AdvancedBot.Core.Commands
         public AuthorizedGLClient GLClient { get; set; }
         public PaginatorService Paginator { get; set; }
         public LogService LogService { get; set; }
-        public ModerationService ModService { get; set; }
 
         public readonly List<ulong> PowerUsers = new List<ulong>() { 209801906237865984, 202095042372829184, 942849642931032164, 362271714702262273 };
 
@@ -68,6 +68,77 @@ namespace AdvancedBot.Core.Commands
 
             await Paginator.HandleNewPaginatedMessageAsync(Context, displayFields, displayTexts, templateEmbed.Build());
             await Task.Delay(1000);
+        }
+
+        protected async Task SendResponseMessage(ResponseMessage response, bool followup)
+        {
+            if (followup)
+            {
+                await FollowupAsync(response.Content, response.Embeds, ephemeral: response.Ephemeral);
+                return;
+            }
+
+            if (!string.IsNullOrEmpty(response.Content))
+            {
+                await ModifyOriginalResponseAsync(x => x.Content = response.Content);
+            }
+            if (response.Embeds != null)
+            {
+                await ModifyOriginalResponseAsync(x => x.Embeds = response.Embeds);
+            }
+        }
+
+        protected MessageComponent CreateDefaultComponents(string username, string userId, string alliance, bool isBanned)
+        {
+            var components = new ComponentBuilder();
+
+            components.WithButton("Profile", $"profile:{username},{userId}", ButtonStyle.Primary, Emote.Parse("<:AFCElderby:943325489009934368>"));
+            components.WithButton("Stats", $"stats:{username},{userId}", ButtonStyle.Primary, Emote.Parse("<:AACLooter:943311525320482877>"));
+
+            if (!string.IsNullOrEmpty(alliance))
+            {
+                components.WithButton("Alliance", $"alliance:{alliance}", ButtonStyle.Primary, Emote.Parse("<:AFECounselor_Mobius:1082315024829272154>"));
+                components.WithButton("Members", $"members:{alliance}", ButtonStyle.Primary, Emote.Parse("<:Major_Wor:944250193279324171>"));
+            }
+
+            if (PowerUsers.Contains(Context.User.Id))
+            {
+                components.WithButton("Mod", $"moderation:{username},{userId},{alliance},{isBanned}", ButtonStyle.Secondary, new Emoji("➕"));
+            }
+
+            return components.Build();
+        }
+
+        protected MessageComponent CreateModerationComponents(string username, string userId, string alliance, bool isBanned)
+        {
+            var components = new ComponentBuilder();
+
+            components.WithButton("Back", $"back:{username},{userId},{alliance},{isBanned}", ButtonStyle.Secondary, new Emoji("↩️"));
+
+            if (isBanned)
+            {
+                components.WithButton("Unban", $"unban:{username},{userId}", ButtonStyle.Success, Emote.Parse("<:AABStarling_happy:946859412763578419>"));
+            }
+            else
+            {
+                components.WithButton("Ban", $"ban:{username},{userId}", ButtonStyle.Danger, Emote.Parse("<:ABEKamikaze:943323658837958686>"));
+            }
+
+            return components.Build();
+        }
+
+        protected async Task<User> GetUserByInput(string input)
+        {
+            if (string.IsNullOrEmpty(input)) input = Context.User.Username;
+
+            var profile = await GLClient.GetUserById(input);
+
+            if (profile == null)
+            {
+                profile = await GLClient.GetUserByName(input);
+            }
+
+            return profile;
         }
 
         protected async Task<PhoenixUser> GetPhoenixUserByInput(string input, bool full = false)

@@ -17,6 +17,8 @@ namespace AdvancedBot.Core.Commands.Modules
     [Group("game", "All commands handling in-game actions")]
     public class ModerationModule : TopModule
     {
+        public ModerationService ModService { get; set; }
+
         [Group("alliance", "All commands handling in-game alliance related actions")]
         public class AllianceModerationModule : TopModule
         {

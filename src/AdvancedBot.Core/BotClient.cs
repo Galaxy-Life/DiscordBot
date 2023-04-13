@@ -168,6 +168,7 @@ namespace AdvancedBot.Core
                 .AddSingleton<LogService>()
                 .AddSingleton<ChannelCounterService>()
                 .AddSingleton<ModerationService>()
+                .AddSingleton<GLService>()
                 .BuildServiceProvider();
         }
     }
