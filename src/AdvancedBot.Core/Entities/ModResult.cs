@@ -5,12 +5,12 @@ namespace AdvancedBot.Core.Entities
 {
     public class ModResult
     {
-        public ModResult(ModResultType type, PhoenixUser phoenixUser = null, User user = null, ResponseMessage message = null)
+        public ModResult(ModResultType type, ResponseMessage message = null, PhoenixUser phoenixUser = null, User user = null)
         {
             Type = type;
+            Message = message;
             PhoenixUser = phoenixUser;
             User = user;
-            Message = message;
         }
 
         public PhoenixUser PhoenixUser { get; set; }

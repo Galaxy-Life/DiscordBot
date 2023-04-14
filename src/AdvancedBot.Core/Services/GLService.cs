@@ -34,7 +34,7 @@ namespace AdvancedBot.Core.Services
 
             if (user == null && phoenixUser.Role != PhoenixRole.Banned)
             {
-                return new ModResult(ModResultType.Success, phoenixUser, null, new ResponseMessage($"The name {phoenixUser.UserName} exists, but has no progress in Galaxy Life!"));
+                return new ModResult(ModResultType.Success, new ResponseMessage($"The name {phoenixUser.UserName} exists, but has no progress in Galaxy Life!"), phoenixUser, null);
             }
 
             var steamId = phoenixUser.SteamId ?? "No steam linked";
@@ -88,7 +88,7 @@ namespace AdvancedBot.Core.Services
             embed.AddField("Colonies", user.Planets.Count(x => x != null) - 1, true);
 
             var message = new ResponseMessage("", new Embed[] { embed.Build() });
-            return new ModResult(ModResultType.Success, phoenixUser, user, message);
+            return new ModResult(ModResultType.Success, message, phoenixUser, user);
         }
 
         public async Task<ModResult> GetUserStatsAsync(string input)
@@ -125,7 +125,7 @@ namespace AdvancedBot.Core.Services
             .AddField("Troopsize donated", stats.TroopSizesDonated, true);
 
             var message = new ResponseMessage("", new Embed[] { embed.Build() });
-            return new ModResult(ModResultType.Success, null, user, message);
+            return new ModResult(ModResultType.Success, message, null, user);
         }
 
         public async Task<ModResult> GetAllianceAsync(string input)
@@ -157,7 +157,7 @@ namespace AdvancedBot.Core.Services
             }
 
             var message = new ResponseMessage("", new Embed[] { embed.Build() });
-            return new ModResult(ModResultType.Success, null, null, message) { Alliance = alliance };
+            return new ModResult(ModResultType.Success, message, null, null) { Alliance = alliance };
         }
 
         public async Task<ModResult> GetAllianceMembersAsync(string input)
@@ -185,7 +185,7 @@ namespace AdvancedBot.Core.Services
             .AddField($"Members ({regulars.Count()})", string.IsNullOrEmpty(formattedMembers) ? "None" : formattedMembers);
 
             var message = new ResponseMessage("", new Embed[] { embed.Build() });
-            return new ModResult(ModResultType.Success, null, null, message) { Alliance = alliance };
+            return new ModResult(ModResultType.Success, message, null, null) { Alliance = alliance };
         }
 
         private async Task<User> GetUserByInput(string input)

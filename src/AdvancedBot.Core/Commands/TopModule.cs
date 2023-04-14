@@ -19,7 +19,7 @@ namespace AdvancedBot.Core.Commands
         public PaginatorService Paginator { get; set; }
         public LogService LogService { get; set; }
 
-        public readonly List<ulong> PowerUsers = new List<ulong>() { 209801906237865984, 202095042372829184, 942849642931032164, 362271714702262273 };
+        public readonly List<ulong> PowerUsers = new List<ulong>() { 202095042372829184, 209801906237865984, 942849642931032164, 362271714702262273 };
 
         public override async Task BeforeExecuteAsync(ICommandInfo command)
         {
@@ -91,6 +91,8 @@ namespace AdvancedBot.Core.Commands
         protected MessageComponent CreateDefaultComponents(string username, string userId, string alliance, bool isBanned)
         {
             var components = new ComponentBuilder();
+            // component magic, cannot handle empty values
+            alliance = alliance == " " ? null : alliance;
 
             components.WithButton("Profile", $"profile:{username},{userId}", ButtonStyle.Primary, Emote.Parse("<:AFCElderby:943325489009934368>"));
             components.WithButton("Stats", $"stats:{username},{userId}", ButtonStyle.Primary, Emote.Parse("<:AACLooter:943311525320482877>"));
@@ -103,7 +105,7 @@ namespace AdvancedBot.Core.Commands
 
             if (PowerUsers.Contains(Context.User.Id))
             {
-                components.WithButton("Mod", $"moderation:{username},{userId},{alliance},{isBanned}", ButtonStyle.Secondary, new Emoji("➕"));
+                components.WithButton("Moderation", $"moderation:{username},{userId},{alliance ?? " "},{isBanned}", ButtonStyle.Secondary, new Emoji("➕"));
             }
 
             return components.Build();
@@ -113,15 +115,22 @@ namespace AdvancedBot.Core.Commands
         {
             var components = new ComponentBuilder();
 
-            components.WithButton("Back", $"back:{username},{userId},{alliance},{isBanned}", ButtonStyle.Secondary, new Emoji("↩️"));
+            components.WithButton("Add Beta", $"addbeta:{userId}", ButtonStyle.Success, Emote.Parse("<:based:943444391677263912>"), row: 0);
+            components.WithButton("Remove Beta", $"removebeta:{userId}", ButtonStyle.Danger, Emote.Parse("<:Sadge:945682815327035432>"), row: 0);
+            components.WithButton("Give Role", $"giverole:{userId}", ButtonStyle.Primary, Emote.Parse("<:AAAStarlingSwag:943310403658715196>"), disabled: true, row: 0);
+            components.WithButton("Chips bought", $"chipsbought:{userId}", ButtonStyle.Primary, Emote.Parse("<:AACPileOfChips:943313554742865951>"), row: 0);
+
+            components.WithButton("Back", $"back:{username},{userId},{alliance},{isBanned}", ButtonStyle.Secondary, new Emoji("↩️"), row: 1);
+            components.WithButton("Add Chips", $"addchips:{username},{userId}", ButtonStyle.Success, Emote.Parse("<:CABGalaxy_Chip:943313446940868678>"), row: 1);
+            components.WithButton("Add Item", $"additem:{username},{userId}", ButtonStyle.Success, Emote.Parse("<:gltoolbox:1084821705316376576>"), row: 1);
 
             if (isBanned)
             {
-                components.WithButton("Unban", $"unban:{username},{userId}", ButtonStyle.Success, Emote.Parse("<:AABStarling_happy:946859412763578419>"));
+                components.WithButton("Unban", $"unban:{username},{userId}", ButtonStyle.Success, Emote.Parse("<:AABStarling_happy:946859412763578419>"), row: 1);
             }
             else
             {
-                components.WithButton("Ban", $"ban:{username},{userId}", ButtonStyle.Danger, Emote.Parse("<:ABEKamikaze:943323658837958686>"));
+                components.WithButton("Ban", $"ban:{username},{userId}", ButtonStyle.Danger, Emote.Parse("<:ABEKamikaze:943323658837958686>"), row: 1);
             }
 
             return components.Build();

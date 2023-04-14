@@ -219,56 +219,14 @@ namespace AdvancedBot.Core.Commands.Modules
         public async Task TryBanUserAsync(uint userId, string reason)
         {
             var result = await ModService.BanUserAsync(Context.User.Id, userId, reason);
-
-            switch (result.Type)
-            {
-                case ModResultType.Success:
-                    var embed = new EmbedBuilder()
-                    {
-                        Title = $"{result.PhoenixUser.UserName} ({result.PhoenixUser.UserId}) is now banned in-game!",
-                        Color = Color.Red
-                    };
-
-                    await ModifyOriginalResponseAsync(x => x.Embed = embed.Build());
-                    break;
-                case ModResultType.NotFound:
-                    await ModifyOriginalResponseAsync(x => x.Content = $"No user found for **{userId}**");
-                    break;
-                case ModResultType.AlreadyDone:
-                    await ModifyOriginalResponseAsync(x => x.Content = $"{result.PhoenixUser.UserName} ({result.PhoenixUser.UserId}) is already banned!");
-                    break;
-                case ModResultType.BackendError:
-                    await ModifyOriginalResponseAsync(x => x.Content = $"Failed to ban {result.PhoenixUser.UserName} ({result.PhoenixUser.UserId}).");
-                    break;
-            }
+            await SendResponseMessage(result.Message, false);
         }
 
         [SlashCommand("unban", "Tries to unban a user")]
         public async Task TryUnbanUserAsync(uint userId)
         {
             var result = await ModService.UnbanUserAsync(Context.User.Id, userId);
-
-            switch (result.Type)
-            {
-                case ModResultType.Success:
-                    var embed = new EmbedBuilder()
-                    {
-                        Title = $"{result.PhoenixUser.UserName} ({result.PhoenixUser.UserId}) is no longer banned in-game!",
-                        Color = Color.Green
-                    };
-
-                    await ModifyOriginalResponseAsync(x => x.Embed = embed.Build());
-                    break;
-                case ModResultType.NotFound:
-                    await ModifyOriginalResponseAsync(x => x.Content = $"No user found for **{userId}**");
-                    break;
-                case ModResultType.AlreadyDone:
-                    await ModifyOriginalResponseAsync(x => x.Content = $"{result.PhoenixUser.UserName} ({result.PhoenixUser.UserId}) is not banned!");
-                    break;
-                case ModResultType.BackendError:
-                    await ModifyOriginalResponseAsync(x => x.Content = $"Failed to unban {result.PhoenixUser.UserName} ({result.PhoenixUser.UserId}).");
-                    break;
-            }
+            await SendResponseMessage(result.Message, false);
         }
 
         [SlashCommand("updateemail", "Update a user's email")]
@@ -345,156 +303,42 @@ namespace AdvancedBot.Core.Commands.Modules
         public async Task AddBetaToUserAsync(uint userId)
         {
             var result = await ModService.AddBetaToUserAsync(Context.User.Id, userId);
-
-            switch (result.Type)
-            {
-                case ModResultType.Success:
-                    var embed = new EmbedBuilder()
-                    {
-                        Title = $"{result.PhoenixUser.UserName} ({result.PhoenixUser.UserId}) now has access to beta",
-                        Color = Color.Green
-                    };
-
-                    await ModifyOriginalResponseAsync(x => x.Embed = embed.Build());
-                    break;
-                case ModResultType.NotFound:
-                    await ModifyOriginalResponseAsync(x => x.Content = $"No user found for **{userId}**");
-                    break;
-                case ModResultType.BackendError:
-                    await ModifyOriginalResponseAsync(x => x.Content = $"Failed to add beta access to {result.PhoenixUser.UserName} ({result.PhoenixUser.UserId})");
-                    break;
-            }
+            await SendResponseMessage(result.Message, false);
         }
 
         [SlashCommand("removebeta", "Removes GL Beta to a user")]
         public async Task RemoveBetaFromUserAsync(uint userId)
         {
             var result = await ModService.RemoveBetaFromUserAsync(Context.User.Id, userId);
-
-            switch (result.Type)
-            {
-                case ModResultType.Success:
-                    var embed = new EmbedBuilder()
-                    {
-                        Title = $"{result.PhoenixUser.UserName} ({result.PhoenixUser.UserId}) no longer has beta access",
-                        Color = Color.Green
-                    };
-
-                    await ModifyOriginalResponseAsync(x => x.Embed = embed.Build());
-                    break;
-                case ModResultType.NotFound:
-                    await ModifyOriginalResponseAsync(x => x.Content = $"No user found for **{userId}**");
-                    break;
-                case ModResultType.BackendError:
-                    await ModifyOriginalResponseAsync(x => x.Content = $"Failed to remove beta access to {result.PhoenixUser.UserName} ({result.PhoenixUser.UserId})");
-                    break;
-            }
+            await SendResponseMessage(result.Message, false);
         }
 
         [SlashCommand("giverole", "Gives a certain user a role")]
         public async Task GiveRoleAsync(uint userId, PhoenixRole role)
         {
             var result = await ModService.GiveRoleAsync(Context.User.Id, userId, role);
-
-            var roleText = role == PhoenixRole.Donator ? "a Donator"
-                : role == PhoenixRole.Staff ? "a Staff Member"
-                : role == PhoenixRole.Administrator ? "an Admin"
-                : role.ToString();
-
-            switch (result.Type)
-            {
-                case ModResultType.Success:
-                    var embed = new EmbedBuilder()
-                    {
-                        Title = $"{result.PhoenixUser.UserName} ({result.PhoenixUser.UserId}) is now {roleText}",
-                        Color = Color.Blue
-                    };
-
-                    await ModifyOriginalResponseAsync(x => x.Embed = embed.Build());
-                    break;
-                case ModResultType.NotFound:
-                    await ModifyOriginalResponseAsync(x => x.Content = $"No user found for **{userId}**");
-                    break;
-                case ModResultType.AlreadyDone:
-                    await ModifyOriginalResponseAsync(x => x.Content = $"User is already {roleText}!");
-                    break;
-                case ModResultType.BackendError:
-                    await ModifyOriginalResponseAsync(x => x.Content = $"Failed to give {role} to {result.PhoenixUser.UserName} ({result.PhoenixUser.UserId})");
-                    break;
-            }
+            await SendResponseMessage(result.Message, false);
         }
 
         [SlashCommand("chipsbought", "Gets chips bought from a user")]
         public async Task GetChipsBoughtAsync(uint userId)
         {
             var result = await ModService.GetChipsBoughtAsync(Context.User.Id, userId);
-
-            switch (result.Type)
-            {
-                case ModResultType.Success:
-                    var embed = new EmbedBuilder()
-                    {
-                        Title = $"{result.User.Name} ({result.User.Id})",
-                        Description = $"**{result.IntValue}** chips bought",
-                        Color = Color.Blue
-                    };
-
-                    await ModifyOriginalResponseAsync(x => x.Embed = embed.Build());
-                    break;
-                case ModResultType.NotFound:
-                    await ModifyOriginalResponseAsync(x => x.Content = $"No user found for **{userId}**");
-                    break;
-            }
+            await SendResponseMessage(result.Message, false);
         }
 
         [SlashCommand("addchips", "Adds chips to a user")]
         public async Task AddChipsToUserAsync(uint userId, int amount)
         {
             var result = await ModService.AddChipsAsync(Context.User.Id, userId, amount);
-
-            switch (result.Type)
-            {
-                case ModResultType.Success:
-                    var embed = new EmbedBuilder()
-                    {
-                        Title = $"Added {amount} chips to {result.User.Name} ({result.User.Id})",
-                        Color = Color.Blue
-                    };
-
-                    await ModifyOriginalResponseAsync(x => x.Embed = embed.Build());
-                    break;
-                case ModResultType.NotFound:
-                    await ModifyOriginalResponseAsync(x => x.Content = $"No user found for **{userId}**");
-                    break;
-                case ModResultType.BackendError:
-                    await ModifyOriginalResponseAsync(x => x.Content = $"Failed to add chips to {result.User.Name} ({result.User.Id})");
-                    break;
-            }
+            await SendResponseMessage(result.Message, false);
         }
 
         [SlashCommand("additem", "Adds an item a user")]
         public async Task AddItemsToUserAsync(uint userId, string sku, int amount)
         {
             var result = await ModService.AddItemsAsync(Context.User.Id, userId, sku, amount);
-
-            switch (result.Type)
-            {
-                case ModResultType.Success:
-                    var embed = new EmbedBuilder()
-                    {
-                        Title = $"Added item {sku} {amount}x to {result.User.Name} ({result.User.Id})",
-                        Color = Color.Blue
-                    };
-
-                    await ModifyOriginalResponseAsync(x => x.Embed = embed.Build());
-                    break;
-                case ModResultType.NotFound:
-                    await ModifyOriginalResponseAsync(x => x.Content = $"No user found for **{userId}**");
-                    break;
-                case ModResultType.BackendError:
-                    await ModifyOriginalResponseAsync(x => x.Content = $"Failed to add item with id {sku} to {result.User.Name} ({result.User.Id})");
-                    break;
-            }
+            await SendResponseMessage(result.Message, false);
         }
 
         [SlashCommand("kick", "Force kicks a user offline")]

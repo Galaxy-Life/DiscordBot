@@ -1,7 +1,5 @@
 using System.Threading.Tasks;
-using AdvancedBot.Core.Entities.Enums;
 using AdvancedBot.Core.Services;
-using Discord;
 using Discord.Interactions;
 
 namespace AdvancedBot.Core.Commands.Modules
@@ -52,28 +50,26 @@ namespace AdvancedBot.Core.Commands.Modules
         [ComponentInteraction("moderation:*,*,*,*")]
         public async Task OnModerationComponent(string username, string userId, string alliance, bool isBanned)
         {
-            await DeferAsync();
-
             if (!PowerUsers.Contains(Context.User.Id))
             {
-                await Context.Interaction.FollowupAsync($"Nice try bozo, what kind of loser calls themself {Context.User.Username} anyway", ephemeral: true);
+                await RespondAsync($"Nice try bozo, what kind of loser calls themself {Context.User.Username} anyway", ephemeral: true);
                 return;
             }
 
+            await DeferAsync();
             await ModifyOriginalResponseAsync(x => x.Components = CreateModerationComponents(username, userId, alliance, isBanned));
         }
 
         [ComponentInteraction("back:*,*,*,*")]
         public async Task OnBackComponent(string username, string userId, string alliance, bool isBanned)
         {
-            await DeferAsync();
-
             if (!PowerUsers.Contains(Context.User.Id))
             {
-                await Context.Interaction.FollowupAsync($"Nice try bozo, what kind of loser calls themself {Context.User.Username} anyway", ephemeral: true);
+                await RespondAsync($"Nice try bozo, what kind of loser calls themself {Context.User.Username} anyway", ephemeral: true);
                 return;
             }
 
+            await DeferAsync();
             await ModifyOriginalResponseAsync(x => x.Components = CreateDefaultComponents(username, userId, alliance, isBanned));
         }
 
@@ -82,57 +78,115 @@ namespace AdvancedBot.Core.Commands.Modules
         {
             if (!PowerUsers.Contains(Context.User.Id))
             {
-                await DeferAsync();
-                await Context.Interaction.FollowupAsync($"Nice try bozo, what kind of loser calls themself {Context.User.Username} anyway", ephemeral: true);
+                await RespondAsync($"Nice try bozo, what kind of loser calls themself {Context.User.Username} anyway", ephemeral: true);
                 return;
             }
 
-            await Context.Interaction.RespondWithModalAsync<BanModal>($"ban_menu:{username},{userId}", null, x => x.Title = $"Banning {username} ({userId})");
+            await Context.Interaction.RespondWithModalAsync<BanModal>($"ban_menu:{userId}", null, x => x.Title = $"Banning {username} ({userId})");
         }
 
-        [ComponentInteraction("unban:*,*")]
-        public async Task OnUnbanComponent(string username, string userId)
+        [ComponentInteraction("unban:*")]
+        public async Task OnUnbanComponent(string userId)
         {
-            await DeferAsync();
-
             if (!PowerUsers.Contains(Context.User.Id))
             {
-                await Context.Interaction.FollowupAsync($"Nice try bozo, what kind of loser calls themself {Context.User.Username} anyway", ephemeral: true);
+                await RespondAsync($"Nice try bozo, what kind of loser calls themself {Context.User.Username} anyway", ephemeral: true);
                 return;
             }
 
+            await DeferAsync();
             var result = await ModService.UnbanUserAsync(Context.User.Id, uint.Parse(userId));
-
-            switch (result.Type)
-            {
-                case ModResultType.Success:
-                    var embed = new EmbedBuilder()
-                    {
-                        Title = $"{result.PhoenixUser.UserName} ({result.PhoenixUser.UserId}) is no longer banned in-game!",
-                        Color = Color.Green
-                    };
-
-                    await FollowupAsync(embed: embed.Build());
-                    var components = CreateDefaultComponents(username, userId, result.User?.AllianceId, false);
-                    await ModifyOriginalResponseAsync(x => x.Components = components);
-                    break;
-                case ModResultType.AlreadyDone:
-                    await FollowupAsync($"{result.PhoenixUser.UserName} ({result.PhoenixUser.UserId}) is not banned!");
-                    break;
-                case ModResultType.BackendError:
-                    await FollowupAsync($"Failed to unban {username} ({userId}).", ephemeral: true);
-                    break;
-            }
+            await SendResponseMessage(result.Message, true);
         }
 
-        [ModalInteraction("ban_menu:*,*")]
-        public async Task BanModalResponse(string username, string userId, BanModal modal)
+        [ComponentInteraction("addbeta:*")]
+        public async Task OnAddBetaComponent(string userId)
         {
-            await DeferAsync();
-
             if (!PowerUsers.Contains(Context.User.Id))
             {
-                await Context.Interaction.FollowupAsync($"Nice try bozo, what kind of loser calls themself {Context.User.Username} anyway", ephemeral: true);
+                await RespondAsync($"Nice try bozo, what kind of loser calls themself {Context.User.Username} anyway", ephemeral: true);
+                return;
+            }
+
+            await DeferAsync();
+            var result = await ModService.AddBetaToUserAsync(Context.User.Id, uint.Parse(userId));
+            await SendResponseMessage(result.Message, true);
+        }
+
+        [ComponentInteraction("removebeta:*")]
+        public async Task OnRemoveBetaComponent(string userId)
+        {
+            if (!PowerUsers.Contains(Context.User.Id))
+            {
+                await RespondAsync($"Nice try bozo, what kind of loser calls themself {Context.User.Username} anyway", ephemeral: true);
+                return;
+            }
+
+            await DeferAsync();
+            var result = await ModService.RemoveBetaFromUserAsync(Context.User.Id, uint.Parse(userId));
+            await SendResponseMessage(result.Message, true);
+        }
+
+        [ComponentInteraction("giverole:*")]
+        public async Task OnGiveRoleComponent(string userId)
+        {
+            if (!PowerUsers.Contains(Context.User.Id))
+            {
+                await RespondAsync($"Nice try bozo, what kind of loser calls themself {Context.User.Username} anyway", ephemeral: true);
+                return;
+            }
+
+            await DeferAsync(true);
+            await FollowupAsync("implement", ephemeral: true);
+        }
+
+        [ComponentInteraction("chipsbought:*")]
+        public async Task OnChipsBoughtComponent(string userId)
+        {
+            if (!PowerUsers.Contains(Context.User.Id))
+            {
+                await RespondAsync($"Nice try bozo, what kind of loser calls themself {Context.User.Username} anyway", ephemeral: true);
+                return;
+            }
+
+            await DeferAsync(true);
+            var result = await ModService.GetChipsBoughtAsync(Context.User.Id, uint.Parse(userId));
+
+            result.Message.Ephemeral = true;
+            await SendResponseMessage(result.Message, true);
+        }
+
+        [ComponentInteraction("addchips:*,*")]
+        public async Task OnAddChipsComponent(string username, string userId)
+        {
+            if (!PowerUsers.Contains(Context.User.Id))
+            {
+                await RespondAsync($"Nice try bozo, what kind of loser calls themself {Context.User.Username} anyway", ephemeral: true);
+                return;
+            }
+
+            await Context.Interaction.RespondWithModalAsync<AddChipsModal>($"addchips_menu:{userId}", null, x => x.Title = $"Adding chips to {username} ({userId})");
+        }
+
+        [ComponentInteraction("additem:*,*")]
+        public async Task OnAddItemComponent(string username, string userId)
+        {
+            if (!PowerUsers.Contains(Context.User.Id))
+            {
+                await RespondAsync($"Nice try bozo, what kind of loser calls themself {Context.User.Username} anyway", ephemeral: true);
+                return;
+            }
+
+            await Context.Interaction.RespondWithModalAsync<AddItemModal>($"additem_menu:{userId}", null, x => x.Title = $"Adding item(s) to {username} ({userId})");
+        }
+
+        [ModalInteraction("ban_menu:*")]
+        public async Task BanModalResponse(string userId, BanModal modal)
+        {
+            if (!PowerUsers.Contains(Context.User.Id))
+            {
+                await RespondAsync($"Nice try bozo, what kind of loser calls themself {Context.User.Username} anyway", ephemeral: true);
+                return;
             }
 
             if (string.IsNullOrEmpty(modal.BanReason))
@@ -141,29 +195,60 @@ namespace AdvancedBot.Core.Commands.Modules
                 return;
             }
 
+            await DeferAsync();
+
             var result = await ModService.BanUserAsync(Context.User.Id, uint.Parse(userId), modal.BanReason);
+            await SendResponseMessage(result.Message, true);
+        }
 
-            switch (result.Type)
+        [ModalInteraction("addchips_menu:*")]
+        public async Task AddChipsModalResponse(string userId, AddChipsModal modal)
+        {
+            if (!PowerUsers.Contains(Context.User.Id))
             {
-                case ModResultType.Success:
-                    var embed = new EmbedBuilder()
-                    {
-                        Title = $"{result.PhoenixUser.UserName} ({result.PhoenixUser.UserId}) is now banned in-game!",
-                        Color = Color.Red
-                    };
-
-                    await FollowupAsync(embed: embed.Build());
-
-                    var components = CreateDefaultComponents(username, userId, result.User?.AllianceId, true);
-                    await ModifyOriginalResponseAsync(x => x.Components = components);
-                    break;
-                case ModResultType.AlreadyDone:
-                    await FollowupAsync($"{result.PhoenixUser.UserName} ({result.PhoenixUser.UserId}) is already banned!");
-                    break;
-                case ModResultType.BackendError:
-                    await FollowupAsync($"Failed to ban {username} ({userId}).", ephemeral: true);
-                    break;
+                await RespondAsync($"Nice try bozo, what kind of loser calls themself {Context.User.Username} anyway", ephemeral: true);
+                return;
             }
+
+            if (string.IsNullOrEmpty(modal.Amount))
+            {
+                await RespondAsync("Invalid amount", ephemeral: true);
+                return;
+            }
+
+            await DeferAsync(true);
+            var result = await ModService.AddChipsAsync(Context.User.Id, uint.Parse(userId), modal.ActualAmount);
+
+            result.Message.Ephemeral = true;
+            await SendResponseMessage(result.Message, true);
+        }
+
+        [ModalInteraction("additem_menu:*")]
+        public async Task AddItemModalResponse(string userId, AddItemModal modal)
+        {
+            if (!PowerUsers.Contains(Context.User.Id))
+            {
+                await RespondAsync($"Nice try bozo, what kind of loser calls themself {Context.User.Username} anyway", ephemeral: true);
+                return;
+            }
+
+            if (string.IsNullOrEmpty(modal.Sku))
+            {
+                await RespondAsync("Invalid sku", ephemeral: true);
+                return;
+            }
+
+            if (string.IsNullOrEmpty(modal.Amount))
+            {
+                await RespondAsync("Invalid amount", ephemeral: true);
+                return;
+            }
+
+            await DeferAsync(true);
+            var result = await ModService.AddItemsAsync(Context.User.Id, uint.Parse(userId), modal.Sku, modal.ActualAmount);
+
+            result.Message.Ephemeral = true;
+            await SendResponseMessage(result.Message, true);
         }
     }
 }
