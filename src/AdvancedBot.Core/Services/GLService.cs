@@ -190,7 +190,13 @@ namespace AdvancedBot.Core.Services
 
         private async Task<User> GetUserByInput(string input)
         {
-            var profile = await _client.GetUserById(input);
+            User profile = null;
+            var digitString = new String(input.Where(Char.IsDigit).ToArray());
+
+            if (digitString.Length == input.Length)
+            {
+                profile = await _client.GetUserById(input);
+            }
 
             if (profile == null)
             {

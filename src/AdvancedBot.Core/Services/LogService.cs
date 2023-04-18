@@ -107,6 +107,8 @@ namespace AdvancedBot.Core.Services
                 case LogAction.KickOffline:
                 case LogAction.RemoveBeta:
                 case LogAction.RemoveUserFromAlliance:
+                case LogAction.EnableMaintenance:
+                case LogAction.ReloadRules:
                     return Color.Red;
                 case LogAction.Unban:
                 case LogAction.AddBeta:

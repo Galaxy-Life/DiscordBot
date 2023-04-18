@@ -396,5 +396,96 @@ namespace AdvancedBot.Core.Commands.Modules
 
             await ModifyOriginalResponseAsync(x => x.Embed = embed.Build() );
         }
+
+        [SlashCommand("reloadrules", "Reloads the server rules")]
+        public async Task ReloadRulesAsync()
+        {
+            var result = await ModService.ReloadRules(Context.User.Id);
+            await SendResponseMessage(result.Message, false);
+        }
+
+        [SlashCommand("maintenance", "Enables maintenance on the server")]
+        public async Task EnableMaintenanceAsync(uint minutes = 60)
+        {
+            var result = await ModService.EnableMaintenance(Context.User.Id, minutes);
+            await SendResponseMessage(result.Message, false);
+        }
+
+        [SlashCommand("lb", "Shows all the possible leaderboards")]
+        public async Task GetLeaderboardAsync([Choice("Xp", "xp"), Choice("Xp From Attack", "attackXp"), Choice("Rivals Won", "rivalsWon"), Choice("Chips", "chips"), Choice("Chips Spent", "chipsSpent"), Choice("Friends Helped", "friendsHelped"), Choice("Gifts Received", "giftsReceived"), Choice("Gifts Sent", "giftsSent"), Choice("Stars Visited", "starsVisited"), Choice("Obstacles Recycled", "obstaclesRecycled"), Choice("Utility Used", "utilityUsed"), Choice("Item", "item")]string type, string sku = "7000")
+        {
+            List<string> displayTexts = new List<string>() { "Failed to get information" };
+            var title = "Galaxy Life Leaderboard";
+
+            switch (type)
+            {
+                case "attackXp":
+                    title = "Xp From Attack Leaderboard";
+                    displayTexts = (await GLClient.GetXpFromAttackLeaderboard()).Select(x => $"<:RedExp:1082428998182768701>{x.Level} **{x.Name}**").ToList();
+                    break;
+                case "rivalsWon":
+                    title = "Rivals Won Leaderboard";
+                    displayTexts = (await GLClient.GetRivalsWonLeaderboard()).Select(x => $"<:pistol:1082429024963395674>{x.RivalsWon} **{x.Name}**").ToList();
+                    break;
+                case "chips":
+                    title = "Chips Leaderboard";
+                    displayTexts = (await GLClient.GetChipsLeaderboard()).Select(x => $"<:pistol:1082429024963395674>{x.Chips} **{x.Name}**").ToList();
+                    break;
+                case "chipsSpent":
+                    title = "Chips Spent Leaderboard";
+                    displayTexts = (await GLClient.GetChipsSpentLeaderboard()).Select(x => $"<:pistol:1082429024963395674>{x.ChipsSpent} **{x.Name}**").ToList();
+                    break;
+                case "friendsHelped":
+                    title = "Friends Helped Leaderboard";
+                    displayTexts = (await GLClient.GetFriendsHelpedLeaderboard()).Select(x => $"<:pistol:1082429024963395674>{x.FriendsHelped} **{x.Name}**").ToList();
+                    break;
+                case "giftsReceived":
+                    title = "Gifts Received Leaderboard";
+                    displayTexts = (await GLClient.GetGiftsReceivedLeaderboard()).Select(x => $"<:pistol:1082429024963395674>{x.GiftsReceived} **{x.Name}**").ToList();
+                    break;
+                case "giftsSent":
+                    title = "Gifts Sent Leaderboard";
+                    displayTexts = (await GLClient.GetGiftsSentLeaderboard()).Select(x => $"<:pistol:1082429024963395674>{x.GiftsSent} **{x.Name}**").ToList();
+                    break;
+                case "starsVisited":
+                    title = "Stars Visited Leaderboard";
+                    displayTexts = (await GLClient.GetStarsVisitedLeaderboard()).Select(x => $"<:pistol:1082429024963395674>{x.StarsVisited} **{x.Name}**").ToList();
+                    break;
+                case "obstaclesRecycled":
+                    title = "Obstacles Recycled Leaderboard";
+                    displayTexts = (await GLClient.GetObstaclesRecycledLeaderboard()).Select(x => $"<:pistol:1082429024963395674>{x.ObstaclesRecycled} **{x.Name}**").ToList();
+                    break;
+                case "utilityUsed":
+                    title = "Utility Used Leaderboard";
+                    displayTexts = (await GLClient.GetUtilityUsedLeaderboard()).Select(x => $"<:pistol:1082429024963395674>{x.UtilityUsed} **{x.Name}**").ToList();
+                    break;
+                case "item":
+                    title = $"Item {sku} Leaderboard";
+                    displayTexts = (await GLClient.GetItemLeaderboard(sku)).Select(x => $"<:pistol:1082429024963395674>{x.Quantity} **{x.Name}**").ToList();
+                    break;
+                default:
+                case "xp":
+                    title = "Xp Leaderboard";
+                    displayTexts = (await GLClient.GetXpLeaderboard()).Select(x => $"<:experience:920289172428849182> {x.Level} **{x.Name}**").ToList();
+                    break;
+            }
+
+            if (displayTexts.Count == 0)
+            {
+                await ModifyOriginalResponseAsync(x => x.Content = $"<:BAAWorker_Happy:943308706555260928> Servers are still loading the leaderboard, please be patient!");
+                return;
+            }
+
+            for (int i = 0; i < displayTexts.Count(); i++)
+            {
+                displayTexts[i] = $"**#{i + 1}** | {displayTexts[i]}";
+            }
+
+            await SendPaginatedMessageAsync(null, displayTexts, new EmbedBuilder()
+            {
+                Title = title,
+                Color = Color.Purple
+            });
+        }
     }
 }

@@ -243,5 +243,47 @@ namespace AdvancedBot.Core.Services
             var message = new ResponseMessage(embeds: new Embed[] { embed.Build() });
             return new ModResult(ModResultType.Success, message, null, user);
         }
+
+        public async Task<ModResult> EnableMaintenance(ulong discordId, uint minutes)
+        {
+            var success = await _gl.EnableMaintenance(minutes);
+
+            if (!success)
+            {
+                return new ModResult(ModResultType.BackendError, new ResponseMessage($"Failed to enable maintenance for {minutes} minutes"));
+            }
+
+            await _logs.LogGameActionAsync(LogAction.EnableMaintenance, discordId, 0, minutes.ToString());
+
+            var embed = new EmbedBuilder()
+            {
+                Title = $"Enabled maintenance for {minutes} minutes!",
+                Color = Color.Red
+            };
+
+            var message = new ResponseMessage(embeds: new Embed[] { embed.Build() });
+            return new ModResult(ModResultType.Success, message);
+        }
+
+        public async Task<ModResult> ReloadRules(ulong discordId)
+        {
+            var success = await _gl.ReloadRules();
+
+            if (!success)
+            {
+                return new ModResult(ModResultType.BackendError, new ResponseMessage($"Failed to reload rules on the backend!"));
+            }
+
+            await _logs.LogGameActionAsync(LogAction.ReloadRules, discordId, 0);
+
+            var embed = new EmbedBuilder()
+            {
+                Title = $"Reloaded rules on the server!",
+                Color = Color.Red
+            };
+
+            var message = new ResponseMessage(embeds: new Embed[] { embed.Build() });
+            return new ModResult(ModResultType.Success, message);
+        }
     }
 }
