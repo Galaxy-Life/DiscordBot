@@ -118,11 +118,6 @@ namespace AdvancedBot.Core
         {
             if (!result.IsSuccess)
             {
-                if (result.Error == InteractionCommandError.UnmetPrecondition)
-                {
-                    await context.Interaction.DeferAsync();
-                }
-
                 try
                 {
                     await context.Interaction.ModifyOriginalResponseAsync(x => x.Content = $"⛔ {result.ErrorReason}");

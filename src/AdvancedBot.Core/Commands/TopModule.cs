@@ -19,7 +19,7 @@ namespace AdvancedBot.Core.Commands
         public PaginatorService Paginator { get; set; }
         public LogService LogService { get; set; }
 
-        public readonly List<ulong> PowerUsers = new List<ulong>() { 202095042372829184, 209801906237865984, 942849642931032164, 362271714702262273 };
+        public readonly List<ulong> PowerUsers = new List<ulong>() { 202095042372829184, 209801906237865984, 942849642931032164, 362271714702262273, 180676108088246272 };
 
         public override async Task BeforeExecuteAsync(ICommandInfo command)
         {
@@ -67,7 +67,7 @@ namespace AdvancedBot.Core.Commands
             }
 
             await Paginator.HandleNewPaginatedMessageAsync(Context, displayFields, displayTexts, templateEmbed.Build());
-            await Task.Delay(1000);
+            await Task.Delay(200);
         }
 
         protected async Task SendResponseMessage(ResponseMessage response, bool followup)

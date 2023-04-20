@@ -27,7 +27,6 @@ namespace AdvancedBot.Core.Services
         public async Task HandleNewPaginatedMessageAsync(SocketInteractionContext context, IEnumerable<EmbedField> displayFields, IEnumerable<string> displayTexts, Embed embed)
         {
             var message = await context.Interaction.GetOriginalResponseAsync();
-            
             await context.Interaction.ModifyOriginalResponseAsync(x => x.Embed = embed);
 
             var paginatedMessage = new PaginatedMessage()
@@ -47,13 +46,15 @@ namespace AdvancedBot.Core.Services
                 await context.Interaction.ModifyOriginalResponseAsync(x => x.Components = CreateMessageComponents());
                 AddNewTimer(message.Id);
             }
+
+            await GoToFirstPageAsync(message.Id);
         }
 
         public void AddNewTimer(ulong messageId)
         {
-            var timer = new Timer();
-            timer.Interval = 30000;
+            var timer = new Timer(30 * 1000);
             timer.Start();
+
             timer.Elapsed += DisposeActivePaginatorMessage;
             _activeTimers.TryAdd(messageId, timer);
         }
