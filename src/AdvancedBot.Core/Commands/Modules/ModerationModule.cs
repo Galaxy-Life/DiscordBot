@@ -429,39 +429,39 @@ namespace AdvancedBot.Core.Commands.Modules
                     break;
                 case "chips":
                     title = "Chips Leaderboard";
-                    displayTexts = (await GLClient.GetChipsLeaderboard()).Select(x => $"<:pistol:1082429024963395674>{x.Chips} **{x.Name}**").ToList();
+                    displayTexts = (await GLClient.GetChipsLeaderboard()).Select(x => $"<:CABGalaxy_Chip:943313446940868678>{x.Chips} **{x.Name}**").ToList();
                     break;
                 case "chipsSpent":
                     title = "Chips Spent Leaderboard";
-                    displayTexts = (await GLClient.GetChipsSpentLeaderboard()).Select(x => $"<:pistol:1082429024963395674>{x.ChipsSpent} **{x.Name}**").ToList();
+                    displayTexts = (await GLClient.GetChipsSpentLeaderboard()).Select(x => $"<:AACPileOfChips:943313554742865951>{x.ChipsSpent} **{x.Name}**").ToList();
                     break;
                 case "friendsHelped":
                     title = "Friends Helped Leaderboard";
-                    displayTexts = (await GLClient.GetFriendsHelpedLeaderboard()).Select(x => $"<:pistol:1082429024963395674>{x.FriendsHelped} **{x.Name}**").ToList();
+                    displayTexts = (await GLClient.GetFriendsHelpedLeaderboard()).Select(x => $"<:AAAStarlingSorry:943311734196809821>{x.FriendsHelped} **{x.Name}**").ToList();
                     break;
                 case "giftsReceived":
                     title = "Gifts Received Leaderboard";
-                    displayTexts = (await GLClient.GetGiftsReceivedLeaderboard()).Select(x => $"<:pistol:1082429024963395674>{x.GiftsReceived} **{x.Name}**").ToList();
+                    displayTexts = (await GLClient.GetGiftsReceivedLeaderboard()).Select(x => $"<:AFDChubi_Happy:943325609113833492>{x.GiftsReceived} **{x.Name}**").ToList();
                     break;
                 case "giftsSent":
                     title = "Gifts Sent Leaderboard";
-                    displayTexts = (await GLClient.GetGiftsSentLeaderboard()).Select(x => $"<:pistol:1082429024963395674>{x.GiftsSent} **{x.Name}**").ToList();
+                    displayTexts = (await GLClient.GetGiftsSentLeaderboard()).Select(x => $"<:ZStarlingGentleman2:945539138311061554>{x.GiftsSent} **{x.Name}**").ToList();
                     break;
                 case "starsVisited":
                     title = "Stars Visited Leaderboard";
-                    displayTexts = (await GLClient.GetStarsVisitedLeaderboard()).Select(x => $"<:pistol:1082429024963395674>{x.StarsVisited} **{x.Name}**").ToList();
+                    displayTexts = (await GLClient.GetStarsVisitedLeaderboard()).Select(x => $"⭐{x.StarsVisited} **{x.Name}**").ToList();
                     break;
                 case "obstaclesRecycled":
                     title = "Obstacles Recycled Leaderboard";
-                    displayTexts = (await GLClient.GetObstaclesRecycledLeaderboard()).Select(x => $"<:pistol:1082429024963395674>{x.ObstaclesRecycled} **{x.Name}**").ToList();
+                    displayTexts = (await GLClient.GetObstaclesRecycledLeaderboard()).Select(x => $"<:touchgrass:1085581198690099281>{x.ObstaclesRecycled} **{x.Name}**").ToList();
                     break;
                 case "utilityUsed":
                     title = "Utility Used Leaderboard";
-                    displayTexts = (await GLClient.GetUtilityUsedLeaderboard()).Select(x => $"<:pistol:1082429024963395674>{x.UtilityUsed} **{x.Name}**").ToList();
+                    displayTexts = (await GLClient.GetUtilityUsedLeaderboard()).Select(x => $"<:nuke:1034465682835898408>{x.UtilityUsed} **{x.Name}**").ToList();
                     break;
                 case "item":
                     title = $"Item {sku} Leaderboard";
-                    displayTexts = (await GLClient.GetItemLeaderboard(sku)).Select(x => $"<:pistol:1082429024963395674>{x.Quantity} **{x.Name}**").ToList();
+                    displayTexts = (await GLClient.GetItemLeaderboard(sku)).Select(x => $"<:glhelmet:1084821573975945267>{x.Quantity} **{x.Name}**").ToList();
                     break;
                 default:
                 case "xp":
