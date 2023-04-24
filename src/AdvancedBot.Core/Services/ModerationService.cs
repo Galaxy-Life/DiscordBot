@@ -265,20 +265,21 @@ namespace AdvancedBot.Core.Services
             return new ModResult(ModResultType.Success, message);
         }
 
-        public async Task<ModResult> ReloadRules(ulong discordId)
+        public async Task<ModResult> ReloadRules(ulong discordId, bool staging = false)
         {
-            var success = await _gl.ReloadRules();
+            var success = staging ? await _gl.ReloadStagingRules() : await _gl.ReloadRules();
+            var stagingText = staging ? "staging " : "";
 
             if (!success)
             {
-                return new ModResult(ModResultType.BackendError, new ResponseMessage($"Failed to reload rules on the backend!"));
+                return new ModResult(ModResultType.BackendError, new ResponseMessage($"Failed to reload rules on the {stagingText}backend!"));
             }
 
-            await _logs.LogGameActionAsync(LogAction.ReloadRules, discordId, 0);
+            await _logs.LogGameActionAsync(LogAction.ReloadRules, discordId, 0, stagingText.TrimEnd());
 
             var embed = new EmbedBuilder()
             {
-                Title = $"Reloaded rules on the server!",
+                Title = $"Reloaded rules on the {stagingText}server!",
                 Color = Color.Red
             };
 

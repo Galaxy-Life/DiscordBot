@@ -412,7 +412,7 @@ namespace AdvancedBot.Core.Commands.Modules
         }
 
         [SlashCommand("lb", "Shows all the possible leaderboards")]
-        public async Task GetLeaderboardAsync([Choice("Xp", "xp"), Choice("Xp From Attack", "attackXp"), Choice("Rivals Won", "rivalsWon"), Choice("Chips", "chips"), Choice("Chips Spent", "chipsSpent"), Choice("Friends Helped", "friendsHelped"), Choice("Gifts Received", "giftsReceived"), Choice("Gifts Sent", "giftsSent"), Choice("Stars Visited", "starsVisited"), Choice("Obstacles Recycled", "obstaclesRecycled"), Choice("Utility Used", "utilityUsed"), Choice("Item", "item")]string type, string sku = "7000")
+        public async Task GetLeaderboardAsync([Choice("Xp", "xp"), Choice("Xp From Attack", "attackXp"), Choice("Rivals Won", "rivalsWon"), Choice("Chips", "chips"), Choice("Chips Spent", "chipsSpent"), Choice("Friends Helped", "friendsHelped"), Choice("Gifts Received", "giftsReceived"), Choice("Gifts Sent", "giftsSent"), Choice("Stars Visited", "starsVisited"), Choice("Obstacles Recycled", "obstaclesRecycled"), Choice("Utility Used", "utilityUsed"), Choice("Item", "item"), Choice("Warpoints", "warpoints"), Choice("Alliance Warpoints", "alliancewarpoints"), Choice("Advanced Chips", "advchips")]string type, string sku = "7000")
         {
             List<string> displayTexts = new List<string>() { "Failed to get information" };
             var title = "Galaxy Life Leaderboard";
@@ -462,6 +462,18 @@ namespace AdvancedBot.Core.Commands.Modules
                 case "item":
                     title = $"Item {sku} Leaderboard";
                     displayTexts = (await GLClient.GetItemLeaderboard(sku)).Select(x => $"<:glhelmet:1084821573975945267>{x.Quantity} **{x.Name}**").ToList();
+                    break;
+                case "warpoints":
+                    title = $"Warpoints Leaderboard";
+                    displayTexts = (await GLClient.GetWarpointLeaderboard()).Select(x => $"<:frenchling:1080133173352091708>{x.Warpoints} **{x.Name}** ({x.AllianceName})").ToList();
+                    break;
+                case "alliancewarpoints":
+                    title = $"Alliance Warpoints Leaderboard";
+                    displayTexts = (await GLClient.GetAllianceWarpointLeaderboard()).Select(x => $"<:TopNotch:945458565538279515>{x.Warpoints} **{x.Name}** ({x.MemberCount} members)").ToList();
+                    break;
+                case "advchips":
+                    title = $"Advanced Chips";
+                    displayTexts = (await GLClient.GetAdvancedChipsLb()).Select(x => $"<:AACPileOfChips:943313554742865951>{x.Chips + x.ChipsSpent - x.ChipsPurchased} **{x.Name}**").ToList();
                     break;
                 default:
                 case "xp":

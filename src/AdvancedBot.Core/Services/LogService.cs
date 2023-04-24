@@ -66,6 +66,7 @@ namespace AdvancedBot.Core.Services
                 case LogAction.RemoveBeta:
                 case LogAction.GetChipsBought:
                 case LogAction.GetFull:
+                case LogAction.EnableMaintenance:
                 default:
                     break;
                 case LogAction.Ban:
@@ -92,6 +93,9 @@ namespace AdvancedBot.Core.Services
                 case LogAction.MakeUserAllianceOwner:
                 case LogAction.GetWarlogs:
                     embed.AddField("Alliance", log.Reason);
+                    break;
+                case LogAction.ReloadRules:
+                    embed.AddField("Server", log.Reason);
                     break;
             }
 
