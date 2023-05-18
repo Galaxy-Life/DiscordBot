@@ -30,12 +30,13 @@ namespace AdvancedBot.Core.Services
             }
 
             var user = await GetUserByInput(input);
-            var stats = await _client.GetUserStats(user.Id);
 
             if (user == null && phoenixUser.Role != PhoenixRole.Banned)
             {
                 return new ModResult(ModResultType.Success, new ResponseMessage($"The name {phoenixUser.UserName} exists, but has no progress in Galaxy Life!"), phoenixUser, null);
             }
+
+            var stats = await _client.GetUserStats(user.Id);
 
             var steamId = phoenixUser.SteamId ?? "No steam linked";
             var roleText = phoenixUser.Role == PhoenixRole.Banned ? "[BANNED]"

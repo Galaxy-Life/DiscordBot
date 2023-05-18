@@ -20,6 +20,7 @@ namespace AdvancedBot.Core.Commands
         public LogService LogService { get; set; }
 
         public readonly List<ulong> PowerUsers = new List<ulong>() { 202095042372829184, 209801906237865984, 942849642931032164, 362271714702262273, 180676108088246272 };
+        public readonly List<ulong> SemiPowerUsers = new List<ulong>() { 275698828974489612 };
 
         public override async Task BeforeExecuteAsync(ICommandInfo command)
         {
@@ -107,6 +108,10 @@ namespace AdvancedBot.Core.Commands
             {
                 components.WithButton("Moderation", $"moderation:{username},{userId},{alliance ?? " "},{isBanned}", ButtonStyle.Secondary, new Emoji("➕"));
             }
+            else if (SemiPowerUsers.Contains(Context.User.Id))
+            {
+                components.WithButton("Moderation", $"semimoderation:{username},{userId},{alliance ?? " "}", ButtonStyle.Secondary, new Emoji("➕"));
+            }
 
             return components.Build();
         }
@@ -132,6 +137,19 @@ namespace AdvancedBot.Core.Commands
             {
                 components.WithButton("Ban", $"ban:{username},{userId}", ButtonStyle.Danger, Emote.Parse("<:ABEKamikaze:943323658837958686>"), row: 1);
             }
+
+            return components.Build();
+        }
+
+        protected MessageComponent CreateSemiModerationComponents(string username, string userId, string alliance)
+        {
+            var components = new ComponentBuilder();
+
+            components.WithButton("Back", $"semiback:{username},{userId},{alliance}", ButtonStyle.Secondary, new Emoji("↩️"));
+            components.WithButton("Chips bought", $"chipsbought:{userId}", ButtonStyle.Primary, Emote.Parse("<:AACPileOfChips:943313554742865951>"));
+
+            components.WithButton("Add Chips", $"addchips:{username},{userId}", ButtonStyle.Success, Emote.Parse("<:CABGalaxy_Chip:943313446940868678>"));
+            components.WithButton("Add Item", $"additem:{username},{userId}", ButtonStyle.Success, Emote.Parse("<:gltoolbox:1084821705316376576>"));
 
             return components.Build();
         }

@@ -73,6 +73,32 @@ namespace AdvancedBot.Core.Commands.Modules
             await ModifyOriginalResponseAsync(x => x.Components = CreateDefaultComponents(username, userId, alliance, isBanned));
         }
 
+        [ComponentInteraction("semimoderation:*,*,*")]
+        public async Task OnModerationComponent(string username, string userId, string alliance)
+        {
+            if (!PowerUsers.Contains(Context.User.Id) && !SemiPowerUsers.Contains(Context.User.Id))
+            {
+                await RespondAsync($"Nice try bozo, what kind of loser calls themself {Context.User.Username} anyway", ephemeral: true);
+                return;
+            }
+
+            await DeferAsync();
+            await ModifyOriginalResponseAsync(x => x.Components = CreateSemiModerationComponents(username, userId, alliance));
+        }
+
+        [ComponentInteraction("semiback:*,*,*")]
+        public async Task OnSemiBackComponent(string username, string userId, string alliance)
+        {
+            if (!PowerUsers.Contains(Context.User.Id) && !SemiPowerUsers.Contains(Context.User.Id))
+            {
+                await RespondAsync($"Nice try bozo, what kind of loser calls themself {Context.User.Username} anyway", ephemeral: true);
+                return;
+            }
+
+            await DeferAsync();
+            await ModifyOriginalResponseAsync(x => x.Components = CreateDefaultComponents(username, userId, alliance, false));
+        }
+
         [ComponentInteraction("ban:*,*")]
         public async Task OnBanComponent(string username, string userId)
         {
@@ -143,7 +169,7 @@ namespace AdvancedBot.Core.Commands.Modules
         [ComponentInteraction("chipsbought:*")]
         public async Task OnChipsBoughtComponent(string userId)
         {
-            if (!PowerUsers.Contains(Context.User.Id))
+            if (!PowerUsers.Contains(Context.User.Id) && !SemiPowerUsers.Contains(Context.User.Id))
             {
                 await RespondAsync($"Nice try bozo, what kind of loser calls themself {Context.User.Username} anyway", ephemeral: true);
                 return;
@@ -159,7 +185,7 @@ namespace AdvancedBot.Core.Commands.Modules
         [ComponentInteraction("addchips:*,*")]
         public async Task OnAddChipsComponent(string username, string userId)
         {
-            if (!PowerUsers.Contains(Context.User.Id))
+            if (!PowerUsers.Contains(Context.User.Id) && !SemiPowerUsers.Contains(Context.User.Id))
             {
                 await RespondAsync($"Nice try bozo, what kind of loser calls themself {Context.User.Username} anyway", ephemeral: true);
                 return;
@@ -171,7 +197,7 @@ namespace AdvancedBot.Core.Commands.Modules
         [ComponentInteraction("additem:*,*")]
         public async Task OnAddItemComponent(string username, string userId)
         {
-            if (!PowerUsers.Contains(Context.User.Id))
+            if (!PowerUsers.Contains(Context.User.Id) && !SemiPowerUsers.Contains(Context.User.Id))
             {
                 await RespondAsync($"Nice try bozo, what kind of loser calls themself {Context.User.Username} anyway", ephemeral: true);
                 return;
@@ -204,7 +230,7 @@ namespace AdvancedBot.Core.Commands.Modules
         [ModalInteraction("addchips_menu:*")]
         public async Task AddChipsModalResponse(string userId, AddChipsModal modal)
         {
-            if (!PowerUsers.Contains(Context.User.Id))
+            if (!PowerUsers.Contains(Context.User.Id) && !SemiPowerUsers.Contains(Context.User.Id))
             {
                 await RespondAsync($"Nice try bozo, what kind of loser calls themself {Context.User.Username} anyway", ephemeral: true);
                 return;
@@ -219,14 +245,13 @@ namespace AdvancedBot.Core.Commands.Modules
             await DeferAsync(true);
             var result = await ModService.AddChipsAsync(Context.User.Id, uint.Parse(userId), modal.ActualAmount);
 
-            result.Message.Ephemeral = true;
             await SendResponseMessage(result.Message, true);
         }
 
         [ModalInteraction("additem_menu:*")]
         public async Task AddItemModalResponse(string userId, AddItemModal modal)
         {
-            if (!PowerUsers.Contains(Context.User.Id))
+            if (!PowerUsers.Contains(Context.User.Id) && !SemiPowerUsers.Contains(Context.User.Id))
             {
                 await RespondAsync($"Nice try bozo, what kind of loser calls themself {Context.User.Username} anyway", ephemeral: true);
                 return;
@@ -247,7 +272,6 @@ namespace AdvancedBot.Core.Commands.Modules
             await DeferAsync(true);
             var result = await ModService.AddItemsAsync(Context.User.Id, uint.Parse(userId), modal.Sku, modal.ActualAmount);
 
-            result.Message.Ephemeral = true;
             await SendResponseMessage(result.Message, true);
         }
     }
