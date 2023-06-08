@@ -33,7 +33,7 @@ namespace AdvancedBot.Core.Services
 
             if (user == null && phoenixUser.Role != PhoenixRole.Banned)
             {
-                return new ModResult(ModResultType.Success, new ResponseMessage($"The name {phoenixUser.UserName} exists, but has no progress in Galaxy Life!"), phoenixUser, null);
+                return new ModResult(ModResultType.Success, new ResponseMessage($"The name {phoenixUser.UserName} ({phoenixUser.UserId}) exists, but has no progress in Galaxy Life!"), phoenixUser, null);
             }
 
             var stats = await _client.GetUserStats(user.Id);
