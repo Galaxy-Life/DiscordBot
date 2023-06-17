@@ -128,7 +128,7 @@ namespace AdvancedBot.Core.Commands.Modules
 
                 var embed = new EmbedBuilder()
                 {
-                    Title = $"{alliance.Name} is now owner of **{alliance.Name}**",
+                    Title = $"{user.Name} is now owner of **{alliance.Name}**",
                     Color = Color.Green
                 };
 
