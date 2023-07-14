@@ -35,11 +35,11 @@ namespace AdvancedBot.Core.Services
             {
                 if (phoenixUser.Role != PhoenixRole.Banned)
                 {
-                    return new ModResult(ModResultType.Success, new ResponseMessage($"The name {phoenixUser.UserName} ({phoenixUser.UserId}) exists, but has no progress in Galaxy Life!"), phoenixUser, null);
+                    return new ModResult(ModResultType.Success, new ResponseMessage($"The person **{phoenixUser.UserName} ({phoenixUser.UserId})** exists, but has no progress in Galaxy Life!"), phoenixUser, null);
                 }
                 else
                 {
-                    return new ModResult(ModResultType.Success, new ResponseMessage($"The name {phoenixUser.UserName} ({phoenixUser.UserId}) is banned and reset!"), phoenixUser, null);
+                    return new ModResult(ModResultType.Success, new ResponseMessage($"**{phoenixUser.UserName} ({phoenixUser.UserId})** is banned and reset!"), phoenixUser, null);
                 }
             }
 

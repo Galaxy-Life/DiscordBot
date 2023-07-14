@@ -120,22 +120,22 @@ namespace AdvancedBot.Core.Commands
         {
             var components = new ComponentBuilder();
 
-            components.WithButton("Add Beta", $"addbeta:{userId}", ButtonStyle.Success, Emote.Parse("<:based:943444391677263912>"), row: 0);
-            components.WithButton("Remove Beta", $"removebeta:{userId}", ButtonStyle.Danger, Emote.Parse("<:Sadge:945682815327035432>"), row: 0);
-            components.WithButton("Give Role", $"giverole:{userId}", ButtonStyle.Primary, Emote.Parse("<:AAAStarlingSwag:943310403658715196>"), disabled: true, row: 0);
-            components.WithButton("Chips bought", $"chipsbought:{userId}", ButtonStyle.Primary, Emote.Parse("<:AACPileOfChips:943313554742865951>"), row: 0);
+            components.WithButton("Add Beta", $"addbeta:{userId}", ButtonStyle.Success, Emote.Parse("<:Pepe_Based:943444391677263912>"), row: 0);
+            components.WithButton("Remove Beta", $"removebeta:{userId}", ButtonStyle.Danger, Emote.Parse("<:Pepe_Sadge:945682815327035432>"), row: 0);
+            components.WithButton("Give Role", $"giverole:{userId}", ButtonStyle.Primary, Emote.Parse("<:Starling_Swag:943310403658715196>"), disabled: true, row: 0);
+            components.WithButton("Chips bought", $"chipsbought:{userId}", ButtonStyle.Primary, Emote.Parse("<:Resource_PileOfChips:943313554742865951>"), row: 0);
 
             components.WithButton("Back", $"back:{username},{userId},{alliance},{isBanned}", ButtonStyle.Secondary, new Emoji("↩️"), row: 1);
-            components.WithButton("Add Chips", $"addchips:{username},{userId}", ButtonStyle.Success, Emote.Parse("<:CABGalaxy_Chip:943313446940868678>"), row: 1);
-            components.WithButton("Add Item", $"additem:{username},{userId}", ButtonStyle.Success, Emote.Parse("<:gltoolbox:1084821705316376576>"), row: 1);
+            components.WithButton("Add Chips", $"addchips:{username},{userId}", ButtonStyle.Success, Emote.Parse("<:Resource_Chip:943313446940868678>"), row: 1);
+            components.WithButton("Add Item", $"additem:{username},{userId}", ButtonStyle.Success, Emote.Parse("<:Item_Toolbox:1084821705316376576>"), row: 1);
 
             if (isBanned)
             {
-                components.WithButton("Unban", $"unban:{username},{userId}", ButtonStyle.Success, Emote.Parse("<:AABStarling_happy:946859412763578419>"), row: 1);
+                components.WithButton("Unban", $"unban:{username},{userId}", ButtonStyle.Success, Emote.Parse("<:Starling_Happy:946859412763578419>"), row: 1);
             }
             else
             {
-                components.WithButton("Ban", $"ban:{username},{userId}", ButtonStyle.Danger, Emote.Parse("<:ABEKamikaze:943323658837958686>"), row: 1);
+                components.WithButton("Ban", $"ban:{username},{userId}", ButtonStyle.Danger, Emote.Parse("<:Story_LuckNorris:945537412199743488>"), row: 1);
             }
 
             return components.Build();
@@ -146,10 +146,10 @@ namespace AdvancedBot.Core.Commands
             var components = new ComponentBuilder();
 
             components.WithButton("Back", $"semiback:{username},{userId},{alliance}", ButtonStyle.Secondary, new Emoji("↩️"));
-            components.WithButton("Chips bought", $"chipsbought:{userId}", ButtonStyle.Primary, Emote.Parse("<:AACPileOfChips:943313554742865951>"));
+            components.WithButton("Chips bought", $"chipsbought:{userId}", ButtonStyle.Primary, Emote.Parse("<:Resource_PileOfChips:943313554742865951>"));
 
-            components.WithButton("Add Chips", $"addchips:{username},{userId}", ButtonStyle.Success, Emote.Parse("<:CABGalaxy_Chip:943313446940868678>"));
-            components.WithButton("Add Item", $"additem:{username},{userId}", ButtonStyle.Success, Emote.Parse("<:gltoolbox:1084821705316376576>"));
+            components.WithButton("Add Chips", $"addchips:{username},{userId}", ButtonStyle.Success, Emote.Parse("<:Resource_Chip:943313446940868678>"));
+            components.WithButton("Add Item", $"additem:{username},{userId}", ButtonStyle.Success, Emote.Parse("<:Item_Toolbox:1084821705316376576>"));
 
             return components.Build();
         }
