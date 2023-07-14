@@ -116,11 +116,11 @@ namespace AdvancedBot.Core.Commands.Modules
                     break;
                 case "warpoints":
                     title = $"Warpoints Leaderboard";
-                    displayTexts = (await GLClient.GetWarpointLeaderboard()).Select(x => $"<:frenchling:1080133173352091708>{x.Warpoints} **{x.Name}**").ToList();
+                    displayTexts = (await GLClient.GetWarpointLeaderboard()).Select(x => $"<:Starling_Frenchling:1080133173352091708>{x.Warpoints} **{x.Name}**").ToList();
                     break;
                 case "alliancewarpoints":
                     title = $"Alliance Warpoints Leaderboard";
-                    displayTexts = (await GLClient.GetAllianceWarpointLeaderboard()).Select(x => $"<:TopNotch:945458565538279515>{x.Warpoints} **{x.Name}**").ToList();
+                    displayTexts = (await GLClient.GetAllianceWarpointLeaderboard()).Select(x => $"<:TopNotch:1117073442236276809>{x.Warpoints} **{x.Name}**").ToList();
                     break;
                 default:
                 case "xp":

@@ -445,23 +445,23 @@ namespace AdvancedBot.Core.Commands.Modules
                     break;
                 case "chips":
                     title = "Chips Leaderboard";
-                    displayTexts = (await GLClient.GetChipsLeaderboard()).Select(x => $"<:CABGalaxy_Chip:943313446940868678>{x.Chips} **{x.Name}**").ToList();
+                    displayTexts = (await GLClient.GetChipsLeaderboard()).Select(x => $"<:Resource_Chip:943313446940868678>{x.Chips} **{x.Name}**").ToList();
                     break;
                 case "chipsSpent":
                     title = "Chips Spent Leaderboard";
-                    displayTexts = (await GLClient.GetChipsSpentLeaderboard()).Select(x => $"<:AACPileOfChips:943313554742865951>{x.ChipsSpent} **{x.Name}**").ToList();
+                    displayTexts = (await GLClient.GetChipsSpentLeaderboard()).Select(x => $"<:Resource_PileOfChips:943313554742865951>{x.ChipsSpent} **{x.Name}**").ToList();
                     break;
                 case "friendsHelped":
                     title = "Friends Helped Leaderboard";
-                    displayTexts = (await GLClient.GetFriendsHelpedLeaderboard()).Select(x => $"<:AAAStarlingSorry:943311734196809821>{x.FriendsHelped} **{x.Name}**").ToList();
+                    displayTexts = (await GLClient.GetFriendsHelpedLeaderboard()).Select(x => $"<:Starling_Sorry:943311734196809821>{x.FriendsHelped} **{x.Name}**").ToList();
                     break;
                 case "giftsReceived":
                     title = "Gifts Received Leaderboard";
-                    displayTexts = (await GLClient.GetGiftsReceivedLeaderboard()).Select(x => $"<:AFDChubi_Happy:943325609113833492>{x.GiftsReceived} **{x.Name}**").ToList();
+                    displayTexts = (await GLClient.GetGiftsReceivedLeaderboard()).Select(x => $"<:Story_Chubi_Happy:943325609113833492>{x.GiftsReceived} **{x.Name}**").ToList();
                     break;
                 case "giftsSent":
                     title = "Gifts Sent Leaderboard";
-                    displayTexts = (await GLClient.GetGiftsSentLeaderboard()).Select(x => $"<:ZStarlingGentleman2:945539138311061554>{x.GiftsSent} **{x.Name}**").ToList();
+                    displayTexts = (await GLClient.GetGiftsSentLeaderboard()).Select(x => $"<:Starling_Gentleman:945539138311061554>{x.GiftsSent} **{x.Name}**").ToList();
                     break;
                 case "starsVisited":
                     title = "Stars Visited Leaderboard";
@@ -469,19 +469,19 @@ namespace AdvancedBot.Core.Commands.Modules
                     break;
                 case "obstaclesRecycled":
                     title = "Obstacles Recycled Leaderboard";
-                    displayTexts = (await GLClient.GetObstaclesRecycledLeaderboard()).Select(x => $"<:touchgrass:1085581198690099281>{x.ObstaclesRecycled} **{x.Name}**").ToList();
+                    displayTexts = (await GLClient.GetObstaclesRecycledLeaderboard()).Select(x => $"<:TouchGrass:1085581198690099281>{x.ObstaclesRecycled} **{x.Name}**").ToList();
                     break;
                 case "utilityUsed":
                     title = "Utility Used Leaderboard";
-                    displayTexts = (await GLClient.GetUtilityUsedLeaderboard()).Select(x => $"<:nuke:1034465682835898408>{x.UtilityUsed} **{x.Name}**").ToList();
+                    displayTexts = (await GLClient.GetUtilityUsedLeaderboard()).Select(x => $"<:Nuke:1034465682835898408>{x.UtilityUsed} **{x.Name}**").ToList();
                     break;
                 case "item":
                     title = $"Item {sku} Leaderboard";
-                    displayTexts = (await GLClient.GetItemLeaderboard(sku)).Select(x => $"<:glhelmet:1084821573975945267>{x.Quantity} **{x.Name}**").ToList();
+                    displayTexts = (await GLClient.GetItemLeaderboard(sku)).Select(x => $"<:Item_Helmet:1084821573975945267>{x.Quantity} **{x.Name}**").ToList();
                     break;
                 case "warpoints":
                     title = $"Warpoints Leaderboard";
-                    displayTexts = (await GLClient.GetWarpointLeaderboard()).Select(x => $"<:frenchling:1080133173352091708>{x.Warpoints} **{x.Name}** ({x.AllianceName})").ToList();
+                    displayTexts = (await GLClient.GetWarpointLeaderboard()).Select(x => $"<:Starling_Frenchling:1080133173352091708>{x.Warpoints} **{x.Name}** ({x.AllianceName})").ToList();
                     break;
                 case "alliancewarpoints":
                     title = $"Alliance Warpoints Leaderboard";
@@ -489,7 +489,7 @@ namespace AdvancedBot.Core.Commands.Modules
                     break;
                 case "advchips":
                     title = $"Advanced Chips";
-                    displayTexts = (await GLClient.GetAdvancedChipsLb()).Select(x => $"<:AACPileOfChips:943313554742865951>{x.Chips + x.ChipsSpent - x.ChipsPurchased} **{x.Name}**").ToList();
+                    displayTexts = (await GLClient.GetAdvancedChipsLb()).Select(x => $"<:Resource_PileOfChips:943313554742865951>{x.Chips + x.ChipsSpent - x.ChipsPurchased} **{x.Name}**").ToList();
                     break;
                 default:
                 case "xp":
@@ -500,7 +500,7 @@ namespace AdvancedBot.Core.Commands.Modules
 
             if (displayTexts.Count == 0)
             {
-                await ModifyOriginalResponseAsync(x => x.Content = $"<:BAAWorker_Happy:943308706555260928> Servers are still loading the leaderboard, please be patient!");
+                await ModifyOriginalResponseAsync(x => x.Content = $"<:Starling_WorkerHappy:943308706555260928> Servers are still loading the leaderboard, please be patient!");
                 return;
             }
 
