@@ -16,12 +16,12 @@ namespace AdvancedBot.Core.Services
     {
         private List<ChannelCounterInfo> _activeCounters = new List<ChannelCounterInfo>();
         private DiscordSocketClient _client;
-        private AuthorizedGLClient _gl;
+        private GLClient _gl;
         private AccountService _guild;
         private Timer _timer = new Timer(6 * 60 * 1000);
         private string _serverStatus = "Offline";
 
-        public ChannelCounterService(DiscordSocketClient client, AuthorizedGLClient gl, AccountService guild)
+        public ChannelCounterService(DiscordSocketClient client, GLClient gl, AccountService guild)
         {
             _client = client;
             _gl = gl;
@@ -156,7 +156,7 @@ namespace AdvancedBot.Core.Services
         {
             try
             {
-                var status = await _gl.GetServerStatus();
+                var status = await _gl.Api.GetServerStatus();
                 var authStatus = status.Find(x => x.Name == "Auth Server");
 
                 if (authStatus == null || !authStatus.IsOnline)

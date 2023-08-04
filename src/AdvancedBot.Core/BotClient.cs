@@ -21,7 +21,7 @@ namespace AdvancedBot.Core
         private IServiceProvider _services;
         private InteractionService _interactions;
         private AccountService _accounts;
-        private AuthorizedGLClient _glClient;
+        private GLClient _glClient;
 
         public BotClient(CustomCommandService commands = null, DiscordSocketClient client = null)
         {
@@ -43,8 +43,17 @@ namespace AdvancedBot.Core
 
             _interactions = new InteractionService(_client.Rest, new InteractionServiceConfig() { UseCompiledLambda = true });
 
-            var creds = Environment.GetEnvironmentVariable("PhoenixApiCred").Split(';');
-            _glClient = new AuthorizedGLClient(creds[0], creds[1], creds[2]);
+            var envVar = Environment.GetEnvironmentVariable("PhoenixApiCred");
+
+            if (envVar == null)
+            {
+                LogAsync(new LogMessage(LogSeverity.Warning, "BotClient", "Initializing GLClient without tokens!"));
+                _glClient = new GLClient("", "", "");
+                return;
+            }
+
+            var creds = envVar.Split(';');
+            _glClient = new GLClient(creds[0], creds[1], creds[2]);
         }
 
         public async Task InitializeAsync()

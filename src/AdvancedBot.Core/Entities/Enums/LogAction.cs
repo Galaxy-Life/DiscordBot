@@ -21,5 +21,6 @@ namespace AdvancedBot.Core.Entities.Enums
         GetWarlogs = 16,
         EnableMaintenance = 17,
         ReloadRules = 18,
+        AddXp = 19,
     }
 }

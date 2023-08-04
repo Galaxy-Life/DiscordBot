@@ -17,9 +17,9 @@ namespace AdvancedBot.Core.Services
         private LiteDBHandler _storage;
         private CustomCommandService _commands;
         private DiscordSocketClient _client;
-        private AuthorizedGLClient _gl;
+        private GLClient _gl;
 
-        public LogService(LiteDBHandler storage, CustomCommandService commands, DiscordSocketClient client, AuthorizedGLClient gl)
+        public LogService(LiteDBHandler storage, CustomCommandService commands, DiscordSocketClient client, GLClient gl)
         {
             _storage = storage;
             _commands = commands;
@@ -37,7 +37,7 @@ namespace AdvancedBot.Core.Services
             _storage.Store(log);
 
             var channel = await _client.GetChannelAsync(_commands.LogChannelId) as ISocketMessageChannel;
-            var user = await _gl.GetUserById(victimGameId.ToString());
+            var user = await _gl.Api.GetUserById(victimGameId.ToString());
 
             await channel.SendMessageAsync(embed: GetEmbedForLog(log, user));
         }

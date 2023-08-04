@@ -16,7 +16,7 @@ namespace AdvancedBot.Core.Commands.Modules
         [SlashCommand("status", "Shows the current status of the flash servers")]
         public async Task DisplayServerStatusAsync()
         {
-            var status = await GLClient.GetServerStatus();
+            var status = await GLClient.Api.GetServerStatus();
 
             var embed = new EmbedBuilder()
             {
@@ -108,24 +108,24 @@ namespace AdvancedBot.Core.Commands.Modules
             {
                 case "attackXp":
                     title = "Xp From Attack Leaderboard";
-                    displayTexts = (await GLClient.GetXpFromAttackLeaderboard()).Select(x => $"<:RedExp:1082428998182768701>{x.Level} **{x.Name}**").ToList();
+                    displayTexts = (await GLClient.Api.GetXpFromAttackLeaderboard()).Select(x => $"<:RedExp:1082428998182768701>{x.Level} **{x.Name}**").ToList();
                     break;
                 case "rivalsWon":
                     title = "Rivals Won Leaderboard";
-                    displayTexts = (await GLClient.GetRivalsWonLeaderboard()).Select(x => $"<:pistol:1082429024963395674>{x.RivalsWon} **{x.Name}**").ToList();
+                    displayTexts = (await GLClient.Api.GetRivalsWonLeaderboard()).Select(x => $"<:pistol:1082429024963395674>{x.RivalsWon} **{x.Name}**").ToList();
                     break;
                 case "warpoints":
                     title = $"Warpoints Leaderboard";
-                    displayTexts = (await GLClient.GetWarpointLeaderboard()).Select(x => $"<:Starling_Frenchling:1080133173352091708>{x.Warpoints} **{x.Name}**").ToList();
+                    displayTexts = (await GLClient.Api.GetWarpointLeaderboard()).Select(x => $"<:Starling_Frenchling:1080133173352091708>{x.Warpoints} **{x.Name}**").ToList();
                     break;
                 case "alliancewarpoints":
                     title = $"Alliance Warpoints Leaderboard";
-                    displayTexts = (await GLClient.GetAllianceWarpointLeaderboard()).Select(x => $"<:TopNotch:1117073442236276809>{x.Warpoints} **{x.Name}**").ToList();
+                    displayTexts = (await GLClient.Api.GetAllianceWarpointLeaderboard()).Select(x => $"<:TopNotch:1117073442236276809>{x.Warpoints} **{x.Name}**").ToList();
                     break;
                 default:
                 case "xp":
                     title = "Xp Leaderboard";
-                    displayTexts = (await GLClient.GetXpLeaderboard()).Select(x => $"<:experience:920289172428849182> {x.Level} **{x.Name}**").ToList();
+                    displayTexts = (await GLClient.Api.GetXpLeaderboard()).Select(x => $"<:experience:920289172428849182> {x.Level} **{x.Name}**").ToList();
                     break;
             }
 
@@ -171,8 +171,8 @@ namespace AdvancedBot.Core.Commands.Modules
                 return;
             }
 
-            var baseUserStats = await GLClient.GetUserStats(baseUser.Id);
-            var secondUserStats = await GLClient.GetUserStats(secondUser.Id);
+            var baseUserStats = await GLClient.Api.GetUserStats(baseUser.Id);
+            var secondUserStats = await GLClient.Api.GetUserStats(secondUser.Id);
 
             var expDifference = Math.Round((decimal)baseUser.Experience / secondUser.Experience, 2);
 

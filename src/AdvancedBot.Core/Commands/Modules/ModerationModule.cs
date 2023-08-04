@@ -25,7 +25,7 @@ namespace AdvancedBot.Core.Commands.Modules
             [SlashCommand("warlogs", "Get warlogs of an alliance")]
             public async Task GetAllianceWarlogs(string allianceName)
             {
-                var alliance = await GLClient.GetAlliance(allianceName);
+                var alliance = await GLClient.Api.GetAlliance(allianceName);
 
                 if (alliance == null)
                 {
@@ -33,7 +33,7 @@ namespace AdvancedBot.Core.Commands.Modules
                     return;
                 }
 
-                var warlogs = await GLClient.GetAllianceWarlogs(alliance.Id);
+                var warlogs = await GLClient.Api.GetAllianceWarlogs(alliance.Id);
                 var texts = new List<string>();
                 var wins = warlogs.Count(x => x.WinnerId == alliance.Id);
 
@@ -66,7 +66,7 @@ namespace AdvancedBot.Core.Commands.Modules
             [SlashCommand("rename", "Renames an alliance")]
             public async Task RenameAllianceAsync(string allianceName, string newAllianceName)
             {
-                var alliance = await GLClient.GetAlliance(allianceName);
+                var alliance = await GLClient.Api.GetAlliance(allianceName);
 
                 if (alliance == null)
                 {
@@ -74,7 +74,7 @@ namespace AdvancedBot.Core.Commands.Modules
                     return;
                 }
 
-                var checkAlliance = await GLClient.GetAlliance(newAllianceName);
+                var checkAlliance = await GLClient.Api.GetAlliance(newAllianceName);
 
                 if (checkAlliance != null)
                 {
@@ -82,7 +82,7 @@ namespace AdvancedBot.Core.Commands.Modules
                     return;
                 }
 
-                if (!await GLClient.RenameAllianceAsync(alliance.Id, newAllianceName))
+                if (!await GLClient.Production.RenameAllianceAsync(alliance.Id, newAllianceName))
                 {
                     await ModifyOriginalResponseAsync(x => x.Content = $"Failed to rename **{allianceName}** to **{newAllianceName}**");
                     return;
@@ -102,7 +102,7 @@ namespace AdvancedBot.Core.Commands.Modules
             [SlashCommand("makeowner", "Makes a user owner of an alliance")]
             public async Task MakeUserOwnerOfAllianceAsync(string allianceName, uint userId)
             {
-                var alliance = await GLClient.GetAlliance(allianceName);
+                var alliance = await GLClient.Api.GetAlliance(allianceName);
 
                 if (alliance == null)
                 {
@@ -110,7 +110,7 @@ namespace AdvancedBot.Core.Commands.Modules
                     return;
                 }
 
-                var user = await GLClient.GetUserById(userId.ToString());
+                var user = await GLClient.Api.GetUserById(userId.ToString());
 
                 if (user == null || user.AllianceId != alliance.Id)
                 {
@@ -118,7 +118,7 @@ namespace AdvancedBot.Core.Commands.Modules
                     return;
                 }
 
-                if (!await GLClient.MakeUserOwnerInAllianceAsync(alliance.Id, userId.ToString()))
+                if (!await GLClient.Api.MakeUserOwnerInAllianceAsync(alliance.Id, userId.ToString()))
                 {
                     await ModifyOriginalResponseAsync(x => x.Content = $"Failed to make {user.Name} owner of **{alliance.Name}**");
                     return;
@@ -138,7 +138,7 @@ namespace AdvancedBot.Core.Commands.Modules
             [SlashCommand("removeuser", "Removes a user from an alliance")]
             public async Task RemoveUserFromAllianceAsync(string allianceName, uint userId)
             {
-                var alliance = await GLClient.GetAlliance(allianceName);
+                var alliance = await GLClient.Api.GetAlliance(allianceName);
 
                 if (alliance == null)
                 {
@@ -146,7 +146,7 @@ namespace AdvancedBot.Core.Commands.Modules
                     return;
                 }
 
-                var user = await GLClient.GetUserById(userId.ToString());
+                var user = await GLClient.Api.GetUserById(userId.ToString());
 
                 if (user == null || user.AllianceId != alliance.Id)
                 {
@@ -154,7 +154,7 @@ namespace AdvancedBot.Core.Commands.Modules
                     return;
                 }
 
-                if (!await GLClient.KickUserFromAllianceAsync(alliance.Id, userId.ToString()))
+                if (!await GLClient.Api.KickUserFromAllianceAsync(alliance.Id, userId.ToString()))
                 {
                     await ModifyOriginalResponseAsync(x => x.Content = $"Failed to kick {user.Name} from **{alliance.Name}**");
                     return;
@@ -176,9 +176,7 @@ namespace AdvancedBot.Core.Commands.Modules
         [RequirePrivateList]
         public async Task GetFullUserAsync(string input)
         {
-            var user = await GetPhoenixUserByInput(input, true) as FullPhoenixUser;
-
-            if (user == null)
+            if (await GetPhoenixUserByInput(input, true) is not FullPhoenixUser user)
             {
                 await ModifyOriginalResponseAsync(x => x.Content = $"<:shrugR:945740284308893696> No user found for **{input}**");
                 return;
@@ -236,7 +234,7 @@ namespace AdvancedBot.Core.Commands.Modules
         [RequirePrivateList]
         public async Task TryUpdateEmailAsync(uint userId, string email)
         {
-            var user = await GLClient.GetFullPhoenixUserAsync(userId);
+            var user = await GLClient.Phoenix.GetFullPhoenixUserAsync(userId);
 
             if (user == null)
             {
@@ -250,7 +248,7 @@ namespace AdvancedBot.Core.Commands.Modules
                 return;
             }
 
-            if (!await GLClient.TryUpdateEmail(userId, email))
+            if (!await GLClient.Phoenix.TryUpdateEmail(userId, email))
             {
                 await ModifyOriginalResponseAsync(x => x.Content = $"Could not update email for {user.UserName} ({user.UserId})");
                 return;
@@ -272,7 +270,7 @@ namespace AdvancedBot.Core.Commands.Modules
         [RequirePrivateList]
         public async Task TryUpdateNameAsync(uint userId, string username)
         {
-            var user = await GLClient.GetFullPhoenixUserAsync(userId);
+            var user = await GLClient.Phoenix.GetFullPhoenixUserAsync(userId);
 
             if (user == null)
             {
@@ -286,7 +284,7 @@ namespace AdvancedBot.Core.Commands.Modules
                 return;
             }
 
-            if (!await GLClient.TryUpdateUsername(userId, username))
+            if (!await GLClient.Phoenix.TryUpdateUsername(userId, username))
             {
                 await ModifyOriginalResponseAsync(x => x.Content = $"Could not update username for {user.UserName} ({user.UserId})");
                 return;
@@ -356,7 +354,7 @@ namespace AdvancedBot.Core.Commands.Modules
         [RequirePrivateList]
         public async Task KickUserOfflineAsync(uint userId)
         {
-            var user = await GLClient.GetPhoenixUserAsync(userId);
+            var user = await GLClient.Phoenix.GetPhoenixUserAsync(userId);
 
             if (user == null)
             {
@@ -364,7 +362,7 @@ namespace AdvancedBot.Core.Commands.Modules
                 return;
             }
             
-            if (!await GLClient.TryKickUserOfflineAsync(userId.ToString()))
+            if (!await GLClient.Production.TryKickUserOfflineAsync(userId.ToString()))
             {
                 await ModifyOriginalResponseAsync(x => x.Content = $"Failed to kick {user.UserName} ({user.UserId}) offline");
                 return;
@@ -385,7 +383,7 @@ namespace AdvancedBot.Core.Commands.Modules
         [RequirePrivateList]
         public async Task ResetUserAsync(uint userId)
         {
-            var user = await GLClient.GetPhoenixUserAsync(userId);
+            var user = await GLClient.Phoenix.GetPhoenixUserAsync(userId);
 
             if (user == null)
             {
@@ -393,7 +391,7 @@ namespace AdvancedBot.Core.Commands.Modules
                 return;
             }
             
-            if (!await GLClient.TryResetUserAsync(userId.ToString()))
+            if (!await GLClient.Production.TryResetUserAsync(userId.ToString()))
             {
                 await ModifyOriginalResponseAsync(x => x.Content = $"Failed to reset {user.UserName} ({user.UserId})");
                 return;
@@ -437,64 +435,64 @@ namespace AdvancedBot.Core.Commands.Modules
             {
                 case "attackXp":
                     title = "Xp From Attack Leaderboard";
-                    displayTexts = (await GLClient.GetXpFromAttackLeaderboard()).Select(x => $"<:RedExp:1082428998182768701>{x.Level} **{x.Name}**").ToList();
+                    displayTexts = (await GLClient.Api.GetXpFromAttackLeaderboard()).Select(x => $"<:RedExp:1082428998182768701>{x.Level} **{x.Name}**").ToList();
                     break;
                 case "rivalsWon":
                     title = "Rivals Won Leaderboard";
-                    displayTexts = (await GLClient.GetRivalsWonLeaderboard()).Select(x => $"<:pistol:1082429024963395674>{x.RivalsWon} **{x.Name}**").ToList();
+                    displayTexts = (await GLClient.Api.GetRivalsWonLeaderboard()).Select(x => $"<:pistol:1082429024963395674>{x.RivalsWon} **{x.Name}**").ToList();
                     break;
                 case "chips":
                     title = "Chips Leaderboard";
-                    displayTexts = (await GLClient.GetChipsLeaderboard()).Select(x => $"<:Resource_Chip:943313446940868678>{x.Chips} **{x.Name}**").ToList();
+                    displayTexts = (await GLClient.Api.GetChipsLeaderboard()).Select(x => $"<:Resource_Chip:943313446940868678>{x.Chips} **{x.Name}**").ToList();
                     break;
                 case "chipsSpent":
                     title = "Chips Spent Leaderboard";
-                    displayTexts = (await GLClient.GetChipsSpentLeaderboard()).Select(x => $"<:Resource_PileOfChips:943313554742865951>{x.ChipsSpent} **{x.Name}**").ToList();
+                    displayTexts = (await GLClient.Api.GetChipsSpentLeaderboard()).Select(x => $"<:Resource_PileOfChips:943313554742865951>{x.ChipsSpent} **{x.Name}**").ToList();
                     break;
                 case "friendsHelped":
                     title = "Friends Helped Leaderboard";
-                    displayTexts = (await GLClient.GetFriendsHelpedLeaderboard()).Select(x => $"<:Starling_Sorry:943311734196809821>{x.FriendsHelped} **{x.Name}**").ToList();
+                    displayTexts = (await GLClient.Api.GetFriendsHelpedLeaderboard()).Select(x => $"<:Starling_Sorry:943311734196809821>{x.FriendsHelped} **{x.Name}**").ToList();
                     break;
                 case "giftsReceived":
                     title = "Gifts Received Leaderboard";
-                    displayTexts = (await GLClient.GetGiftsReceivedLeaderboard()).Select(x => $"<:Story_Chubi_Happy:943325609113833492>{x.GiftsReceived} **{x.Name}**").ToList();
+                    displayTexts = (await GLClient.Api.GetGiftsReceivedLeaderboard()).Select(x => $"<:Story_Chubi_Happy:943325609113833492>{x.GiftsReceived} **{x.Name}**").ToList();
                     break;
                 case "giftsSent":
                     title = "Gifts Sent Leaderboard";
-                    displayTexts = (await GLClient.GetGiftsSentLeaderboard()).Select(x => $"<:Starling_Gentleman:945539138311061554>{x.GiftsSent} **{x.Name}**").ToList();
+                    displayTexts = (await GLClient.Api.GetGiftsSentLeaderboard()).Select(x => $"<:Starling_Gentleman:945539138311061554>{x.GiftsSent} **{x.Name}**").ToList();
                     break;
                 case "starsVisited":
                     title = "Stars Visited Leaderboard";
-                    displayTexts = (await GLClient.GetStarsVisitedLeaderboard()).Select(x => $"⭐{x.StarsVisited} **{x.Name}**").ToList();
+                    displayTexts = (await GLClient.Api.GetStarsVisitedLeaderboard()).Select(x => $"⭐{x.StarsVisited} **{x.Name}**").ToList();
                     break;
                 case "obstaclesRecycled":
                     title = "Obstacles Recycled Leaderboard";
-                    displayTexts = (await GLClient.GetObstaclesRecycledLeaderboard()).Select(x => $"<:TouchGrass:1085581198690099281>{x.ObstaclesRecycled} **{x.Name}**").ToList();
+                    displayTexts = (await GLClient.Api.GetObstaclesRecycledLeaderboard()).Select(x => $"<:TouchGrass:1085581198690099281>{x.ObstaclesRecycled} **{x.Name}**").ToList();
                     break;
                 case "utilityUsed":
                     title = "Utility Used Leaderboard";
-                    displayTexts = (await GLClient.GetUtilityUsedLeaderboard()).Select(x => $"<:Nuke:1034465682835898408>{x.UtilityUsed} **{x.Name}**").ToList();
+                    displayTexts = (await GLClient.Api.GetUtilityUsedLeaderboard()).Select(x => $"<:Nuke:1034465682835898408>{x.UtilityUsed} **{x.Name}**").ToList();
                     break;
                 case "item":
                     title = $"Item {sku} Leaderboard";
-                    displayTexts = (await GLClient.GetItemLeaderboard(sku)).Select(x => $"<:Item_Helmet:1084821573975945267>{x.Quantity} **{x.Name}**").ToList();
+                    displayTexts = (await GLClient.Api.GetItemLeaderboard(sku)).Select(x => $"<:Item_Helmet:1084821573975945267>{x.Quantity} **{x.Name}**").ToList();
                     break;
                 case "warpoints":
                     title = $"Warpoints Leaderboard";
-                    displayTexts = (await GLClient.GetWarpointLeaderboard()).Select(x => $"<:Starling_Frenchling:1080133173352091708>{x.Warpoints} **{x.Name}** ({x.AllianceName})").ToList();
+                    displayTexts = (await GLClient.Api.GetWarpointLeaderboard()).Select(x => $"<:Starling_Frenchling:1080133173352091708>{x.Warpoints} **{x.Name}** ({x.AllianceName})").ToList();
                     break;
                 case "alliancewarpoints":
                     title = $"Alliance Warpoints Leaderboard";
-                    displayTexts = (await GLClient.GetAllianceWarpointLeaderboard()).Select(x => $"<:TopNotch:945458565538279515>{x.Warpoints} **{x.Name}** ({x.MemberCount} members)").ToList();
+                    displayTexts = (await GLClient.Api.GetAllianceWarpointLeaderboard()).Select(x => $"<:TopNotch:945458565538279515>{x.Warpoints} **{x.Name}** ({x.MemberCount} members)").ToList();
                     break;
                 case "advchips":
                     title = $"Advanced Chips";
-                    displayTexts = (await GLClient.GetAdvancedChipsLb()).Select(x => $"<:Resource_PileOfChips:943313554742865951>{x.Chips + x.ChipsSpent - x.ChipsPurchased} **{x.Name}**").ToList();
+                    displayTexts = (await GLClient.Api.GetAdvancedChipsLb()).Select(x => $"<:Resource_PileOfChips:943313554742865951>{x.Chips + x.ChipsSpent - x.ChipsPurchased} **{x.Name}**").ToList();
                     break;
                 default:
                 case "xp":
                     title = "Xp Leaderboard";
-                    displayTexts = (await GLClient.GetXpLeaderboard()).Select(x => $"<:experience:920289172428849182> {x.Level} **{x.Name}**").ToList();
+                    displayTexts = (await GLClient.Api.GetXpLeaderboard()).Select(x => $"<:experience:920289172428849182> {x.Level} **{x.Name}**").ToList();
                     break;
             }
 

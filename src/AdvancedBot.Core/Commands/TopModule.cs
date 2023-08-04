@@ -15,7 +15,7 @@ namespace AdvancedBot.Core.Commands
     public class TopModule : InteractionModuleBase<SocketInteractionContext>
     {
         public AccountService Accounts { get; set; }
-        public AuthorizedGLClient GLClient { get; set; }
+        public GLClient GLClient { get; set; }
         public PaginatorService Paginator { get; set; }
         public LogService LogService { get; set; }
 
@@ -158,11 +158,11 @@ namespace AdvancedBot.Core.Commands
         {
             if (string.IsNullOrEmpty(input)) input = Context.User.Username;
 
-            var profile = await GLClient.GetUserById(input);
+            var profile = await GLClient.Api.GetUserById(input);
 
             if (profile == null)
             {
-                profile = await GLClient.GetUserByName(input);
+                profile = await GLClient.Api.GetUserByName(input);
             }
 
             return profile;
@@ -180,24 +180,24 @@ namespace AdvancedBot.Core.Commands
             {
                 if (full)
                 {
-                    user = await GLClient.GetFullPhoenixUserAsync(input);
+                    user = await GLClient.Phoenix.GetFullPhoenixUserAsync(input);
                 }
                 else
                 {
-                    user = await GLClient.GetPhoenixUserAsync(input);
+                    user = await GLClient.Phoenix.GetPhoenixUserAsync(input);
                 }
             }
 
             // try to get user by name
             if (user == null)
             {
-                user = await GLClient.GetPhoenixUserByNameAsync(input);
+                user = await GLClient.Phoenix.GetPhoenixUserByNameAsync(input);
             }
 
             // get user by id after getting it by name
             if (user != null && full)
             {
-                user = await GLClient.GetFullPhoenixUserAsync(user.UserId);
+                user = await GLClient.Phoenix.GetFullPhoenixUserAsync(user.UserId);
             }
 
             return user;

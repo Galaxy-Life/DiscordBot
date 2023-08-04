@@ -13,9 +13,9 @@ namespace AdvancedBot.Core.Services
 {
     public class GLService
     {
-        private AuthorizedGLClient _client;
+        private GLClient _client;
 
-        public GLService(AuthorizedGLClient client)
+        public GLService(GLClient client)
         {
             _client = client;
         }
@@ -43,7 +43,7 @@ namespace AdvancedBot.Core.Services
                 }
             }
 
-            var stats = await _client.GetUserStats(user.Id);
+            var stats = await _client.Api.GetUserStats(user.Id);
 
             var steamId = phoenixUser.SteamId ?? "No steam linked";
             var roleText = phoenixUser.Role == PhoenixRole.Banned ? "[BANNED]"
@@ -62,7 +62,7 @@ namespace AdvancedBot.Core.Services
 
             if (!string.IsNullOrEmpty(user.AllianceId))
             {
-                var alliance = await _client.GetAlliance(user.AllianceId);
+                var alliance = await _client.Api.GetAlliance(user.AllianceId);
 
                 // can happen due to 24hour player delay
                 if (alliance == null)
@@ -108,7 +108,7 @@ namespace AdvancedBot.Core.Services
                 return new ModResult(ModResultType.NotFound, message: new ResponseMessage($"<:shrugR:945740284308893696> No user found for **{input}**"));
             }
 
-            var stats = await _client.GetUserStats(user.Id);
+            var stats = await _client.Api.GetUserStats(user.Id);
             var displayAlliance = string.IsNullOrEmpty(user.AllianceId) ? "User is not in any alliance." : $"User is part of **{user.AllianceId}**.";
 
             var embed = new EmbedBuilder()
@@ -138,7 +138,7 @@ namespace AdvancedBot.Core.Services
 
         public async Task<ModResult> GetAllianceAsync(string input)
         {
-            var alliance = await _client.GetAlliance(input);
+            var alliance = await _client.Api.GetAlliance(input);
 
             if (alliance == null)
             {
@@ -170,7 +170,7 @@ namespace AdvancedBot.Core.Services
 
         public async Task<ModResult> GetAllianceMembersAsync(string input)
         {
-            var alliance = await _client.GetAlliance(input);
+            var alliance = await _client.Api.GetAlliance(input);
 
             if (alliance == null)
             {
@@ -203,12 +203,12 @@ namespace AdvancedBot.Core.Services
 
             if (digitString.Length == input.Length)
             {
-                profile = await _client.GetUserById(input);
+                profile = await _client.Api.GetUserById(input);
             }
 
             if (profile == null)
             {
-                profile = await _client.GetUserByName(input);
+                profile = await _client.Api.GetUserByName(input);
             }
 
             return profile;
@@ -225,24 +225,24 @@ namespace AdvancedBot.Core.Services
             {
                 if (full)
                 {
-                    user = await _client.GetFullPhoenixUserAsync(input);
+                    user = await _client.Phoenix.GetFullPhoenixUserAsync(input);
                 }
                 else
                 {
-                    user = await _client.GetPhoenixUserAsync(input);
+                    user = await _client.Phoenix.GetPhoenixUserAsync(input);
                 }
             }
 
             // try to get user by name
             if (user == null)
             {
-                user = await _client.GetPhoenixUserByNameAsync(input);
+                user = await _client.Phoenix.GetPhoenixUserByNameAsync(input);
             }
 
             // get user by id after getting it by name
             if (user != null && full)
             {
-                user = await _client.GetFullPhoenixUserAsync(user.UserId);
+                user = await _client.Phoenix.GetFullPhoenixUserAsync(user.UserId);
             }
 
             return user;

@@ -9,10 +9,10 @@ namespace AdvancedBot.Core.Services
 {
     public class ModerationService
     {
-        private AuthorizedGLClient _gl;
+        private GLClient _gl;
         private LogService _logs;
 
-        public ModerationService(AuthorizedGLClient gl, LogService logs)
+        public ModerationService(GLClient gl, LogService logs)
         {
             _gl = gl;
             _logs = logs;
@@ -20,7 +20,7 @@ namespace AdvancedBot.Core.Services
 
         public async Task<ModResult> BanUserAsync(ulong discordId, uint userId, string reason)
         {
-            var user = await _gl.GetPhoenixUserAsync(userId);
+            var user = await _gl.Phoenix.GetPhoenixUserAsync(userId);
 
             if (user == null)
             {
@@ -32,12 +32,12 @@ namespace AdvancedBot.Core.Services
                 return new ModResult(ModResultType.AlreadyDone, new ResponseMessage($"{user.UserName} ({user.UserId}) is not banned"), user);
             }
 
-            if (!await _gl.TryBanUser(userId, reason))
+            if (!await _gl.Phoenix.TryBanUser(userId, reason))
             {
                 return new ModResult(ModResultType.BackendError, new ResponseMessage($"Failed to ban {user.UserName} ({user.UserId})"), user);
             }
 
-            await _gl.TryKickUserOfflineAsync(userId.ToString());
+            await _gl.Production.TryKickUserOfflineAsync(userId.ToString());
             await _logs.LogGameActionAsync(LogAction.Ban, discordId, userId, reason);
 
             var embed = new EmbedBuilder()
@@ -52,7 +52,7 @@ namespace AdvancedBot.Core.Services
 
         public async Task<ModResult> UnbanUserAsync(ulong discordId, uint userId)
         {
-            var user = await _gl.GetPhoenixUserAsync(userId);
+            var user = await _gl.Phoenix.GetPhoenixUserAsync(userId);
 
             if (user == null)
             {
@@ -64,7 +64,7 @@ namespace AdvancedBot.Core.Services
                 return new ModResult(ModResultType.AlreadyDone, new ResponseMessage($"{user.UserName} ({user.UserId}) is not banned"), user);
             }
 
-            if (!await _gl.TryUnbanUser(userId))
+            if (!await _gl.Phoenix.TryUnbanUser(userId))
             {
                 return new ModResult(ModResultType.BackendError, new ResponseMessage($"Failed to unban {user.UserName} ({user.UserId})"), user);
             }
@@ -83,14 +83,14 @@ namespace AdvancedBot.Core.Services
 
         public async Task<ModResult> AddBetaToUserAsync(ulong discordId, uint userId)
         {
-            var user = await _gl.GetPhoenixUserAsync(userId);
+            var user = await _gl.Phoenix.GetPhoenixUserAsync(userId);
 
             if (user == null)
             {
                 return new ModResult(ModResultType.NotFound, new ResponseMessage($"No user found for **{userId}**"));
             }
 
-            if (!await _gl.AddGlBeta(userId))
+            if (!await _gl.Phoenix.AddGlBeta(userId))
             {
                 return new ModResult(ModResultType.BackendError, new ResponseMessage($"Failed to add beta access to {user.UserName} ({user.UserId})"));
             }
@@ -109,14 +109,14 @@ namespace AdvancedBot.Core.Services
 
         public async Task<ModResult> RemoveBetaFromUserAsync(ulong discordId, uint userId)
         {
-            var user = await _gl.GetPhoenixUserAsync(userId);
+            var user = await _gl.Phoenix.GetPhoenixUserAsync(userId);
 
             if (user == null)
             {
                 return new ModResult(ModResultType.NotFound, new ResponseMessage($"No user found for **{userId}**"));
             }
 
-            if (!await _gl.RemoveGlBeta(userId))
+            if (!await _gl.Phoenix.RemoveGlBeta(userId))
             {
                 return new ModResult(ModResultType.BackendError, new ResponseMessage($"Failed to remove beta access from {user.UserName} ({user.UserId})"));
             }
@@ -135,7 +135,7 @@ namespace AdvancedBot.Core.Services
 
         public async Task<ModResult> GiveRoleAsync(ulong discordId, uint userId, PhoenixRole role)
         {
-            var user = await _gl.GetPhoenixUserAsync(userId);
+            var user = await _gl.Phoenix.GetPhoenixUserAsync(userId);
 
             if (user == null)
             {
@@ -152,7 +152,7 @@ namespace AdvancedBot.Core.Services
                 return new ModResult(ModResultType.AlreadyDone, new ResponseMessage($"User is already {roleText}!"));
             }    
 
-            if (!await _gl.GiveRoleAsync(userId, role))
+            if (!await _gl.Phoenix.GiveRoleAsync(userId, role))
             {
                 return new ModResult(ModResultType.BackendError, new ResponseMessage($"Failed to give {role} to {user.UserName} ({user.UserId})"), user);
             }
@@ -171,14 +171,14 @@ namespace AdvancedBot.Core.Services
 
         public async Task<ModResult> GetChipsBoughtAsync(ulong discordId, uint userId)
         {
-            var user = await _gl.GetUserById(userId.ToString());
+            var user = await _gl.Api.GetUserById(userId.ToString());
 
             if (user == null)
             {
                 return new ModResult(ModResultType.NotFound, new ResponseMessage($"No user found for **{userId}**"));
             }
 
-            var chipsBought = await _gl.GetChipsBoughtAsync(userId.ToString());
+            var chipsBought = await _gl.Api.GetChipsBoughtAsync(userId.ToString());
             await _logs.LogGameActionAsync(LogAction.GetChipsBought, discordId, userId);
 
             var embed = new EmbedBuilder()
@@ -194,14 +194,14 @@ namespace AdvancedBot.Core.Services
 
         public async Task<ModResult> AddChipsAsync(ulong discordId, uint userId, int amount)
         {
-            var user = await _gl.GetUserById(userId.ToString());
+            var user = await _gl.Api.GetUserById(userId.ToString());
 
             if (user == null)
             {
                 return new ModResult(ModResultType.NotFound, new ResponseMessage($"No user found for **{userId}**"));
             }
             
-            if (!await _gl.TryAddChipsToUserAsync(userId.ToString(), amount))
+            if (!await _gl.Production.TryAddChipsToUserAsync(userId.ToString(), amount))
             {
                 return new ModResult(ModResultType.BackendError, new ResponseMessage($"Failed to add chips to {user.Name} ({user.Id})"), null, user);
             }
@@ -220,14 +220,14 @@ namespace AdvancedBot.Core.Services
 
         public async Task<ModResult> AddItemsAsync(ulong discordId, uint userId, string sku, int amount)
         {
-            var user = await _gl.GetUserById(userId.ToString());
+            var user = await _gl.Api.GetUserById(userId.ToString());
 
             if (user == null)
             {
                 return new ModResult(ModResultType.NotFound, new ResponseMessage($"No user found for **{userId}**"));
             }
             
-            if (!await _gl.TryAddItemToUserAsync(userId.ToString(), sku, amount))
+            if (!await _gl.Production.TryAddItemToUserAsync(userId.ToString(), sku, amount))
             {
                 return new ModResult(ModResultType.BackendError, new ResponseMessage($"Failed to add item with sku {sku} to {user.Name} ({user.Id})"), null, user);
             }
@@ -244,9 +244,35 @@ namespace AdvancedBot.Core.Services
             return new ModResult(ModResultType.Success, message, null, user);
         }
 
+        public async Task<ModResult> AddXpAsync(ulong discordId, uint userId, int amount)
+        {
+            var user = await _gl.Api.GetUserById(userId.ToString());
+
+            if (user == null)
+            {
+                return new ModResult(ModResultType.NotFound, new ResponseMessage($"No user found for **{userId}**"));
+            }
+            
+            if (!await _gl.Production.TryAddXpToUserAsync(userId.ToString(), "", amount))
+            {
+                return new ModResult(ModResultType.BackendError, new ResponseMessage($"Failed to add xp to {user.Name} ({user.Id})"), null, user);
+            }
+
+            await _logs.LogGameActionAsync(LogAction.AddXp, discordId, userId, $"{amount}");
+
+            var embed = new EmbedBuilder()
+            {
+                Title = $"Added {amount} xp to {user.Name} ({user.Id})",
+                Color = Color.Blue
+            };
+
+            var message = new ResponseMessage(embeds: new Embed[] { embed.Build() });
+            return new ModResult(ModResultType.Success, message, null, user);
+        }
+
         public async Task<ModResult> EnableMaintenance(ulong discordId, uint minutes)
         {
-            var success = await _gl.EnableMaintenance(minutes);
+            var success = await _gl.Production.EnableMaintenance(minutes);
 
             if (!success)
             {
@@ -267,7 +293,7 @@ namespace AdvancedBot.Core.Services
 
         public async Task<ModResult> ReloadRules(ulong discordId, bool staging = false)
         {
-            var success = staging ? await _gl.ReloadStagingRules() : await _gl.ReloadRules();
+            var success = staging ? await _gl.Staging.ReloadRules() : await _gl.Production.ReloadRules();
             var stagingText = staging ? "staging " : "";
 
             if (!success)
