@@ -69,7 +69,7 @@ namespace AdvancedBot.Core.Commands.Modules
                 return;
             }
 
-            await _interactions.AddModulesToGuildAsync(ulong.Parse(guildId), false, (ModuleInfo)module);
+            await _interactions.AddModulesToGuildAsync(ulong.Parse(guildId), false, module);
             await ModifyOriginalResponseAsync(x => x.Content = $"Added {module.Name} module to guild with {module.SlashCommands.Count} commands");
         }
 

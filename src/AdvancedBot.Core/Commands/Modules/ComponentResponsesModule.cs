@@ -206,6 +206,18 @@ namespace AdvancedBot.Core.Commands.Modules
             await Context.Interaction.RespondWithModalAsync<AddItemModal>($"additem_menu:{userId}", null, x => x.Title = $"Adding item(s) to {username} ({userId})");
         }
 
+        [ComponentInteraction("addxp:*,*")]
+        public async Task OnAddXpComponent(string username, string userId)
+        {
+            if (!PowerUsers.Contains(Context.User.Id) && !SemiPowerUsers.Contains(Context.User.Id))
+            {
+                await RespondAsync($"Nice try bozo, what kind of loser calls themself {Context.User.Username} anyway", ephemeral: true);
+                return;
+            }
+
+            await Context.Interaction.RespondWithModalAsync<AddXpModal>($"addxp_menu:{userId}", null, x => x.Title = $"Adding xp to {username} ({userId})");
+        }
+
         [ModalInteraction("ban_menu:*")]
         public async Task BanModalResponse(string userId, BanModal modal)
         {
@@ -271,6 +283,27 @@ namespace AdvancedBot.Core.Commands.Modules
 
             await DeferAsync(true);
             var result = await ModService.AddItemsAsync(Context.User.Id, uint.Parse(userId), modal.Sku, modal.ActualAmount);
+
+            await SendResponseMessage(result.Message, true);
+        }
+
+        [ModalInteraction("addxp_menu:*")]
+        public async Task AddXpModalResponse(string userId, AddXpModal modal)
+        {
+            if (!PowerUsers.Contains(Context.User.Id) && !SemiPowerUsers.Contains(Context.User.Id))
+            {
+                await RespondAsync($"Nice try bozo, what kind of loser calls themself {Context.User.Username} anyway", ephemeral: true);
+                return;
+            }
+
+            if (string.IsNullOrEmpty(modal.Amount))
+            {
+                await RespondAsync("Invalid amount", ephemeral: true);
+                return;
+            }
+
+            await DeferAsync(true);
+            var result = await ModService.AddXpAsync(Context.User.Id, uint.Parse(userId), modal.ActualAmount);
 
             await SendResponseMessage(result.Message, true);
         }

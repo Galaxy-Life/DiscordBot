@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using AdvancedBot.Core.Entities;
 using AdvancedBot.Core.Entities.Enums;
@@ -9,8 +10,8 @@ namespace AdvancedBot.Core.Services
 {
     public class ModerationService
     {
-        private GLClient _gl;
-        private LogService _logs;
+        private readonly GLClient _gl;
+        private readonly LogService _logs;
 
         public ModerationService(GLClient gl, LogService logs)
         {
@@ -311,6 +312,114 @@ namespace AdvancedBot.Core.Services
 
             var message = new ResponseMessage(embeds: new Embed[] { embed.Build() });
             return new ModResult(ModResultType.Success, message);
+        }
+    
+        public async Task<ModResult> RunStagingKickerAsync(ulong discordId)
+        {
+            var success = await _gl.Staging.RunKicker();
+
+            if (!success)
+            {
+                return new ModResult(ModResultType.BackendError, new ResponseMessage($"Failed to run kicker on staging!"));
+            }
+
+            await _logs.LogGameActionAsync(LogAction.RunKicker, discordId, 0, "staging");
+
+            var embed = new EmbedBuilder()
+            {
+                Title = $"Ran kicker on staging!",
+                Color = Color.Red
+            };
+
+            var message = new ResponseMessage(embeds: new Embed[] { embed.Build() });
+            return new ModResult(ModResultType.Success, message);
+        }
+
+        public async Task<ModResult> ResetHelpsStagingAsync(ulong discordId, uint userId)
+        {
+            var success = await _gl.Staging.ResetPlanetHelps(userId.ToString());
+
+            if (!success)
+            {
+                return new ModResult(ModResultType.BackendError, new ResponseMessage($"Failed to reset helps for {userId}!"));
+            }
+
+            await _logs.LogGameActionAsync(LogAction.ResetHelps, discordId, 0, "staging");
+
+            var embed = new EmbedBuilder()
+            {
+                Title = $"Reset helps for {userId} on staging!",
+                Color = Color.Red
+            };
+
+            var message = new ResponseMessage(embeds: new Embed[] { embed.Build() });
+            return new ModResult(ModResultType.Success, message);
+        }
+
+        public async Task<ModResult> ForceWarStagingAsync(ulong discordId, string allianceA, string allianceB)
+        {
+            var success = await _gl.Staging.ForceWar(allianceA, allianceB);
+
+            if (!success)
+            {
+                return new ModResult(ModResultType.BackendError, new ResponseMessage($"Failed to force war between **{allianceA}** and **{allianceB}**!"));
+            }
+
+            await _logs.LogGameActionAsync(LogAction.ForceWar, discordId, 0, "staging");
+
+            var embed = new EmbedBuilder()
+            {
+                Title = $"Forced war between **{allianceA}** and **{allianceB}**!",
+                Color = Color.Red
+            };
+
+            var message = new ResponseMessage(embeds: new Embed[] { embed.Build() });
+            return new ModResult(ModResultType.Success, message);
+        }
+
+        public async Task<ModResult> ForceEndWarStagingAsync(ulong discordId, string allianceA, string allianceB)
+        {
+            var success = await _gl.Staging.ForceStopWar(allianceA, allianceB);
+
+            if (!success)
+            {
+                return new ModResult(ModResultType.BackendError, new ResponseMessage($"Failed to end war between **{allianceA}** and **{allianceB}**!"));
+            }
+
+            await _logs.LogGameActionAsync(LogAction.ForceStopWar, discordId, 0, "staging");
+
+            var embed = new EmbedBuilder()
+            {
+                Title = $"Forced to stop war between **{allianceA}** and **{allianceB}**!",
+                Color = Color.Red
+            };
+
+            var message = new ResponseMessage(embeds: new Embed[] { embed.Build() });
+            return new ModResult(ModResultType.Success, message);
+        }
+
+        public async Task<ModResult<List<BattleLog>>> GetBattleLogTelemetry(ulong discordId, uint userId)
+        {
+            var result = await _gl.Api.GetBattlelogTelemetry(userId.ToString());
+            await _logs.LogGameActionAsync(LogAction.GetTelemetry, discordId, 0, "BattleLogs");
+
+            return new ModResult<List<BattleLog>>(result, ModResultType.Success);
+        }
+
+        public async Task<ModResult<List<Gift>>> GetGiftsTelemetry(ulong discordId, uint userId)
+        {
+            var result = await _gl.Api.GetGiftsTelemetry(userId.ToString());
+            await _logs.LogGameActionAsync(LogAction.GetTelemetry, discordId, 0, "Gifts");
+
+            return new ModResult<List<Gift>>(result, ModResultType.Success);
+        }
+
+        public async Task<ModResult<List<Login>>> GetLoginsTelemetry(ulong discordId, uint userId)
+        {
+            var result = await _gl.Api.GetLoginsTelemetry(userId.ToString());
+            await _logs.LogGameActionAsync(LogAction.GetTelemetry, discordId, 0, "Gifts");
+
+            return new ModResult<List<Login>>(result, ModResultType.Success);
         }
     }
 }

@@ -22,5 +22,10 @@ namespace AdvancedBot.Core.Entities.Enums
         EnableMaintenance = 17,
         ReloadRules = 18,
         AddXp = 19,
+        GetTelemetry = 20,
+        RunKicker = 21,
+        ResetHelps = 22,
+        ForceWar = 23,
+        ForceStopWar = 24,
     }
 }

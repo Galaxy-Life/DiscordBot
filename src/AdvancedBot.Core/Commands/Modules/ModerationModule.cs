@@ -350,6 +350,14 @@ namespace AdvancedBot.Core.Commands.Modules
             await SendResponseMessage(result.Message, false);
         }
 
+        [SlashCommand("addxp", "Adds an item a user")]
+        [RequireSemiprivateList]
+        public async Task AddXpToUserAsync(uint userId, int amount)
+        {
+            var result = await ModService.AddXpAsync(Context.User.Id, userId, amount);
+            await SendResponseMessage(result.Message, false);
+        }
+
         [SlashCommand("kick", "Force kicks a user offline")]
         [RequirePrivateList]
         public async Task KickUserOfflineAsync(uint userId)

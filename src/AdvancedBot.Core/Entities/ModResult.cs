@@ -21,4 +21,15 @@ namespace AdvancedBot.Core.Entities
         public ModResultType Type { get; set; }
         public ResponseMessage Message { get; set; }
     }
+
+    public class ModResult<T> : ModResult
+    {
+        public ModResult(T output, ModResultType type, ResponseMessage message = null, PhoenixUser phoenixUser = null, User user = null)
+            : base(type, message, phoenixUser, user)
+        {
+            Output = output;
+        }
+
+        public T Output { get; set; }
+    }
 }

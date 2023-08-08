@@ -128,6 +128,7 @@ namespace AdvancedBot.Core.Commands
             components.WithButton("Back", $"back:{username},{userId},{alliance},{isBanned}", ButtonStyle.Secondary, new Emoji("↩️"), row: 1);
             components.WithButton("Add Chips", $"addchips:{username},{userId}", ButtonStyle.Success, Emote.Parse("<:Resource_Chip:943313446940868678>"), row: 1);
             components.WithButton("Add Item", $"additem:{username},{userId}", ButtonStyle.Success, Emote.Parse("<:Item_Toolbox:1084821705316376576>"), row: 1);
+            components.WithButton("Add Xp", $"addxp:{username},{userId}", ButtonStyle.Success, Emote.Parse("<:Resource_Experience:943325952212090880>"), row: 1);
 
             if (isBanned)
             {
@@ -150,6 +151,7 @@ namespace AdvancedBot.Core.Commands
 
             components.WithButton("Add Chips", $"addchips:{username},{userId}", ButtonStyle.Success, Emote.Parse("<:Resource_Chip:943313446940868678>"));
             components.WithButton("Add Item", $"additem:{username},{userId}", ButtonStyle.Success, Emote.Parse("<:Item_Toolbox:1084821705316376576>"));
+            components.WithButton("Add Xp", $"addxp:{username},{userId}", ButtonStyle.Success, Emote.Parse("<:Resource_Experience:943325952212090880>"));
 
             return components.Build();
         }
