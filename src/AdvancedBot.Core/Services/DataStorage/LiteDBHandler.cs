@@ -52,5 +52,11 @@ namespace AdvancedBot.Core.Services.DataStorage
             var collection = _db.GetCollection<T>();
             return collection.Exists(predicate);
         }
+
+        public void Remove<T>(Expression<Func<T, bool>> predicate)
+        {
+            var collection = _db.GetCollection<T>();
+            collection.DeleteMany(predicate);
+        }
     }
 }

@@ -1,7 +1,10 @@
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Timers;
 using AdvancedBot.Core.Entities;
 using AdvancedBot.Core.Entities.Enums;
+using AdvancedBot.Core.Services.DataStorage;
 using Discord;
 using GL.NET;
 using GL.NET.Entities;
@@ -12,14 +15,22 @@ namespace AdvancedBot.Core.Services
     {
         private readonly GLClient _gl;
         private readonly LogService _logs;
+        private readonly BotStorage _storage;
 
-        public ModerationService(GLClient gl, LogService logs)
+        private readonly Timer _banTimer = new Timer(1000 * 60 * 30);
+
+        public ModerationService(GLClient gl, LogService logs, BotStorage storage)
         {
             _gl = gl;
             _logs = logs;
+            _storage = storage;
+
+            _banTimer.Elapsed += OnBanTimer;
+            _banTimer.Start();
+            OnBanTimer(null, null);
         }
 
-        public async Task<ModResult> BanUserAsync(ulong discordId, uint userId, string reason)
+        public async Task<ModResult> BanUserAsync(ulong discordId, uint userId, string reason, uint days = 0)
         {
             var user = await _gl.Phoenix.GetPhoenixUserAsync(userId);
 
@@ -30,7 +41,7 @@ namespace AdvancedBot.Core.Services
 
             if (user.Role == PhoenixRole.Banned)
             {
-                return new ModResult(ModResultType.AlreadyDone, new ResponseMessage($"{user.UserName} ({user.UserId}) is not banned"), user);
+                return new ModResult(ModResultType.AlreadyDone, new ResponseMessage($"{user.UserName} ({user.UserId}) is already banned"), user);
             }
 
             if (!await _gl.Phoenix.TryBanUser(userId, reason))
@@ -38,20 +49,34 @@ namespace AdvancedBot.Core.Services
                 return new ModResult(ModResultType.BackendError, new ResponseMessage($"Failed to ban {user.UserName} ({user.UserId})"), user);
             }
 
-            await _gl.Production.TryKickUserOfflineAsync(userId.ToString());
-            await _logs.LogGameActionAsync(LogAction.Ban, discordId, userId, reason);
-
             var embed = new EmbedBuilder()
             {
-                Title = $"{user.UserName} ({user.UserId}) is now banned in-game!",
                 Color = Color.Red
             };
+
+            DateTime? banDuration = null;
+
+            if (days == 0)
+            {
+                embed.WithTitle($"{user.UserName} ({user.UserId}) is now banned in-game permanently!");
+            }
+            else
+            {
+                embed.WithTitle($"{user.UserName} ({user.UserId}) is now banned in-game!");
+                embed.WithDescription($"**Duration:** {days} days");
+
+                banDuration = DateTime.UtcNow.AddDays(days);
+                _storage.AddTempBan(new Tempban(discordId, userId, banDuration.Value));
+            }
+
+            await _gl.Production.TryKickUserOfflineAsync(userId.ToString());
+            await _logs.LogGameActionAsync(LogAction.Ban, discordId, userId, reason, banDuration);
 
             var message = new ResponseMessage(embeds: new Embed[] { embed.Build() });
             return new ModResult(ModResultType.Success, message, user);
         }
 
-        public async Task<ModResult> UnbanUserAsync(ulong discordId, uint userId)
+        public async Task<ModResult> UnbanUserAsync(ulong discordId, uint userId, bool auto = false)
         {
             var user = await _gl.Phoenix.GetPhoenixUserAsync(userId);
 
@@ -70,7 +95,8 @@ namespace AdvancedBot.Core.Services
                 return new ModResult(ModResultType.BackendError, new ResponseMessage($"Failed to unban {user.UserName} ({user.UserId})"), user);
             }
 
-            await _logs.LogGameActionAsync(LogAction.Unban, discordId, userId);
+            var extra = auto ? "Auto Unban" : "";
+            await _logs.LogGameActionAsync(LogAction.Unban, discordId, userId, extra);
 
             var embed = new EmbedBuilder()
             {
@@ -323,7 +349,7 @@ namespace AdvancedBot.Core.Services
                 return new ModResult(ModResultType.BackendError, new ResponseMessage($"Failed to run kicker on staging!"));
             }
 
-            await _logs.LogGameActionAsync(LogAction.RunKicker, discordId, 0, "staging");
+            await _logs.LogGameActionAsync(LogAction.RunKicker, discordId, 0, "Staging");
 
             var embed = new EmbedBuilder()
             {
@@ -344,7 +370,7 @@ namespace AdvancedBot.Core.Services
                 return new ModResult(ModResultType.BackendError, new ResponseMessage($"Failed to reset helps for {userId}!"));
             }
 
-            await _logs.LogGameActionAsync(LogAction.ResetHelps, discordId, 0, "staging");
+            await _logs.LogGameActionAsync(LogAction.ResetHelps, discordId, 0, "Staging");
 
             var embed = new EmbedBuilder()
             {
@@ -365,7 +391,7 @@ namespace AdvancedBot.Core.Services
                 return new ModResult(ModResultType.BackendError, new ResponseMessage($"Failed to force war between **{allianceA}** and **{allianceB}**!"));
             }
 
-            await _logs.LogGameActionAsync(LogAction.ForceWar, discordId, 0, "staging");
+            await _logs.LogGameActionAsync(LogAction.ForceWar, discordId, 0, $"Staging:{allianceA}:{allianceB}");
 
             var embed = new EmbedBuilder()
             {
@@ -386,7 +412,7 @@ namespace AdvancedBot.Core.Services
                 return new ModResult(ModResultType.BackendError, new ResponseMessage($"Failed to end war between **{allianceA}** and **{allianceB}**!"));
             }
 
-            await _logs.LogGameActionAsync(LogAction.ForceStopWar, discordId, 0, "staging");
+            await _logs.LogGameActionAsync(LogAction.ForceStopWar, discordId, 0, $"Staging:{allianceA}:{allianceB}");
 
             var embed = new EmbedBuilder()
             {
@@ -420,6 +446,30 @@ namespace AdvancedBot.Core.Services
             await _logs.LogGameActionAsync(LogAction.GetTelemetry, discordId, 0, "Gifts");
 
             return new ModResult<List<Login>>(result, ModResultType.Success);
+        }
+
+        private void OnBanTimer(object sender, ElapsedEventArgs e)
+        {
+            var bans = _storage.GetTempbans();
+            var bansToRemove = new List<Tempban>();
+
+            for (int i = 0; i < bans.Count; i++)
+            {
+                var time = (bans[i].BanEnd - DateTime.UtcNow).TotalMinutes;
+
+                if (time <= 0)
+                {
+                    // no need to await
+                    UnbanUserAsync(bans[i].ModeratorId, bans[i].UserId, true).ConfigureAwait(false);
+                    bansToRemove.Add(bans[i]);
+                }
+            }
+
+            // remove bans that were handled
+            for (int i = 0; i < bansToRemove.Count; i++)
+            {
+                _storage.RemoveTempban(bansToRemove[i]);
+            }
         }
     }
 }

@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using AdvancedBot.Core.Commands;
 using AdvancedBot.Core.Entities;
@@ -29,10 +30,10 @@ namespace AdvancedBot.Core.Services
             _id = _storage.RestoreCount<Log>();
         }
 
-        public async Task LogGameActionAsync(LogAction action, ulong discordModId, uint victimGameId, string reason = "")
+        public async Task LogGameActionAsync(LogAction action, ulong discordModId, uint victimGameId, string reason = "", DateTime? until = null)
         {
             _id++;
-            var log = new Log(_id, action, discordModId, victimGameId, reason);
+            var log = new Log(_id, action, discordModId, victimGameId, reason, until);
 
             _storage.Store(log);
 
@@ -60,6 +61,12 @@ namespace AdvancedBot.Core.Services
             switch (log.Type)
             {
                 case LogAction.Unban:
+                    if (!string.IsNullOrEmpty(log.Reason))
+                    {
+                        embed.AddField("Reason", log.Reason, true);
+                    }
+
+                    break;
                 case LogAction.Reset:
                 case LogAction.KickOffline:
                 case LogAction.AddBeta:
@@ -70,10 +77,11 @@ namespace AdvancedBot.Core.Services
                 default:
                     break;
                 case LogAction.Ban:
-                    embed.AddField("Ban Reason", log.Reason);
+                    embed.AddField("Ban Reason", log.Reason, true);
+                    embed.AddField("Ends", log.Until == null ? "Never" : log.Until.Value.ToShortDateString());
                     break;                
                 case LogAction.GiveRole:
-                    embed.AddField("Role", ((PhoenixRole)int.Parse(log.Reason)).Humanize());
+                    embed.AddField("Role", ((PhoenixRole)int.Parse(log.Reason)).Humanize(), true);
                     break;
                 case LogAction.UpdateEmail:
                 case LogAction.UpdateName:
@@ -89,13 +97,30 @@ namespace AdvancedBot.Core.Services
                     var splitties = log.Reason.Split(':');
                     embed.AddField("Item added", $"{splitties[1]}x item {splitties[0]}");
                     break;
+                case LogAction.AddXp:
+                    embed.AddField("Xp added", log.Reason);
+                    break;
                 case LogAction.RemoveUserFromAlliance:
                 case LogAction.MakeUserAllianceOwner:
                 case LogAction.GetWarlogs:
-                    embed.AddField("Alliance", log.Reason);
+                    embed.AddField("Alliance", log.Reason, true);
                     break;
                 case LogAction.ReloadRules:
-                    embed.AddField("Server", log.Reason);
+                    embed.AddField("Server", log.Reason, true);
+                    break;
+                case LogAction.GetTelemetry:
+                    embed.AddField("Type", log.Reason, true);
+                    break;
+                case LogAction.RunKicker:
+                case LogAction.ResetHelps:
+                    embed.AddField("Server", log.Reason, true);
+                    break;
+                case LogAction.ForceWar:
+                case LogAction.ForceStopWar:
+                    var split = log.Reason.Split(':');
+                    embed.AddField("Server", split[0], true);
+                    embed.AddField("Alliance A", split[1]);
+                    embed.AddField("Alliance B", split[2]);
                     break;
             }
 

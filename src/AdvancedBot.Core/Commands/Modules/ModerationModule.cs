@@ -216,9 +216,9 @@ namespace AdvancedBot.Core.Commands.Modules
 
         [SlashCommand("ban", "Tries to ban a user")]
         [RequirePrivateList]
-        public async Task TryBanUserAsync(uint userId, string reason)
+        public async Task TryBanUserAsync(uint userId, string reason, uint days = 0)
         {
-            var result = await ModService.BanUserAsync(Context.User.Id, userId, reason);
+            var result = await ModService.BanUserAsync(Context.User.Id, userId, reason, days);
             await SendResponseMessage(result.Message, false);
         }
 

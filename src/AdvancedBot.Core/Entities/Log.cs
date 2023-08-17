@@ -6,7 +6,7 @@ namespace AdvancedBot.Core.Entities
     public class Log
     {
         public Log() {}
-        public Log(int id, LogAction type, ulong discordModId, uint victimGameId, string reason)
+        public Log(int id, LogAction type, ulong discordModId, uint victimGameId, string reason, DateTime? until = null)
         {
             Id = id;
             Type = type;
@@ -14,6 +14,7 @@ namespace AdvancedBot.Core.Entities
             VictimGameId = victimGameId;
             Reason = reason;
             At = DateTime.UtcNow;
+            Until = until;
         }
 
         public int Id { get; set; }
@@ -22,5 +23,6 @@ namespace AdvancedBot.Core.Entities
         public uint VictimGameId { get; set; }
         public string Reason { get; set; }
         public DateTime At { get; set; }
+        public DateTime? Until { get; set; }
     }
 }

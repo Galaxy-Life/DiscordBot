@@ -1,5 +1,4 @@
 using AdvancedBot.Core.Entities;
-using AdvancedBot.Core.Commands;
 using System.Linq;
 using System.Linq.Expressions;
 using System;
@@ -9,12 +8,10 @@ namespace AdvancedBot.Core.Services.DataStorage
     public class AccountService
     {
         private LiteDBHandler _storage;
-        private CustomCommandService _commands;
 
-        public AccountService(LiteDBHandler storage, CustomCommandService commands)
+        public AccountService(LiteDBHandler storage)
         {
             _storage = storage;
-            _commands = commands;
         }
 
         public Account GetOrCreateAccount(ulong id, bool isGuild = false)
@@ -44,11 +41,11 @@ namespace AdvancedBot.Core.Services.DataStorage
         {
             if (!_storage.Exists<Account>(x => x.Id == account.Id))
             {
-                _storage.Store<Account>(account);
+                _storage.Store(account);
             }
             else
             {
-                _storage.Update<Account>(account);
+                _storage.Update(account);
             }
         }
     }
