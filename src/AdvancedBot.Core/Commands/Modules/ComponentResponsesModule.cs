@@ -233,9 +233,14 @@ namespace AdvancedBot.Core.Commands.Modules
                 return;
             }
 
+            int days = 0;
+            if (!string.IsNullOrEmpty(modal.Duration) && int.TryParse(modal.Duration, out days))
+            {
+            }
+
             await DeferAsync();
 
-            var result = await ModService.BanUserAsync(Context.User.Id, uint.Parse(userId), modal.BanReason);
+            var result = await ModService.BanUserAsync(Context.User.Id, uint.Parse(userId), modal.BanReason, (uint)days);
             await SendResponseMessage(result.Message, true);
         }
 
