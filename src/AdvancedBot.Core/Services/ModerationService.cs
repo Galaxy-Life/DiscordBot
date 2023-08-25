@@ -280,7 +280,7 @@ namespace AdvancedBot.Core.Services
                 return new ModResult(ModResultType.NotFound, new ResponseMessage($"No user found for **{userId}**"));
             }
             
-            if (!await _gl.Production.TryAddXpToUserAsync(userId.ToString(), "", amount))
+            if (!await _gl.Production.TryAddXpToUserAsync(userId.ToString(), amount))
             {
                 return new ModResult(ModResultType.BackendError, new ResponseMessage($"Failed to add xp to {user.Name} ({user.Id})"), null, user);
             }
