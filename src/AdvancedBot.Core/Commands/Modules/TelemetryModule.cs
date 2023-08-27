@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using AdvancedBot.Core.Commands.Preconditions;
 using AdvancedBot.Core.Services;
@@ -14,26 +16,44 @@ namespace AdvancedBot.Core.Commands.Modules
         public ModerationService ModService { get; set; }
         public GLService GLService { get; set; }
 
-        [SlashCommand("battlelogs", "")]
+        [SlashCommand("battlelogs", "Shows information about a users battlelogs")]
         public async Task BattlelogsAsync(uint userId)
         {
             var result = await ModService.GetBattleLogTelemetry(Context.User.Id, userId);
             await SendResponseMessage(result.Message, false);
         }
 
-        [SlashCommand("gifts", "")]
+        [SlashCommand("gifts", "Shows information about a users gifts")]
         public async Task GiftsAsync(uint userId)
         {
             var result = await ModService.GetGiftsTelemetry(Context.User.Id, userId);
             var user = await GLService.GetUserProfileAsync(userId.ToString());
 
+            var users = new Dictionary<string, int>();
+
+            for (int i = 0; i < result.Output.Count; i++)
+            {
+                var gift = result.Output[i];
+
+                if (!users.TryGetValue(gift.FromUserId, out int value))
+                {
+                    users.Add(gift.FromUserId, 0);
+                }
+
+                users[gift.FromUserId] = value + 1;
+            }
+
+            var fields = users.OrderByDescending(x => x.Value).Select(x => new EmbedFieldBuilder() { Name = $"Id: {x.Key}", Value = $"Items sent: {x.Value}"}.Build());
+
             var templateEmbed = new EmbedBuilder()
             {
                 Title = $"Gifts Telemetry for {user.User.Name} ({userId})"
             };
+
+            await SendPaginatedMessageAsync(fields, null, templateEmbed);
         }
 
-        [SlashCommand("logins", "")]
+        [SlashCommand("logins", "Shows information about a users logins")]
         public async Task LoginsAsync(uint userId)
         {
             var result = await ModService.GetLoginsTelemetry(Context.User.Id, userId);
