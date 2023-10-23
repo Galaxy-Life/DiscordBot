@@ -27,5 +27,7 @@ namespace AdvancedBot.Core.Entities.Enums
         ResetHelps = 22,
         ForceWar = 23,
         ForceStopWar = 24,
+        AddEmulate = 25,
+        RemoveEmulate = 26,
     }
 }

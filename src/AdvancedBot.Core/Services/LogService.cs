@@ -74,6 +74,8 @@ namespace AdvancedBot.Core.Services
                 case LogAction.GetChipsBought:
                 case LogAction.GetFull:
                 case LogAction.EnableMaintenance:
+                case LogAction.AddEmulate:
+                case LogAction.RemoveEmulate:
                 default:
                     break;
                 case LogAction.Ban:

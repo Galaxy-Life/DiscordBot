@@ -160,6 +160,58 @@ namespace AdvancedBot.Core.Services
             return new ModResult(ModResultType.Success, message, user);
         }
 
+        public async Task<ModResult> AddEmulateToUserAsync(ulong discordId, uint userId)
+        {
+            var user = await _gl.Phoenix.GetPhoenixUserAsync(userId);
+
+            if (user == null)
+            {
+                return new ModResult(ModResultType.NotFound, new ResponseMessage($"No user found for **{userId}**"));
+            }
+
+            if (!await _gl.Phoenix.AddEmulate(userId))
+            {
+                return new ModResult(ModResultType.BackendError, new ResponseMessage($"Failed to add emulate access to {user.UserName} ({user.UserId})"));
+            }
+
+            await _logs.LogGameActionAsync(LogAction.AddEmulate, discordId, userId);
+
+            var embed = new EmbedBuilder()
+            {
+                Title = $"{user.UserName} ({user.UserId}) now has emulate access",
+                Color = Color.Green
+            };
+
+            var message = new ResponseMessage(embeds: new Embed[] { embed.Build() });
+            return new ModResult(ModResultType.Success, message, user);
+        }
+
+        public async Task<ModResult> RemoveEmulateFromUserAsync(ulong discordId, uint userId)
+        {
+            var user = await _gl.Phoenix.GetPhoenixUserAsync(userId);
+
+            if (user == null)
+            {
+                return new ModResult(ModResultType.NotFound, new ResponseMessage($"No user found for **{userId}**"));
+            }
+
+            if (!await _gl.Phoenix.RemoveGlBeta(userId))
+            {
+                return new ModResult(ModResultType.BackendError, new ResponseMessage($"Failed to remove emulate access from {user.UserName} ({user.UserId})"));
+            }
+
+            await _logs.LogGameActionAsync(LogAction.RemoveEmulate, discordId, userId);
+
+            var embed = new EmbedBuilder()
+            {
+                Title = $"{user.UserName} ({user.UserId}) no longer has emulate access",
+                Color = Color.Green
+            };
+
+            var message = new ResponseMessage(embeds: new Embed[] { embed.Build() });
+            return new ModResult(ModResultType.Success, message, user);
+        }
+
         public async Task<ModResult> GiveRoleAsync(ulong discordId, uint userId, PhoenixRole role)
         {
             var user = await _gl.Phoenix.GetPhoenixUserAsync(userId);
