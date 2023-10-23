@@ -318,6 +318,22 @@ namespace AdvancedBot.Core.Commands.Modules
             await SendResponseMessage(result.Message, false);
         }
 
+        [SlashCommand("addemulate", "Adds Emulate Access to a user")]
+        [RequirePrivateList]
+        public async Task AddEmulateToUserAsync(uint userId)
+        {
+            var result = await ModService.AddEmulateToUserAsync(Context.User.Id, userId);
+            await SendResponseMessage(result.Message, false);
+        }
+
+        [SlashCommand("removeemulate", "Removes Emulate Access to a user")]
+        [RequirePrivateList]
+        public async Task RemoveEmulateFromUserAsync(uint userId)
+        {
+            var result = await ModService.RemoveEmulateFromUserAsync(Context.User.Id, userId);
+            await SendResponseMessage(result.Message, false);
+        }
+
         [SlashCommand("giverole", "Gives a certain user a role")]
         [RequirePrivateList]
         public async Task GiveRoleAsync(uint userId, PhoenixRole role)
