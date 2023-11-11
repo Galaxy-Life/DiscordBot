@@ -59,5 +59,30 @@ namespace AdvancedBot.Core.Commands.Modules
             var result = await ModService.GetLoginsTelemetry(Context.User.Id, userId);
             await SendResponseMessage(result.Message, false);
         }
+
+        [SlashCommand("accounts", "Shows information about linked accounts to this user")]
+        public async Task GetPossibleAltsAsync(uint userId)
+        {
+            var result = await ModService.GetPossibleAlts(Context.User.Id, userId);
+            var user = await GLService.GetUserProfileAsync(userId.ToString());
+
+            var fields = new List<EmbedField>();
+
+            for (int i = 0; i < result.Output.Count; i++)
+            {
+                var trackerKey = result.Output.ElementAt(i).Key;
+                var trackerResult = result.Output.ElementAt(i).Value;
+
+                fields.Add(new EmbedFieldBuilder() { Name = "Fingerprint Id", Value = trackerKey }.Build());
+                fields.AddRange(trackerResult.OrderByDescending(x => x.Value).Select(x => new EmbedFieldBuilder() { Name = $"Id: {x.Key}", Value = $"Times 'logged in': {x.Value}"}.Build()));
+            }
+
+            var templateEmbed = new EmbedBuilder()
+            {
+                Title = $"Possible Connections to {user.User.Name} ({userId})"
+            };
+
+            await SendPaginatedMessageAsync(fields, null, templateEmbed);
+        }
     }
 }

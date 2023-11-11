@@ -29,5 +29,6 @@ namespace AdvancedBot.Core.Entities.Enums
         ForceStopWar = 24,
         AddEmulate = 25,
         RemoveEmulate = 26,
+        GetAccounts = 27,
     }
 }

@@ -76,6 +76,7 @@ namespace AdvancedBot.Core.Services
                 case LogAction.EnableMaintenance:
                 case LogAction.AddEmulate:
                 case LogAction.RemoveEmulate:
+                case LogAction.GetAccounts:
                 default:
                     break;
                 case LogAction.Ban:

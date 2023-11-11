@@ -479,7 +479,7 @@ namespace AdvancedBot.Core.Services
         public async Task<ModResult<List<BattleLog>>> GetBattleLogTelemetry(ulong discordId, uint userId)
         {
             var result = await _gl.Api.GetBattlelogTelemetry(userId.ToString());
-            await _logs.LogGameActionAsync(LogAction.GetTelemetry, discordId, 0, "BattleLogs");
+            await _logs.LogGameActionAsync(LogAction.GetTelemetry, discordId, userId, "BattleLogs");
 
             return new ModResult<List<BattleLog>>(result, ModResultType.Success);
         }
@@ -487,7 +487,7 @@ namespace AdvancedBot.Core.Services
         public async Task<ModResult<List<Gift>>> GetGiftsTelemetry(ulong discordId, uint userId)
         {
             var result = await _gl.Api.GetGiftsTelemetry(userId.ToString());
-            await _logs.LogGameActionAsync(LogAction.GetTelemetry, discordId, 0, "Gifts");
+            await _logs.LogGameActionAsync(LogAction.GetTelemetry, discordId, userId, "Gifts");
 
             return new ModResult<List<Gift>>(result, ModResultType.Success);
         }
@@ -495,9 +495,17 @@ namespace AdvancedBot.Core.Services
         public async Task<ModResult<List<Login>>> GetLoginsTelemetry(ulong discordId, uint userId)
         {
             var result = await _gl.Api.GetLoginsTelemetry(userId.ToString());
-            await _logs.LogGameActionAsync(LogAction.GetTelemetry, discordId, 0, "Gifts");
+            await _logs.LogGameActionAsync(LogAction.GetTelemetry, discordId, userId, "Gifts");
 
             return new ModResult<List<Login>>(result, ModResultType.Success);
+        }
+
+        public async Task<ModResult<Dictionary<string, Dictionary<string, int>>>> GetPossibleAlts(ulong discordId, uint userId)
+        {
+            var result = await _gl.Api.GetFingerprint(userId.ToString());
+            await _logs.LogGameActionAsync(LogAction.GetAccounts, discordId, userId);
+
+            return new ModResult<Dictionary<string, Dictionary<string, int>>>(result, ModResultType.Success);
         }
 
         private void OnBanTimer(object sender, ElapsedEventArgs e)
