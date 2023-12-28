@@ -1,6 +1,7 @@
 using System.Threading.Tasks;
 using AdvancedBot.Core.Commands.Preconditions;
 using AdvancedBot.Core.Entities;
+using AdvancedBot.Core.Entities.Enums;
 using AdvancedBot.Core.Services;
 using Discord;
 using Discord.Interactions;
@@ -72,6 +73,34 @@ namespace AdvancedBot.Core.Commands.Modules
         {
             var result = await ModService.ForceEndWarStagingAsync(Context.User.Id, allianceA, allianceB);
             await SendResponseMessage(result.Message, false);
+        }
+
+        [SlashCommand("reset", "Force end a war between 2 alliances")]
+        public async Task ResetStagingUser(uint userId)
+        {
+            var user = await GLClient.Phoenix.GetPhoenixUserAsync(userId);
+
+            if (user == null)
+            {
+                await ModifyOriginalResponseAsync(x => x.Content = $"No user found for **{userId}**");
+                return;
+            }
+            
+            if (!await GLClient.Staging.TryResetUserAsync(userId.ToString()))
+            {
+                await ModifyOriginalResponseAsync(x => x.Content = $"Failed to reset {user.UserName} ({user.UserId})");
+                return;
+            }
+
+            await LogService.LogGameActionAsync(LogAction.Reset, Context.User.Id, userId, "Staging");
+
+            var embed = new EmbedBuilder()
+            {
+                Title = $"Reset {user.UserName} ({user.UserId}) on Staging",
+                Color = Color.Red
+            };
+
+            await ModifyOriginalResponseAsync(x => x.Embed = embed.Build() );
         }
     }
 }

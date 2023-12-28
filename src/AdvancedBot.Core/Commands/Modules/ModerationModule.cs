@@ -403,7 +403,7 @@ namespace AdvancedBot.Core.Commands.Modules
             await ModifyOriginalResponseAsync(x => x.Embed = embed.Build() );
         }
 
-        [SlashCommand("reset", "Force kicks a user offline")]
+        [SlashCommand("reset", "Resets a users progress")]
         [RequirePrivateList]
         public async Task ResetUserAsync(uint userId)
         {
@@ -421,7 +421,7 @@ namespace AdvancedBot.Core.Commands.Modules
                 return;
             }
 
-            await LogService.LogGameActionAsync(LogAction.Reset, Context.User.Id, userId);
+            await LogService.LogGameActionAsync(LogAction.Reset, Context.User.Id, userId, "Production");
 
             var embed = new EmbedBuilder()
             {

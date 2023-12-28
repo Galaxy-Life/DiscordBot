@@ -67,7 +67,6 @@ namespace AdvancedBot.Core.Services
                     }
 
                     break;
-                case LogAction.Reset:
                 case LogAction.KickOffline:
                 case LogAction.AddBeta:
                 case LogAction.RemoveBeta:
@@ -84,7 +83,7 @@ namespace AdvancedBot.Core.Services
                     embed.AddField("Ends", log.Until == null ? "Never" : log.Until.Value.ToShortDateString());
                     break;                
                 case LogAction.GiveRole:
-                    embed.AddField("Role", ((PhoenixRole)int.Parse(log.Reason)).Humanize(), true);
+                    embed.AddField("Role", log.Reason, true);
                     break;
                 case LogAction.UpdateEmail:
                 case LogAction.UpdateName:
@@ -116,6 +115,7 @@ namespace AdvancedBot.Core.Services
                     break;
                 case LogAction.RunKicker:
                 case LogAction.ResetHelps:
+                case LogAction.Reset:
                     embed.AddField("Server", log.Reason, true);
                     break;
                 case LogAction.ForceWar:
