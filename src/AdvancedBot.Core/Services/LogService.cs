@@ -71,6 +71,7 @@ namespace AdvancedBot.Core.Services
                 case LogAction.AddBeta:
                 case LogAction.RemoveBeta:
                 case LogAction.GetChipsBought:
+                case LogAction.GetChipsSpent:
                 case LogAction.GetFull:
                 case LogAction.EnableMaintenance:
                 case LogAction.AddEmulate:
@@ -124,6 +125,20 @@ namespace AdvancedBot.Core.Services
                     embed.AddField("Server", split[0], true);
                     embed.AddField("Alliance A", split[1]);
                     embed.AddField("Alliance B", split[2]);
+                    break;
+                case LogAction.Compensate:
+                    var splitters = log.Reason.Split(':');
+                    embed.AddField("Type", splitters[0]);
+
+                    if (splitters.Length > 2)
+                    {
+                        embed.AddField("Sku", splitters[1]);
+                        embed.AddField("Amount", splitters[2]);
+                    }
+                    else 
+                    {
+                        embed.AddField("Amount", splitters[1]);
+                    }
                     break;
             }
 

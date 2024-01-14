@@ -30,5 +30,7 @@ namespace AdvancedBot.Core.Entities.Enums
         AddEmulate = 25,
         RemoveEmulate = 26,
         GetAccounts = 27,
+        GetChipsSpent = 28,
+        Compensate = 29,
     }
 }

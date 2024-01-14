@@ -75,7 +75,7 @@ namespace AdvancedBot.Core.Commands.Modules
             await SendResponseMessage(result.Message, false);
         }
 
-        [SlashCommand("reset", "Force end a war between 2 alliances")]
+        [SlashCommand("reset", "Resets a user on staging")]
         public async Task ResetStagingUser(uint userId)
         {
             var user = await GLClient.Phoenix.GetPhoenixUserAsync(userId);

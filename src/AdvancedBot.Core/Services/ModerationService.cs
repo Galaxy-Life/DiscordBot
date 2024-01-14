@@ -271,6 +271,29 @@ namespace AdvancedBot.Core.Services
             return new ModResult(ModResultType.Success, message, null, user) { IntValue = chipsBought };
         }
 
+        public async Task<ModResult> GetChipsSpentAsync(ulong discordId, uint userId)
+        {
+            var user = await _gl.Api.GetUserById(userId.ToString());
+
+            if (user == null)
+            {
+                return new ModResult(ModResultType.NotFound, new ResponseMessage($"No user found for **{userId}**"));
+            }
+
+            var chipsSpent = await _gl.Api.GetChipsSpentAsync(userId.ToString());
+            await _logs.LogGameActionAsync(LogAction.GetChipsSpent, discordId, userId);
+
+            var embed = new EmbedBuilder()
+            {
+                Title = $"{user.Name} ({user.Id})",
+                Description = $"**{chipsSpent}** chips spent",
+                Color = Color.Blue
+            };
+
+            var message = new ResponseMessage(embeds: new Embed[] { embed.Build() });
+            return new ModResult(ModResultType.Success, message, null, user) { IntValue = chipsSpent };
+        }
+
         public async Task<ModResult> AddChipsAsync(ulong discordId, uint userId, int amount)
         {
             var user = await _gl.Api.GetUserById(userId.ToString());

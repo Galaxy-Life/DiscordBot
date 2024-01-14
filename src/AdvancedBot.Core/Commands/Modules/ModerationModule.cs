@@ -350,6 +350,14 @@ namespace AdvancedBot.Core.Commands.Modules
             await SendResponseMessage(result.Message, false);
         }
 
+        [SlashCommand("chipsspent", "Gets chips bought from a user")]
+        [RequireSemiprivateList]
+        public async Task GetChipsSpentAsync(uint userId)
+        {
+            var result = await ModService.GetChipsSpentAsync(Context.User.Id, userId);
+            await SendResponseMessage(result.Message, false);
+        }
+
         [SlashCommand("addchips", "Adds chips to a user")]
         [RequireSemiprivateList]
         public async Task AddChipsToUserAsync(uint userId, int amount)
@@ -446,6 +454,28 @@ namespace AdvancedBot.Core.Commands.Modules
         {
             var result = await ModService.EnableMaintenance(Context.User.Id, minutes);
             await SendResponseMessage(result.Message, false);
+        }
+
+        [SlashCommand("compensatechips", "Compensate chips to all users")]
+        [RequirePrivateList]
+        public async Task CompensateChips(uint amount)
+        {
+            GLClient.Production.CompensateChips(amount);
+
+            await LogService.LogGameActionAsync(LogAction.Compensate, Context.User.Id, 0, $"Chips:{amount}");
+
+            await ModifyOriginalResponseAsync(x => x.Content = $"Send out compensation of {amount} chips to everyone!");
+        }
+
+        [SlashCommand("compensateitems", "Compensate items to all users")]
+        [RequirePrivateList]
+        public async Task CompensateItems(string sku, uint amount)
+        {
+            GLClient.Production.CompensateItems(sku, amount);
+
+            await LogService.LogGameActionAsync(LogAction.Compensate, Context.User.Id, 0, $"Items:{sku}:{amount}");
+
+            await ModifyOriginalResponseAsync(x => x.Content = $"Send out compensation of {amount}x item {sku} to everyone!");
         }
 
         [SlashCommand("lb", "Shows all the possible leaderboards")]
