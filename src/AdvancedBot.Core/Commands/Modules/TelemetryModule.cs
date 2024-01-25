@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AdvancedBot.Core.Commands.Preconditions;
+using AdvancedBot.Core.Entities;
 using AdvancedBot.Core.Services;
 using Discord;
 using Discord.Interactions;
@@ -65,6 +66,12 @@ namespace AdvancedBot.Core.Commands.Modules
         {
             var result = await ModService.GetPossibleAlts(Context.User.Id, userId);
             var user = await GLService.GetUserProfileAsync(userId.ToString());
+
+            if (user.User == null)
+            {
+                await SendResponseMessage(new ResponseMessage() { Content = "No Galaxy Life Data for this user." }, false);
+                return;
+            }
 
             var fields = new List<EmbedField>();
 
