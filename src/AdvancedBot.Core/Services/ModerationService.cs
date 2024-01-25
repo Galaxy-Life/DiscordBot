@@ -523,12 +523,12 @@ namespace AdvancedBot.Core.Services
             return new ModResult<List<Login>>(result, ModResultType.Success);
         }
 
-        public async Task<ModResult<Dictionary<string, Dictionary<string, int>>>> GetPossibleAlts(ulong discordId, uint userId)
+        public async Task<ModResult<Dictionary<string, Dictionary<string, Fingerprint>>>> GetPossibleAlts(ulong discordId, uint userId)
         {
             var result = await _gl.Api.GetFingerprint(userId.ToString());
             await _logs.LogGameActionAsync(LogAction.GetAccounts, discordId, userId);
 
-            return new ModResult<Dictionary<string, Dictionary<string, int>>>(result, ModResultType.Success);
+            return new ModResult<Dictionary<string, Dictionary<string, Fingerprint>>>(result, ModResultType.Success);
         }
 
         private void OnBanTimer(object sender, ElapsedEventArgs e)
