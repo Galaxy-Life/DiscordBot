@@ -81,7 +81,7 @@ namespace AdvancedBot.Core.Commands.Modules
                 var trackerResult = result.Output.ElementAt(i).Value;
 
                 fields.Add(new EmbedFieldBuilder() { Name = "Fingerprint Id", Value = trackerKey }.Build());
-                fields.AddRange(trackerResult.OrderByDescending(x => x.Value).Select(x => new EmbedFieldBuilder() { Name = $"Id: {x.Key}", Value = $"Times 'logged in': {x.Value.AmountOfLogins}\nLast Login: {x.Value.LastLogin}"}.Build()));
+                fields.AddRange(trackerResult.OrderByDescending(x => x.Value.AmountOfLogins).Select(x => new EmbedFieldBuilder() { Name = $"Id: {x.Key}", Value = $"Times 'logged in': {x.Value.AmountOfLogins}\nLast Login: {x.Value.LastLogin}"}.Build()));
             }
 
             var templateEmbed = new EmbedBuilder()
