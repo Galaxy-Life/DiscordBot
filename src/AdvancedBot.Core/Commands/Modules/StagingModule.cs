@@ -102,5 +102,49 @@ namespace AdvancedBot.Core.Commands.Modules
 
             await ModifyOriginalResponseAsync(x => x.Embed = embed.Build() );
         }
+
+        [SlashCommand("addchips", "Adds chips to a user")]
+        [RequireSemiprivateList]
+        public async Task AddChipsToUserAsync(uint userId, int amount)
+        {
+            var result = await ModService.AddChipsAsync(Context.User.Id, userId, amount, true);
+            await SendResponseMessage(result.Message, false);
+        }
+
+        [SlashCommand("additem", "Adds an item a user")]
+        [RequireSemiprivateList]
+        public async Task AddItemsToUserAsync(uint userId, string sku, int amount)
+        {
+            var result = await ModService.AddItemsAsync(Context.User.Id, userId, sku, amount, true);
+            await SendResponseMessage(result.Message, false);
+        }
+
+        [SlashCommand("addxp", "Adds xp to a user")]
+        [RequireSemiprivateList]
+        public async Task AddXpToUserAsync(uint userId, int amount)
+        {
+            var result = await ModService.AddXpAsync(Context.User.Id, userId, amount, true);
+            await SendResponseMessage(result.Message, false);
+        }
+
+        [SlashCommand("restart", "Restarts staging server")]
+        [RequireSemiprivateList]
+        public async Task RestartStagingAsync()
+        {
+            var result = await GLClient.Staging.RestartServer();
+            
+            if (result)
+            {
+                var embed = new EmbedBuilder()
+                {
+                    Title = $"Restarted Staging",
+                    Color = Color.Blue
+                };
+
+                await ModifyOriginalResponseAsync(x => x.Embed = embed.Build() );
+            }
+
+            await ModifyOriginalResponseAsync(x => x.Content = "Failed lol");
+        }
     }
 }

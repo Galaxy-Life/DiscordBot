@@ -294,7 +294,7 @@ namespace AdvancedBot.Core.Services
             return new ModResult(ModResultType.Success, message, null, user) { IntValue = chipsSpent };
         }
 
-        public async Task<ModResult> AddChipsAsync(ulong discordId, uint userId, int amount)
+        public async Task<ModResult> AddChipsAsync(ulong discordId, uint userId, int amount, bool staging = false)
         {
             var user = await _gl.Api.GetUserById(userId.ToString());
 
@@ -303,7 +303,9 @@ namespace AdvancedBot.Core.Services
                 return new ModResult(ModResultType.NotFound, new ResponseMessage($"No user found for **{userId}**"));
             }
             
-            if (!await _gl.Production.TryAddChipsToUserAsync(userId.ToString(), amount))
+            var success = staging ? await _gl.Staging.TryAddChipsToUserAsync(userId.ToString(), amount) : await _gl.Production.TryAddChipsToUserAsync(userId.ToString(), amount);
+
+            if (!success)
             {
                 return new ModResult(ModResultType.BackendError, new ResponseMessage($"Failed to add chips to {user.Name} ({user.Id})"), null, user);
             }
@@ -320,7 +322,7 @@ namespace AdvancedBot.Core.Services
             return new ModResult(ModResultType.Success, message, null, user);
         }
 
-        public async Task<ModResult> AddItemsAsync(ulong discordId, uint userId, string sku, int amount)
+        public async Task<ModResult> AddItemsAsync(ulong discordId, uint userId, string sku, int amount, bool staging = false)
         {
             var user = await _gl.Api.GetUserById(userId.ToString());
 
@@ -328,8 +330,10 @@ namespace AdvancedBot.Core.Services
             {
                 return new ModResult(ModResultType.NotFound, new ResponseMessage($"No user found for **{userId}**"));
             }
+
+            var success = staging ? await _gl.Staging.TryAddItemToUserAsync(userId.ToString(), sku, amount) : await _gl.Production.TryAddItemToUserAsync(userId.ToString(), sku, amount);
             
-            if (!await _gl.Production.TryAddItemToUserAsync(userId.ToString(), sku, amount))
+            if (!success)
             {
                 return new ModResult(ModResultType.BackendError, new ResponseMessage($"Failed to add item with sku {sku} to {user.Name} ({user.Id})"), null, user);
             }
@@ -346,7 +350,7 @@ namespace AdvancedBot.Core.Services
             return new ModResult(ModResultType.Success, message, null, user);
         }
 
-        public async Task<ModResult> AddXpAsync(ulong discordId, uint userId, int amount)
+        public async Task<ModResult> AddXpAsync(ulong discordId, uint userId, int amount, bool staging = false)
         {
             var user = await _gl.Api.GetUserById(userId.ToString());
 
@@ -355,7 +359,9 @@ namespace AdvancedBot.Core.Services
                 return new ModResult(ModResultType.NotFound, new ResponseMessage($"No user found for **{userId}**"));
             }
             
-            if (!await _gl.Production.TryAddXpToUserAsync(userId.ToString(), amount))
+            var success = staging ? await _gl.Staging.TryAddXpToUserAsync(userId.ToString(), amount) : await _gl.Production.TryAddXpToUserAsync(userId.ToString(), amount);
+            
+            if (!success)
             {
                 return new ModResult(ModResultType.BackendError, new ResponseMessage($"Failed to add xp to {user.Name} ({user.Id})"), null, user);
             }

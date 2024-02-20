@@ -374,7 +374,7 @@ namespace AdvancedBot.Core.Commands.Modules
             await SendResponseMessage(result.Message, false);
         }
 
-        [SlashCommand("addxp", "Adds an item a user")]
+        [SlashCommand("addxp", "Adds xp to a user")]
         [RequireSemiprivateList]
         public async Task AddXpToUserAsync(uint userId, int amount)
         {
