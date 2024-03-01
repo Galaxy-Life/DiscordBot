@@ -104,7 +104,6 @@ namespace AdvancedBot.Core.Commands.Modules
         }
 
         [SlashCommand("addchips", "Adds chips to a user")]
-        [RequireSemiprivateList]
         public async Task AddChipsToUserAsync(uint userId, int amount)
         {
             var result = await ModService.AddChipsAsync(Context.User.Id, userId, amount, true);
@@ -112,7 +111,6 @@ namespace AdvancedBot.Core.Commands.Modules
         }
 
         [SlashCommand("additem", "Adds an item a user")]
-        [RequireSemiprivateList]
         public async Task AddItemsToUserAsync(uint userId, string sku, int amount)
         {
             var result = await ModService.AddItemsAsync(Context.User.Id, userId, sku, amount, true);
@@ -120,7 +118,6 @@ namespace AdvancedBot.Core.Commands.Modules
         }
 
         [SlashCommand("addxp", "Adds xp to a user")]
-        [RequireSemiprivateList]
         public async Task AddXpToUserAsync(uint userId, int amount)
         {
             var result = await ModService.AddXpAsync(Context.User.Id, userId, amount, true);
@@ -128,23 +125,22 @@ namespace AdvancedBot.Core.Commands.Modules
         }
 
         [SlashCommand("restart", "Restarts staging server")]
-        [RequireSemiprivateList]
         public async Task RestartStagingAsync()
         {
             var result = await GLClient.Staging.RestartServer();
             
-            if (result)
+            if (!result)
             {
-                var embed = new EmbedBuilder()
-                {
-                    Title = $"Restarted Staging",
-                    Color = Color.Blue
-                };
-
-                await ModifyOriginalResponseAsync(x => x.Embed = embed.Build() );
+                await ModifyOriginalResponseAsync(x => x.Content = "Failed lol");
             }
 
-            await ModifyOriginalResponseAsync(x => x.Content = "Failed lol");
+            var embed = new EmbedBuilder()
+            {
+                Title = $"Restarted Staging",
+                Color = Color.Blue
+            };
+
+            await ModifyOriginalResponseAsync(x => x.Embed = embed.Build() );
         }
     }
 }
