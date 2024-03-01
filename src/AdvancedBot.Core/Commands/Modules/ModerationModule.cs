@@ -13,13 +13,13 @@ using Humanizer;
 namespace AdvancedBot.Core.Commands.Modules
 {
     [DontAutoRegister]
+    [RequirePrivateList]
     [Group("game", "All commands handling in-game actions")]
     public class ModerationModule : TopModule
     {
         public ModerationService ModService { get; set; }
 
         [Group("alliance", "All commands handling in-game alliance related actions")]
-        [RequirePrivateList]
         public class AllianceModerationModule : TopModule
         {
             [SlashCommand("warlogs", "Get warlogs of an alliance")]
@@ -173,7 +173,6 @@ namespace AdvancedBot.Core.Commands.Modules
         }
 
         [SlashCommand("getfull", "Get full information about a user")]
-        [RequirePrivateList]
         public async Task GetFullUserAsync(string input)
         {
             if (await GetPhoenixUserByInput(input, true) is not FullPhoenixUser user)
@@ -215,7 +214,6 @@ namespace AdvancedBot.Core.Commands.Modules
         }
 
         [SlashCommand("ban", "Tries to ban a user")]
-        [RequirePrivateList]
         public async Task TryBanUserAsync(uint userId, string reason, uint days = 0)
         {
             var result = await ModService.BanUserAsync(Context.User.Id, userId, reason, days);
@@ -223,7 +221,6 @@ namespace AdvancedBot.Core.Commands.Modules
         }
 
         [SlashCommand("unban", "Tries to unban a user")]
-        [RequirePrivateList]
         public async Task TryUnbanUserAsync(uint userId)
         {
             var result = await ModService.UnbanUserAsync(Context.User.Id, userId);
@@ -231,7 +228,6 @@ namespace AdvancedBot.Core.Commands.Modules
         }
 
         [SlashCommand("updateemail", "Update a user's email")]
-        [RequirePrivateList]
         public async Task TryUpdateEmailAsync(uint userId, string email)
         {
             var user = await GLClient.Phoenix.GetFullPhoenixUserAsync(userId);
@@ -267,7 +263,6 @@ namespace AdvancedBot.Core.Commands.Modules
         }
 
         [SlashCommand("updatename", "Update a user's username")]
-        [RequirePrivateList]
         public async Task TryUpdateNameAsync(uint userId, string username)
         {
             var user = await GLClient.Phoenix.GetFullPhoenixUserAsync(userId);
@@ -303,7 +298,6 @@ namespace AdvancedBot.Core.Commands.Modules
         }
 
         [SlashCommand("addbeta", "Adds GL Beta to a user")]
-        [RequirePrivateList]
         public async Task AddBetaToUserAsync(uint userId)
         {
             var result = await ModService.AddBetaToUserAsync(Context.User.Id, userId);
@@ -311,7 +305,6 @@ namespace AdvancedBot.Core.Commands.Modules
         }
 
         [SlashCommand("removebeta", "Removes GL Beta to a user")]
-        [RequirePrivateList]
         public async Task RemoveBetaFromUserAsync(uint userId)
         {
             var result = await ModService.RemoveBetaFromUserAsync(Context.User.Id, userId);
@@ -319,7 +312,6 @@ namespace AdvancedBot.Core.Commands.Modules
         }
 
         [SlashCommand("addemulate", "Adds Emulate Access to a user")]
-        [RequirePrivateList]
         public async Task AddEmulateToUserAsync(uint userId)
         {
             var result = await ModService.AddEmulateToUserAsync(Context.User.Id, userId);
@@ -327,7 +319,6 @@ namespace AdvancedBot.Core.Commands.Modules
         }
 
         [SlashCommand("removeemulate", "Removes Emulate Access to a user")]
-        [RequirePrivateList]
         public async Task RemoveEmulateFromUserAsync(uint userId)
         {
             var result = await ModService.RemoveEmulateFromUserAsync(Context.User.Id, userId);
@@ -335,7 +326,6 @@ namespace AdvancedBot.Core.Commands.Modules
         }
 
         [SlashCommand("giverole", "Gives a certain user a role")]
-        [RequirePrivateList]
         public async Task GiveRoleAsync(uint userId, PhoenixRole role)
         {
             var result = await ModService.GiveRoleAsync(Context.User.Id, userId, role);
@@ -343,7 +333,6 @@ namespace AdvancedBot.Core.Commands.Modules
         }
 
         [SlashCommand("chipsbought", "Gets chips bought from a user")]
-        [RequireSemiprivateList]
         public async Task GetChipsBoughtAsync(uint userId)
         {
             var result = await ModService.GetChipsBoughtAsync(Context.User.Id, userId);
@@ -351,7 +340,6 @@ namespace AdvancedBot.Core.Commands.Modules
         }
 
         [SlashCommand("chipsspent", "Gets chips bought from a user")]
-        [RequireSemiprivateList]
         public async Task GetChipsSpentAsync(uint userId)
         {
             var result = await ModService.GetChipsSpentAsync(Context.User.Id, userId);
@@ -359,7 +347,6 @@ namespace AdvancedBot.Core.Commands.Modules
         }
 
         [SlashCommand("addchips", "Adds chips to a user")]
-        [RequireSemiprivateList]
         public async Task AddChipsToUserAsync(uint userId, int amount)
         {
             var result = await ModService.AddChipsAsync(Context.User.Id, userId, amount);
@@ -367,7 +354,6 @@ namespace AdvancedBot.Core.Commands.Modules
         }
 
         [SlashCommand("additem", "Adds an item a user")]
-        [RequireSemiprivateList]
         public async Task AddItemsToUserAsync(uint userId, string sku, int amount)
         {
             var result = await ModService.AddItemsAsync(Context.User.Id, userId, sku, amount);
@@ -375,7 +361,6 @@ namespace AdvancedBot.Core.Commands.Modules
         }
 
         [SlashCommand("addxp", "Adds xp to a user")]
-        [RequireSemiprivateList]
         public async Task AddXpToUserAsync(uint userId, int amount)
         {
             var result = await ModService.AddXpAsync(Context.User.Id, userId, amount);
@@ -383,7 +368,6 @@ namespace AdvancedBot.Core.Commands.Modules
         }
 
         [SlashCommand("kick", "Force kicks a user offline")]
-        [RequirePrivateList]
         public async Task KickUserOfflineAsync(uint userId)
         {
             var user = await GLClient.Phoenix.GetPhoenixUserAsync(userId);
@@ -412,7 +396,6 @@ namespace AdvancedBot.Core.Commands.Modules
         }
 
         [SlashCommand("reset", "Resets a users progress")]
-        [RequirePrivateList]
         public async Task ResetUserAsync(uint userId)
         {
             var user = await GLClient.Phoenix.GetPhoenixUserAsync(userId);
@@ -441,7 +424,6 @@ namespace AdvancedBot.Core.Commands.Modules
         }
 
         [SlashCommand("reloadrules", "Reloads the server rules")]
-        [RequirePrivateList]
         public async Task ReloadRulesAsync()
         {
             var result = await ModService.ReloadRules(Context.User.Id);
@@ -449,7 +431,6 @@ namespace AdvancedBot.Core.Commands.Modules
         }
 
         [SlashCommand("maintenance", "Enables maintenance on the server")]
-        [RequirePrivateList]
         public async Task EnableMaintenanceAsync(uint minutes = 60)
         {
             var result = await ModService.EnableMaintenance(Context.User.Id, minutes);
@@ -457,7 +438,6 @@ namespace AdvancedBot.Core.Commands.Modules
         }
 
         [SlashCommand("compensatechips", "Compensate chips to all users")]
-        [RequirePrivateList]
         public async Task CompensateChips(uint amount)
         {
             GLClient.Production.CompensateChips(amount);
@@ -468,7 +448,6 @@ namespace AdvancedBot.Core.Commands.Modules
         }
 
         [SlashCommand("compensateitems", "Compensate items to all users")]
-        [RequirePrivateList]
         public async Task CompensateItems(string sku, uint amount)
         {
             GLClient.Production.CompensateItems(sku, amount);
@@ -479,7 +458,6 @@ namespace AdvancedBot.Core.Commands.Modules
         }
 
         [SlashCommand("lb", "Shows all the possible leaderboards")]
-        [RequirePrivateList]
         public async Task GetLeaderboardAsync([Choice("Xp", "xp"), Choice("Xp From Attack", "attackXp"), Choice("Rivals Won", "rivalsWon"), Choice("Chips", "chips"), Choice("Chips Spent", "chipsSpent"), Choice("Friends Helped", "friendsHelped"), Choice("Gifts Received", "giftsReceived"), Choice("Gifts Sent", "giftsSent"), Choice("Stars Visited", "starsVisited"), Choice("Obstacles Recycled", "obstaclesRecycled"), Choice("Utility Used", "utilityUsed"), Choice("Item", "item"), Choice("Warpoints", "warpoints"), Choice("Alliance Warpoints", "alliancewarpoints"), Choice("Advanced Chips", "advchips")]string type, string sku = "7000")
         {
             List<string> displayTexts = new List<string>() { "Failed to get information" };
