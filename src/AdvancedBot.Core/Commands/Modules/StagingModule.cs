@@ -9,7 +9,7 @@ using Discord.Interactions;
 namespace AdvancedBot.Core.Commands.Modules
 {
     [Group("staging", "Handles all commands with the staging server")]
-    [RequirePrivateList]
+    [RequireStagingList]
     [DontAutoRegister]
     public class StagingModule : TopModule
     {

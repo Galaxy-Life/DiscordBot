@@ -6,9 +6,9 @@ using Discord.Interactions;
 
 namespace AdvancedBot.Core.Commands.Preconditions
 {
-    public class RequireSemiprivateList : PreconditionAttribute
+    public class RequireStagingList : PreconditionAttribute
     {
-        private List<ulong> _userIds = new List<ulong>() { 202095042372829184, 942849642931032164, 209801906237865984, 362271714702262273, 180676108088246272, 275698828974489612 };
+        private List<ulong> _userIds = new List<ulong>() { 202095042372829184, 942849642931032164, 209801906237865984, 180676108088246272, 356060824223350784, 275698828974489612, 240402743443980288 };
 
         public override async Task<PreconditionResult> CheckRequirementsAsync(IInteractionContext context, ICommandInfo commandInfo, IServiceProvider services)
         {
