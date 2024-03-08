@@ -52,7 +52,7 @@ namespace AdvancedBot.Core.Services
 
         public void AddNewTimer(ulong messageId)
         {
-            var timer = new Timer(30 * 1000);
+            var timer = new Timer(30 * 60 * 1000);
             timer.Start();
 
             timer.Elapsed += DisposeActivePaginatorMessage;
