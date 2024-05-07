@@ -120,8 +120,8 @@ namespace AdvancedBot.Core.Commands
         {
             var components = new ComponentBuilder();
 
-            components.WithButton("Add Beta", $"addbeta:{userId}", ButtonStyle.Success, Emote.Parse("<:Pepe_Based:943444391677263912>"), row: 0);
-            components.WithButton("Remove Beta", $"removebeta:{userId}", ButtonStyle.Danger, Emote.Parse("<:Pepe_Sadge:945682815327035432>"), row: 0);
+            components.WithButton("Add Beta", $"addbeta:{userId}", ButtonStyle.Success, Emote.Parse("<:Starling_Nukeling:1079151310538022963>"), row: 0);
+            components.WithButton("Remove Beta", $"removebeta:{userId}", ButtonStyle.Danger, Emote.Parse("<:magmalot:1229102605108777002>"), row: 0);
             components.WithButton("Give Role", $"giverole:{userId}", ButtonStyle.Primary, Emote.Parse("<:Starling_Swag:943310403658715196>"), disabled: true, row: 0);
             components.WithButton("Chips bought", $"chipsbought:{userId}", ButtonStyle.Primary, Emote.Parse("<:Resource_PileOfChips:943313554742865951>"), row: 0);
 
