@@ -275,7 +275,7 @@ namespace AdvancedBot.Core.Commands.Modules
 
             if (user.UserName == username)
             {
-                await ModifyOriginalResponseAsync(x => x.Content = $"{user.UserId} already has `{user.UserName}` as their email!");
+                await ModifyOriginalResponseAsync(x => x.Content = $"{user.UserId} already has `{user.UserName}` as their name!");
                 return;
             }
 
