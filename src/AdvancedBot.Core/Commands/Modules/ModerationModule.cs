@@ -285,12 +285,14 @@ namespace AdvancedBot.Core.Commands.Modules
                 return;
             }
 
+            var backendSuccess = await GLClient.Api.UpdateNameFromPhoenixAsync(userId.ToString());
+
             await LogService.LogGameActionAsync(LogAction.UpdateName, Context.User.Id, userId, $"{user.UserName}:{username}");
 
             var embed = new EmbedBuilder()
             {
                 Title = $"{user.UserId}'s username was updated!",
-                Description = $"Old name: **{user.UserName}**\nNew name: **{username}**",
+                Description = $"Old name: **{user.UserName}**\nNew name: **{username}**\n Updated in backend: **{backendSuccess}**",
                 Color = Color.Blue
             };
 
