@@ -1,27 +1,28 @@
 # Galaxy Life Discord Bot
-This is the publicly available Discord Bot for Galaxy Life.  
-Use it to track or find info about players, alliances or server status!
 
-You can add the package through nuget, [found here](https://www.nuget.org/packages/GL.Net/)
+This is the official Discord bot for Galaxy Life, based on [svr333](https://github.com/svr333) advanced discord bot template.<br/>
+Check out players and alliances profiles, servers status, leaderboards and more!
 
-----------
+We also use it internally for moderation purposes.<br/>
+It uses our official .NET API Wrapper, available on [NuGet](https://www.nuget.org/packages/gl.net/), feel free to check it out.
 
-# Advanced Bot Template
-A template Discord Bot with reusable code for all of my own bots.  
-Feel free to use for your Discord bot projects too!
+## Prerequisites
 
-## Features
-- PaginatorService (send paginated message very easily)
-- AccountService (Handle guilds/dms easily)
-- InfoModule with Help & Serverstats command
-- CustomCommandService and TopModule for easy modification
+- [.NET 7.0](https://dotnet.microsoft.com/en-us/download/dotnet/7.0)
+- [Visual Studio](https://visualstudio.microsoft.com/) (or [Visual Studio Code](https://code.visualstudio.com)).
 
-## Building & Running
-**You need to have an environment variable set up called 'Token' with your Discord Bot's Token as value!**
+## Running Locally
 
-### Visual Studio
-1) Set `AdvancedBot.Console` as your Startup Project
-2) Press the run button at the top
+You must have created a discord application on discord [developer portal](https://discord.com/developers/applications).<br/>
+Then, set up an environement variable named `Token`, and assign it your discord bot's token.<br />
 
-### Visual Studio Code
-The `.vscode/` files are included so all you have to do is open the topmost folder in vscode and press `f5`.
+#### Visual Studio
+
+First set `AdvancedBot.Console` as your startup project.
+Right-click the solution and select `Set as your Startup Project`, or use `CTRL + ALT + P` to open the project properties and then set your startup project here.
+- Press `F5` to run the application in debug mode.
+
+#### Visual Studio Code
+
+The `.vscode/` folder contains all necessary configuration files for you to run the application easily.
+- Press `F5` to start the application in debug mode.
