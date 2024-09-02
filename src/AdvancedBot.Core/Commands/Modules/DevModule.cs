@@ -41,19 +41,18 @@ namespace AdvancedBot.Core.Commands.Modules
 
             for (int i = 0; i < commands.Length; i++)
             {
-                fields.Add(new EmbedFieldBuilder()
-                            .WithName(commands[i].Name)
-                            .WithValue($"Executed {commands[i].TimesRun} times ({commands[i].TimesFailed} fails)")
-                            .Build());
+                fields.Add(
+                  new EmbedFieldBuilder()
+                      .WithName(commands[i].Name)
+                      .WithValue($"Executed {commands[i].TimesRun} times ({commands[i].TimesFailed} fails)")
+                      .Build());
             }
 
             var title = Context.Interaction.IsDMInteraction ? $"Stats for {Context.User.Username}'s DMS" : $"Stats for {Context.Guild.Name}";
 
             var templateEmbed = new EmbedBuilder()
-            {
-                Title = title
-            };
-
+                .WithTitle(title);
+            
             await SendPaginatedMessageAsync(fields, null, templateEmbed);
         }
 
@@ -61,16 +60,28 @@ namespace AdvancedBot.Core.Commands.Modules
         [EnabledInDm(false)]
         public async Task AddModerationModuleToGuildAsync(string guildId, string modulename)
         {
-            var module = _interactions.Modules.First(x => x.Name.ToLower() == modulename.ToLower());
+            var module = _interactions.Modules.First(module => module.Name.ToLower() == modulename.ToLower());
             
             if (module == null)
             {
-                await ModifyOriginalResponseAsync(x => x.Content = $"Could not find {modulename}");
+                await ModifyOriginalResponseAsync(msg => msg.Content = $"Could not find any module named **{modulename}**.");
                 return;
             }
 
             await _interactions.AddModulesToGuildAsync(ulong.Parse(guildId), false, module);
-            await ModifyOriginalResponseAsync(x => x.Content = $"Added {module.Name} module to guild with {module.SlashCommands.Count} commands");
+
+            var embed = new EmbedBuilder()
+                .WithTitle("Module successfully added")
+                .WithDescription($"Added **{module.Name}** to the server.")
+                .AddField("Slash Commands", $"{module.SlashCommands.Count}", true)
+                .WithColor(Color.Green)
+                .WithFooter(footer => footer
+                    .WithText($"Module added by {Context.User.Username}#{Context.User.Discriminator}")
+                    .WithIconUrl(Context.User.GetAvatarUrl()))
+                .WithCurrentTimestamp()
+                .Build();
+
+            await ModifyOriginalResponseAsync(msg => msg.Embeds = new Embed[] { embed });
         }
 
         private static List<CommandStats> CalculateCommandStatsOnAccounts(Account[] accounts)
