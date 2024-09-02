@@ -32,10 +32,7 @@ namespace AdvancedBot.Core.Commands
 
         public override async Task BeforeExecuteAsync(ICommandInfo command)
         {
-            if (command.SupportsWildCards || command.Name.Contains(":") || command.Name.Contains(","))
-            {
-                return;
-            }
+            if (command.SupportsWildCards || command.Name.Contains(':') || command.Name.Contains(',')) return;
 
             await DeferAsync();
         }
