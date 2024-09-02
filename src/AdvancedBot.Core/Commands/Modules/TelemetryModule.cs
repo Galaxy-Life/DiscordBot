@@ -47,9 +47,7 @@ namespace AdvancedBot.Core.Commands.Modules
             var fields = users.OrderByDescending(x => x.Value).Select(x => new EmbedFieldBuilder() { Name = $"Id: {x.Key}", Value = $"Items sent: {x.Value}"}.Build());
 
             var templateEmbed = new EmbedBuilder()
-            {
-                Title = $"Gifts Telemetry for {user.User.Name} ({userId})"
-            };
+                .WithTitle($"Gifts Telemetry for {user.User.Name} ({userId})");
 
             await SendPaginatedMessageAsync(fields, null, templateEmbed);
         }
@@ -83,13 +81,17 @@ namespace AdvancedBot.Core.Commands.Modules
                 var a = trackerResult.First().Value;
 
                 fields.Add(new EmbedFieldBuilder() { Name = "Fingerprint Id", Value = trackerKey }.Build());
-                fields.AddRange(trackerResult.OrderByDescending(x => x.Value.AmountOfLogins).Select(x => new EmbedFieldBuilder() { Name = $"Id: {x.Key}", Value = $"Times 'logged in': {x.Value.AmountOfLogins}\nLast Login: {x.Value.LastLogin}"}.Build()));
+                fields.AddRange(
+                    trackerResult
+                        .OrderByDescending(x => x.Value.AmountOfLogins)
+                        .Select(result => new EmbedFieldBuilder()
+                            .WithName($"Id: {result.Key}")
+                            .WithValue($"Times 'logged in': {result.Value.AmountOfLogins}\nLast Login: {result.Value.LastLogin}")
+                            .Build()));
             }
 
             var templateEmbed = new EmbedBuilder()
-            {
-                Title = $"Possible Connections to {user.User.Name} ({userId})"
-            };
+                  .WithTitle($"Possible Connections to {user.User.Name} ({userId})");
 
             await SendPaginatedMessageAsync(fields, null, templateEmbed);
         }
