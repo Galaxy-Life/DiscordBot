@@ -15,7 +15,7 @@ namespace AdvancedBot.Core.Commands.Modules
             _commands = commands;
         }
 
-        [SlashCommand("help", "Gives basic info about the bot")]
+        [SlashCommand("help", "View basic help and information about the Galaxy Life bot.")]
         public async Task DisplayBotInfoAsync()
         {
             await _commands.SendBotInfoAsync(Context);
