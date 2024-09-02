@@ -26,7 +26,7 @@ namespace AdvancedBot.Core.Services
 
             if (phoenixUser == null)
             {
-                return new ModResult(ModResultType.NotFound, message: new ResponseMessage($"<:shrugR:945740284308893696> No user found for **{input}**"));
+                return new ModResult(ModResultType.NotFound, message: new ResponseMessage($"<:shrugR:945740284308893696> Could not find any user for **{input}**."));
             }
 
             var user = await GetUserByInput(input);
@@ -105,34 +105,34 @@ namespace AdvancedBot.Core.Services
 
             if (user == null)
             {
-                return new ModResult(ModResultType.NotFound, message: new ResponseMessage($"<:shrugR:945740284308893696> No user found for **{input}**"));
+                return new ModResult(ModResultType.NotFound, message: new ResponseMessage($"<:shrugR:945740284308893696> Could not find any user for **{input}**."));
             }
 
             var stats = await _client.Api.GetUserStats(user.Id);
-            var displayAlliance = string.IsNullOrEmpty(user.AllianceId) ? "User is not in any alliance." : $"User is part of **{user.AllianceId}**.";
+            var displayAlliance = string.IsNullOrEmpty(user.AllianceId) ? "This user is not a member of any alliance." : $"This user is a member of **{user.AllianceId}**.";
 
             var embed = new EmbedBuilder()
-            {
-                Title = $"Statistics for {user.Name} ({user.Id})",
-                Color = Color.DarkMagenta,
-                ThumbnailUrl = user.Avatar,
-                Description = $"{displayAlliance}\nUser is level **{user.Level}**.\n\u200b"
-            }
-            .AddField("Level", user.Level, true)
-            .AddField("Players Attacked", stats.PlayersAttacked, true)
-            .AddField("Npcs Attacked", stats.NpcsAttacked, true)
-            .AddField("Coins Spent", FormatNumbers(stats.CoinsSpent), true)
-            .AddField("Minerals Spent", FormatNumbers(stats.MineralsSpent), true)
-            .AddField("Friends Helped", FormatNumbers(stats.FriendsHelped), true)
-            .AddField("Gifts Received", FormatNumbers(stats.GiftsReceived), true)
-            .AddField("Gifts Sent", FormatNumbers(stats.GiftsSent), true)
-            .AddField("PlayTime", TimeSpan.FromMilliseconds(stats.TotalPlayTimeInMs).Humanize(3, minUnit: TimeUnit.Minute), true)
-            .AddField("Nukes Used", stats.NukesUsed, true)
-            .AddField("Obstacles Recycled", stats.ObstaclesRecycled, true)
-            .AddField("Troops trained", stats.TroopsTrained, true)
-            .AddField("Troopsize donated", stats.TroopSizesDonated, true);
+                .WithTitle($"Statistics for {user.Name} ({user.Id})")
+                .WithColor(Color.DarkMagenta)
+                .WithThumbnailUrl(user.Avatar)
+                .WithDescription($"{displayAlliance}\n\u200b")
+                .AddField("Level", user.Level, true)
+                .AddField("Players Attacked", stats.PlayersAttacked, true)
+                .AddField("NPCs Attacked", stats.NpcsAttacked, true)
+                .AddField("Coins Spent", FormatNumbers(stats.CoinsSpent), true)
+                .AddField("Minerals Spent", FormatNumbers(stats.MineralsSpent), true)
+                .AddField("Friends Helped", FormatNumbers(stats.FriendsHelped), true)
+                .AddField("Gifts Received", FormatNumbers(stats.GiftsReceived), true)
+                .AddField("Gifts Sent", FormatNumbers(stats.GiftsSent), true)
+                .AddField("Obstacles Recycled", stats.ObstaclesRecycled, true)
+                .AddField("Troops trained", stats.TroopsTrained, true)
+                .AddField("Troopsize donated", stats.TroopSizesDonated, true)
+                .AddField("Nukes Used", stats.NukesUsed, true)
+                .AddField("PlayTime", TimeSpan.FromMilliseconds(stats.TotalPlayTimeInMs).Humanize(3, minUnit: TimeUnit.Minute), true)
+                .Build();
 
-            var message = new ResponseMessage("", new Embed[] { embed.Build() });
+            var message = new ResponseMessage("", new Embed[] { embed });
+
             return new ModResult(ModResultType.Success, message, null, user);
         }
 
@@ -148,16 +148,16 @@ namespace AdvancedBot.Core.Services
             var owner = alliance.Members.FirstOrDefault(x => x.AllianceRole == AllianceRole.LEADER);
 
             var embed = new EmbedBuilder()
-            .WithTitle(alliance.Name)
-            .WithDescription($"<:AFECounselor_Mobius:1082315024829272154> Alliance owned by **{owner.Name}** ({owner.Id})\n\u200b")
-            .WithColor(Color.DarkPurple)
-            .WithThumbnailUrl($"https://cdn.galaxylifegame.net/content/img/alliance_flag/AllianceLogos/flag_{(int)alliance.Emblem.Shape}_{(int)alliance.Emblem.Pattern}_{(int)alliance.Emblem.Icon}.png")
-            .AddField("Level", alliance.AllianceLevel, true)
-            .AddField("Members", alliance.Members.Length, true)
-            .AddField("Warpoints", alliance.WarPoints, true)
-            .AddField("Wars Done", alliance.WarsWon + alliance.WarsLost, true)
-            .AddField("Wars Won", alliance.WarsWon, true)
-            .WithFooter($"Run /members {input} to see its members.");
+                .WithTitle(alliance.Name)
+                .WithDescription($"<:AFECounselor_Mobius:1082315024829272154> Alliance owned by **{owner.Name}** ({owner.Id})\n\u200b")
+                .WithColor(Color.DarkPurple)
+                .WithThumbnailUrl($"https://cdn.galaxylifegame.net/content/img/alliance_flag/AllianceLogos/flag_{(int)alliance.Emblem.Shape}_{(int)alliance.Emblem.Pattern}_{(int)alliance.Emblem.Icon}.png")
+                .AddField("Level", alliance.AllianceLevel, true)
+                .AddField("Members", alliance.Members.Length, true)
+                .AddField("Warpoints", alliance.WarPoints, true)
+                .AddField("Wars Done", alliance.WarsWon + alliance.WarsLost, true)
+                .AddField("Wars Won", alliance.WarsWon, true)
+                .WithFooter($"Run /members {input} to see its members.");
 
             if (alliance.InWar)
             {
@@ -185,12 +185,12 @@ namespace AdvancedBot.Core.Services
             var formattedMembers = $"{string.Join(", ", regulars.Select(x => x.Name))}";
 
             var embed = new EmbedBuilder()
-            .WithTitle($"Members of {alliance.Name}")
-            .WithColor(Color.DarkGreen)
-            .WithThumbnailUrl($"https://cdn.galaxylifegame.net/content/img/alliance_flag/AllianceLogos/flag_{(int)alliance.Emblem.Shape}_{(int)alliance.Emblem.Pattern}_{(int)alliance.Emblem.Icon}.png")
-            .AddField("Owner", $"**{owner.Name}** ({owner.Id})\n\u200b")
-            .AddField($"Captains ({captains.Count()})", string.IsNullOrEmpty(formattedCaptains) ? "None\n\u200b" : formattedCaptains)
-            .AddField($"Members ({regulars.Count()})", string.IsNullOrEmpty(formattedMembers) ? "None" : formattedMembers);
+                .WithTitle($"Members of {alliance.Name}")
+                .WithColor(Color.DarkGreen)
+                .WithThumbnailUrl($"https://cdn.galaxylifegame.net/content/img/alliance_flag/AllianceLogos/flag_{(int)alliance.Emblem.Shape}_{(int)alliance.Emblem.Pattern}_{(int)alliance.Emblem.Icon}.png")
+                .AddField("Owner", $"**{owner.Name}** ({owner.Id})\n\u200b")
+                .AddField($"Captains ({captains.Count()})", string.IsNullOrEmpty(formattedCaptains) ? "None\n\u200b" : formattedCaptains)
+                .AddField($"Members ({regulars.Count()})", string.IsNullOrEmpty(formattedMembers) ? "None" : formattedMembers);
 
             var message = new ResponseMessage("", new Embed[] { embed.Build() });
             return new ModResult(ModResultType.Success, message, null, null) { Alliance = alliance };
