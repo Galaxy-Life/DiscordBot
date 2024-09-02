@@ -17,7 +17,7 @@ namespace AdvancedBot.Core.Services
         private readonly LogService _logs;
         private readonly BotStorage _storage;
 
-        private readonly Timer _banTimer = new Timer(1000 * 60 * 30);
+        private readonly Timer _banTimer = new(1000 * 60 * 30);
 
         public ModerationService(GLClient gl, LogService logs, BotStorage storage)
         {
@@ -36,12 +36,12 @@ namespace AdvancedBot.Core.Services
 
             if (user == null)
             {
-                return new ModResult(ModResultType.NotFound, new ResponseMessage($"No user found for **{userId}**"));
+                return new ModResult(ModResultType.NotFound, new ResponseMessage($"Could not find any user with id **{userId}**."));
             }
 
             if (user.Role == PhoenixRole.Banned)
             {
-                return new ModResult(ModResultType.AlreadyDone, new ResponseMessage($"{user.UserName} ({user.UserId}) is already banned"), user);
+                return new ModResult(ModResultType.AlreadyDone, new ResponseMessage($"{user.UserName} ({user.UserId}) is already banned."), user);
             }
 
             if (!await _gl.Phoenix.TryBanUser(userId, reason))
@@ -50,21 +50,20 @@ namespace AdvancedBot.Core.Services
             }
 
             var embed = new EmbedBuilder()
-            {
-                Color = Color.Red
-            };
+                .WithTitle("Account successfully banned")
+                .WithDescription($"**{user.UserName}** ({user.UserId}) has been banned!")
+                .WithColor(Color.Red)
+                .AddField("Player", $"{user.UserName} (`{user.UserId}`)", true)
+                .AddField("Ban duration", days > 0 ? $"{days} days" : $"Permanent", true)
+                .WithFooter(footer => footer
+                    .WithText($"Ban requested by moderator with id {discordId}"))
+                .WithCurrentTimestamp()
+                .Build();
 
             DateTime? banDuration = null;
 
-            if (days == 0)
+            if (days > 0)
             {
-                embed.WithTitle($"{user.UserName} ({user.UserId}) is now banned in-game permanently!");
-            }
-            else
-            {
-                embed.WithTitle($"{user.UserName} ({user.UserId}) is now banned in-game!");
-                embed.WithDescription($"**Duration:** {days} days");
-
                 banDuration = DateTime.UtcNow.AddDays(days);
                 _storage.AddTempBan(new Tempban(discordId, userId, banDuration.Value));
             }
@@ -72,7 +71,7 @@ namespace AdvancedBot.Core.Services
             await _gl.Production.TryKickUserOfflineAsync(userId.ToString());
             await _logs.LogGameActionAsync(LogAction.Ban, discordId, userId, reason, banDuration);
 
-            var message = new ResponseMessage(embeds: new Embed[] { embed.Build() });
+            var message = new ResponseMessage(embeds: new Embed[] { embed });
             return new ModResult(ModResultType.Success, message, user);
         }
 
@@ -82,12 +81,12 @@ namespace AdvancedBot.Core.Services
 
             if (user == null)
             {
-                return new ModResult(ModResultType.NotFound, new ResponseMessage($"No user found for **{userId}**"));
+                return new ModResult(ModResultType.NotFound, new ResponseMessage($"Could not find any user with id **{userId}**."));
             }
 
             if (user.Role != PhoenixRole.Banned)
             {
-                return new ModResult(ModResultType.AlreadyDone, new ResponseMessage($"{user.UserName} ({user.UserId}) is not banned"), user);
+                return new ModResult(ModResultType.AlreadyDone, new ResponseMessage($"{user.UserName} ({user.UserId}) is not banned."), user);
             }
 
             if (!await _gl.Phoenix.TryUnbanUser(userId))
@@ -99,12 +98,14 @@ namespace AdvancedBot.Core.Services
             await _logs.LogGameActionAsync(LogAction.Unban, discordId, userId, extra);
 
             var embed = new EmbedBuilder()
-            {
-                Title = $"{user.UserName} ({user.UserId}) is no longer banned in-game!",
-                Color = Color.Green
-            };
+                .WithTitle($"{user.UserName} ({user.UserId}) is no longer banned in-game!")
+                .WithColor(Color.Green)
+                .WithFooter(footer => footer
+                    .WithText($"Unban requested by moderator with id {discordId}"))
+                .WithCurrentTimestamp()
+                .Build();
 
-            var message = new ResponseMessage(embeds: new Embed[] { embed.Build() });
+            var message = new ResponseMessage(embeds: new Embed[] { embed });
             return new ModResult(ModResultType.Success, message, user);
         }
 
@@ -114,7 +115,7 @@ namespace AdvancedBot.Core.Services
 
             if (user == null)
             {
-                return new ModResult(ModResultType.NotFound, new ResponseMessage($"No user found for **{userId}**"));
+                return new ModResult(ModResultType.NotFound, new ResponseMessage($"Could not find any user with id **{userId}**."));
             }
 
             if (!await _gl.Phoenix.AddGlBeta(userId))
@@ -125,12 +126,15 @@ namespace AdvancedBot.Core.Services
             await _logs.LogGameActionAsync(LogAction.AddBeta, discordId, userId);
 
             var embed = new EmbedBuilder()
-            {
-                Title = $"{user.UserName} ({user.UserId}) now has access to beta",
-                Color = Color.Green
-            };
+                .WithTitle($"Entitlement successfully added")
+                .WithDescription($"**{user.UserName}** ({user.UserId}) has been given 'beta' access.")
+                .WithColor(Color.Green)
+                .WithFooter(footer => footer
+                    .WithText($"Entitlement added by moderator with id {discordId}"))
+                .WithCurrentTimestamp()
+                .Build();
 
-            var message = new ResponseMessage(embeds: new Embed[] { embed.Build() });
+            var message = new ResponseMessage(embeds: new Embed[] { embed });
             return new ModResult(ModResultType.Success, message, user);
         }
 
@@ -140,7 +144,7 @@ namespace AdvancedBot.Core.Services
 
             if (user == null)
             {
-                return new ModResult(ModResultType.NotFound, new ResponseMessage($"No user found for **{userId}**"));
+                return new ModResult(ModResultType.NotFound, new ResponseMessage($"Could not find any user with id **{userId}**."));
             }
 
             if (!await _gl.Phoenix.RemoveGlBeta(userId))
@@ -151,12 +155,15 @@ namespace AdvancedBot.Core.Services
             await _logs.LogGameActionAsync(LogAction.RemoveBeta, discordId, userId);
 
             var embed = new EmbedBuilder()
-            {
-                Title = $"{user.UserName} ({user.UserId}) no longer has beta access",
-                Color = Color.Green
-            };
+                .WithTitle($"Entitlement successfully removed")
+                .WithDescription($"**{user.UserName}** ({user.UserId}) has been revoked 'beta' access.")
+                .WithColor(Color.Red)
+                .WithFooter(footer => footer
+                    .WithText($"Entitlement removed by moderator with id {discordId}"))
+                .WithCurrentTimestamp()
+                .Build();
 
-            var message = new ResponseMessage(embeds: new Embed[] { embed.Build() });
+            var message = new ResponseMessage(embeds: new Embed[] { embed });
             return new ModResult(ModResultType.Success, message, user);
         }
 
@@ -166,7 +173,7 @@ namespace AdvancedBot.Core.Services
 
             if (user == null)
             {
-                return new ModResult(ModResultType.NotFound, new ResponseMessage($"No user found for **{userId}**"));
+                return new ModResult(ModResultType.NotFound, new ResponseMessage($"Could not find any user with id **{userId}**."));
             }
 
             if (!await _gl.Phoenix.AddEmulate(userId))
@@ -177,12 +184,15 @@ namespace AdvancedBot.Core.Services
             await _logs.LogGameActionAsync(LogAction.AddEmulate, discordId, userId);
 
             var embed = new EmbedBuilder()
-            {
-                Title = $"{user.UserName} ({user.UserId}) now has emulate access",
-                Color = Color.Green
-            };
+                .WithTitle($"Entitlement successfully added")
+                .WithDescription($"**{user.UserName}** ({user.UserId}) has been given 'emulate' access.")
+                .WithColor(Color.Green)
+                .WithFooter(footer => footer
+                    .WithText($"Entitlement added by moderator with id {discordId}"))
+                .WithCurrentTimestamp()
+                .Build();
 
-            var message = new ResponseMessage(embeds: new Embed[] { embed.Build() });
+            var message = new ResponseMessage(embeds: new Embed[] { embed });
             return new ModResult(ModResultType.Success, message, user);
         }
 
@@ -192,7 +202,7 @@ namespace AdvancedBot.Core.Services
 
             if (user == null)
             {
-                return new ModResult(ModResultType.NotFound, new ResponseMessage($"No user found for **{userId}**"));
+                return new ModResult(ModResultType.NotFound, new ResponseMessage($"Could not find any user with id **{userId}**."));
             }
 
             if (!await _gl.Phoenix.RemoveGlBeta(userId))
@@ -203,48 +213,56 @@ namespace AdvancedBot.Core.Services
             await _logs.LogGameActionAsync(LogAction.RemoveEmulate, discordId, userId);
 
             var embed = new EmbedBuilder()
-            {
-                Title = $"{user.UserName} ({user.UserId}) no longer has emulate access",
-                Color = Color.Green
-            };
+                .WithTitle($"Entitlement successfully removed")
+                .WithDescription($"**{user.UserName}** ({user.UserId}) has been revoked 'emulate' access.")
+                .WithColor(Color.Green)
+                .WithFooter(footer => footer
+                    .WithText($"Entitlement removed by moderator with id {discordId}"))
+                .WithCurrentTimestamp()
+                .Build();
 
-            var message = new ResponseMessage(embeds: new Embed[] { embed.Build() });
+            var message = new ResponseMessage(embeds: new Embed[] { embed });
             return new ModResult(ModResultType.Success, message, user);
         }
 
-        public async Task<ModResult> GiveRoleAsync(ulong discordId, uint userId, PhoenixRole role)
+        public async Task<ModResult> GiveRoleAsync(ulong discordId, uint userId, PhoenixRole newRole)
         {
             var user = await _gl.Phoenix.GetPhoenixUserAsync(userId);
 
             if (user == null)
             {
-                return new ModResult(ModResultType.NotFound, new ResponseMessage($"No user found for **{userId}**"));
+                return new ModResult(ModResultType.NotFound, new ResponseMessage($"Could not find any user with id **{userId}**."));
             }
 
-            var roleText = role == PhoenixRole.Donator ? "a Donator"
-                : role == PhoenixRole.Staff ? "a Staff Member"
-                : role == PhoenixRole.Administrator ? "an Admin"
-                : role.ToString();
+            var roleText = newRole == PhoenixRole.Donator ? "a Donator"
+                : newRole == PhoenixRole.Staff ? "a Staff Member"
+                : newRole == PhoenixRole.Administrator ? "an Admin"
+                : newRole.ToString();
 
-            if (user.Role == role)
+            if (user.Role == newRole)
             {
                 return new ModResult(ModResultType.AlreadyDone, new ResponseMessage($"User is already {roleText}!"));
             }    
 
-            if (!await _gl.Phoenix.GiveRoleAsync(userId, role))
+            if (!await _gl.Phoenix.GiveRoleAsync(userId, newRole))
             {
-                return new ModResult(ModResultType.BackendError, new ResponseMessage($"Failed to give {role} to {user.UserName} ({user.UserId})"), user);
+                return new ModResult(ModResultType.BackendError, new ResponseMessage($"Failed to give {newRole} to {user.UserName} ({user.UserId})"), user);
             }
 
-            await _logs.LogGameActionAsync(LogAction.GiveRole, discordId, userId, role.ToString());
+            await _logs.LogGameActionAsync(LogAction.GiveRole, discordId, userId, newRole.ToString());
 
             var embed = new EmbedBuilder()
-            {
-                Title = $"{user.UserName} ({user.UserId}) is now {roleText}",
-                Color = Color.Blue
-            };
+                .WithTitle($"User role successfully updated")
+                .WithDescription($"**{user.UserName}** ({user.UserId}) role has been updated.")
+                .AddField("Previous", $"{user.Role}", true)
+                .AddField("Updated", $"{newRole}", true)
+                .WithColor(Color.Green)
+                .WithFooter(footer => footer
+                    .WithText($"Role given by moderator with id {discordId}"))
+                .WithCurrentTimestamp()
+                .Build();
 
-            var message = new ResponseMessage(embeds: new Embed[] { embed.Build() });
+            var message = new ResponseMessage(embeds: new Embed[] { embed });
             return new ModResult(ModResultType.Success, message, user);
         }
 
@@ -254,20 +272,26 @@ namespace AdvancedBot.Core.Services
 
             if (user == null)
             {
-                return new ModResult(ModResultType.NotFound, new ResponseMessage($"No user found for **{userId}**"));
+                return new ModResult(ModResultType.NotFound, new ResponseMessage($"Could not find any user with id **{userId}**."));
             }
 
             var chipsBought = await _gl.Api.GetChipsBoughtAsync(userId.ToString());
             await _logs.LogGameActionAsync(LogAction.GetChipsBought, discordId, userId);
 
-            var embed = new EmbedBuilder()
-            {
-                Title = $"{user.Name} ({user.Id})",
-                Description = $"**{chipsBought}** chips bought",
-                Color = Color.Blue
-            };
+            var description = chipsBought == 0 ? 
+                  $"This player hasn't bought any chips." 
+                : $"This player has bought **{chipsBought}** chips.";
 
-            var message = new ResponseMessage(embeds: new Embed[] { embed.Build() });
+            var embed = new EmbedBuilder()
+                .WithTitle($"{user.Name} ({user.Id})")
+                .WithDescription(description)
+                .WithColor(Color.DarkBlue)
+                .WithFooter(footer => footer
+                    .WithText($"Requested by moderator with id {discordId}"))
+                .WithCurrentTimestamp()
+                .Build();
+
+            var message = new ResponseMessage(embeds: new Embed[] { embed });
             return new ModResult(ModResultType.Success, message, null, user) { IntValue = chipsBought };
         }
 
@@ -277,20 +301,26 @@ namespace AdvancedBot.Core.Services
 
             if (user == null)
             {
-                return new ModResult(ModResultType.NotFound, new ResponseMessage($"No user found for **{userId}**"));
+                return new ModResult(ModResultType.NotFound, new ResponseMessage($"Could not find any user with id **{userId}**."));
             }
 
             var chipsSpent = await _gl.Api.GetChipsSpentAsync(userId.ToString());
             await _logs.LogGameActionAsync(LogAction.GetChipsSpent, discordId, userId);
 
-            var embed = new EmbedBuilder()
-            {
-                Title = $"{user.Name} ({user.Id})",
-                Description = $"**{chipsSpent}** chips spent",
-                Color = Color.Blue
-            };
+            var description = chipsSpent == 0 ? 
+                  $"This player hasn't spent any chips." 
+                : $"This player has spent **{chipsSpent}** chips.";
 
-            var message = new ResponseMessage(embeds: new Embed[] { embed.Build() });
+            var embed = new EmbedBuilder()
+                .WithTitle($"{user.Name} ({user.Id})")
+                .WithDescription(description)
+                .WithColor(Color.DarkBlue)
+                .WithFooter(footer => footer
+                    .WithText($"Requested by moderator with id {discordId}"))
+                .WithCurrentTimestamp()
+                .Build();
+
+            var message = new ResponseMessage(embeds: new Embed[] { embed });
             return new ModResult(ModResultType.Success, message, null, user) { IntValue = chipsSpent };
         }
 
@@ -300,7 +330,7 @@ namespace AdvancedBot.Core.Services
 
             if (user == null)
             {
-                return new ModResult(ModResultType.NotFound, new ResponseMessage($"No user found for **{userId}**"));
+                return new ModResult(ModResultType.NotFound, new ResponseMessage($"Could not find any user with id **{userId}**."));
             }
             
             var success = staging ? await _gl.Staging.TryAddChipsToUserAsync(userId.ToString(), amount) : await _gl.Production.TryAddChipsToUserAsync(userId.ToString(), amount);
@@ -312,13 +342,20 @@ namespace AdvancedBot.Core.Services
 
             await _logs.LogGameActionAsync(LogAction.AddChips, discordId, userId, amount.ToString());
 
-            var embed = new EmbedBuilder()
-            {
-                Title = $"Added {amount} chips to {user.Name} ({user.Id})",
-                Color = Color.Blue
-            };
+            var action = Math.Sign(amount) < 0 ? "removed" : "added";
 
-            var message = new ResponseMessage(embeds: new Embed[] { embed.Build() });
+            var embed = new EmbedBuilder()
+                .WithTitle($"Chips {action} successfully")
+                .AddField($"Player", $"{user.Name} (`{user.Id}`)", true)
+                .AddField($"Chips {action}", $"{amount}", true)
+                .AddField($"Server", staging ? "Staging" : "Production")
+                .WithColor(Math.Sign(amount) < 0 ? Color.Red : Color.Green)
+                .WithFooter(footer => footer
+                    .WithText($"Chips {action} by moderator with id {discordId}"))
+                .WithCurrentTimestamp()
+                .Build();
+
+            var message = new ResponseMessage(embeds: new Embed[] { embed });
             return new ModResult(ModResultType.Success, message, null, user);
         }
 
@@ -328,7 +365,7 @@ namespace AdvancedBot.Core.Services
 
             if (user == null)
             {
-                return new ModResult(ModResultType.NotFound, new ResponseMessage($"No user found for **{userId}**"));
+                return new ModResult(ModResultType.NotFound, new ResponseMessage($"Could not find any user with id **{userId}**."));
             }
 
             var success = staging ? await _gl.Staging.TryAddItemToUserAsync(userId.ToString(), sku, amount) : await _gl.Production.TryAddItemToUserAsync(userId.ToString(), sku, amount);
@@ -340,13 +377,21 @@ namespace AdvancedBot.Core.Services
 
             await _logs.LogGameActionAsync(LogAction.AddItem, discordId, userId, $"{sku}:{amount}");
 
-            var embed = new EmbedBuilder()
-            {
-                Title = $"Added item {sku} {amount}x to {user.Name} ({user.Id})",
-                Color = Color.Blue
-            };
+            var action = Math.Sign(amount) < 0 ? "removed" : "added";
 
-            var message = new ResponseMessage(embeds: new Embed[] { embed.Build() });
+            var embed = new EmbedBuilder()
+                .WithTitle($"Item {action} successfully")
+                .AddField("Player", $"{user.Name} (`{user.Id}`)", true)
+                .AddField("Item SKU", $"{sku}", true)
+                .AddField($"Quantity {action}", $"{amount}", true)
+                .AddField($"Server", staging ? "Staging" : "Production")
+                .WithColor(Math.Sign(amount) < 0 ? Color.Red : Color.Green)
+                .WithFooter(footer => footer
+                    .WithText($"Item(s) {action} by moderator with id {discordId}"))
+                .WithCurrentTimestamp()
+                .Build();
+
+            var message = new ResponseMessage(embeds: new Embed[] { embed });
             return new ModResult(ModResultType.Success, message, null, user);
         }
 
@@ -356,11 +401,10 @@ namespace AdvancedBot.Core.Services
 
             if (user == null)
             {
-                return new ModResult(ModResultType.NotFound, new ResponseMessage($"No user found for **{userId}**"));
+                return new ModResult(ModResultType.NotFound, new ResponseMessage($"Could not find any user with id **{userId}**."));
             }
             
-            var success = staging ? await _gl.Staging.TryAddXpToUserAsync(userId.ToString(), amount) : await _gl.Production.TryAddXpToUserAsync(userId.ToString(), amount);
-            
+            var success = staging ? await _gl.Staging.TryAddXpToUserAsync(userId.ToString(), amount) : await _gl.Production.TryAddXpToUserAsync(userId.ToString(), amount);            
             if (!success)
             {
                 return new ModResult(ModResultType.BackendError, new ResponseMessage($"Failed to add xp to {user.Name} ({user.Id})"), null, user);
@@ -368,13 +412,20 @@ namespace AdvancedBot.Core.Services
 
             await _logs.LogGameActionAsync(LogAction.AddXp, discordId, userId, $"{amount}");
 
+            var action = Math.Sign(amount) < 0 ? "removed" : "added";
+            
             var embed = new EmbedBuilder()
-            {
-                Title = $"Added {amount} xp to {user.Name} ({user.Id})",
-                Color = Color.Blue
-            };
+                .WithTitle($"Experience {action} successfully")
+                .AddField("Player", $"{user.Name} (`{user.Id}`)", true)
+                .AddField($"Experience {action}", $"{amount}", true)
+                .AddField($"Server", staging ? "Staging" : "Production")
+                .WithColor(Math.Sign(amount) < 0 ? Color.Red : Color.Green)
+                .WithFooter(footer => footer
+                    .WithText($"Experience {action} by moderator with id {discordId}"))
+                .WithCurrentTimestamp()
+                .Build();
 
-            var message = new ResponseMessage(embeds: new Embed[] { embed.Build() });
+            var message = new ResponseMessage(embeds: new Embed[] { embed });
             return new ModResult(ModResultType.Success, message, null, user);
         }
 
@@ -390,34 +441,40 @@ namespace AdvancedBot.Core.Services
             await _logs.LogGameActionAsync(LogAction.EnableMaintenance, discordId, 0, minutes.ToString());
 
             var embed = new EmbedBuilder()
-            {
-                Title = $"Enabled maintenance for {minutes} minutes!",
-                Color = Color.Red
-            };
+                .WithTitle($"Maintenance enabled successfully")
+                .AddField($"Duration", $"{minutes} minutes", true)
+                .WithColor(Color.Red)
+                .WithFooter(footer => footer
+                    .WithText($"Enabled by moderator with id {discordId}"))
+                .WithCurrentTimestamp()
+                .Build();
 
-            var message = new ResponseMessage(embeds: new Embed[] { embed.Build() });
+            var message = new ResponseMessage(embeds: new Embed[] { embed });
             return new ModResult(ModResultType.Success, message);
         }
 
         public async Task<ModResult> ReloadRules(ulong discordId, bool staging = false)
         {
             var success = staging ? await _gl.Staging.ReloadRules() : await _gl.Production.ReloadRules();
-            var stagingText = staging ? "staging " : "";
+            var serverText = staging ? "Staging" : "Production";
 
             if (!success)
             {
-                return new ModResult(ModResultType.BackendError, new ResponseMessage($"Failed to reload rules on the {stagingText}backend!"));
+                return new ModResult(ModResultType.BackendError, new ResponseMessage($"Could not reload rules on the {serverText.ToLower()} backend!"));
             }
 
-            await _logs.LogGameActionAsync(LogAction.ReloadRules, discordId, 0, stagingText.TrimEnd());
+            await _logs.LogGameActionAsync(LogAction.ReloadRules, discordId, 0, serverText);
 
             var embed = new EmbedBuilder()
-            {
-                Title = $"Reloaded rules on the {stagingText}server!",
-                Color = Color.Red
-            };
+                .WithTitle($"Rules reloaded successfully")
+                .AddField($"Server", serverText)
+                .WithColor(Color.Green)
+                .WithFooter(footer => footer
+                    .WithText($"Rules reloaded by moderator with id {discordId}"))
+                .WithCurrentTimestamp()
+                .Build();
 
-            var message = new ResponseMessage(embeds: new Embed[] { embed.Build() });
+            var message = new ResponseMessage(embeds: new Embed[] { embed });
             return new ModResult(ModResultType.Success, message);
         }
     
@@ -433,12 +490,15 @@ namespace AdvancedBot.Core.Services
             await _logs.LogGameActionAsync(LogAction.RunKicker, discordId, 0, "Staging");
 
             var embed = new EmbedBuilder()
-            {
-                Title = $"Ran kicker on staging!",
-                Color = Color.Red
-            };
+                .WithTitle($"Kicker ran successfully")
+                .AddField("Server", "Staging", true)
+                .WithColor(Color.Green)
+                .WithFooter(footer => footer
+                    .WithText($"Kicker requested by moderator with id {discordId}"))
+                .WithCurrentTimestamp()
+                .Build();
 
-            var message = new ResponseMessage(embeds: new Embed[] { embed.Build() });
+            var message = new ResponseMessage(embeds: new Embed[] { embed });
             return new ModResult(ModResultType.Success, message);
         }
 
@@ -454,12 +514,16 @@ namespace AdvancedBot.Core.Services
             await _logs.LogGameActionAsync(LogAction.ResetHelps, discordId, 0, "Staging");
 
             var embed = new EmbedBuilder()
-            {
-                Title = $"Reset helps for {userId} on staging!",
-                Color = Color.Red
-            };
+                .WithTitle($"Helps reset successfully")
+                .AddField("Player ID", $"{userId}", true)
+                .AddField("Server", "Staging", true)
+                .WithColor(Color.Green)
+                .WithFooter(footer => footer
+                    .WithText($"Kicker requested by moderator with id {discordId}"))
+                .WithCurrentTimestamp()
+                .Build();
 
-            var message = new ResponseMessage(embeds: new Embed[] { embed.Build() });
+            var message = new ResponseMessage(embeds: new Embed[] { embed });
             return new ModResult(ModResultType.Success, message);
         }
 
@@ -475,12 +539,18 @@ namespace AdvancedBot.Core.Services
             await _logs.LogGameActionAsync(LogAction.ForceWar, discordId, 0, $"Staging:{allianceA}:{allianceB}");
 
             var embed = new EmbedBuilder()
-            {
-                Title = $"Forced war between **{allianceA}** and **{allianceB}**!",
-                Color = Color.Red
-            };
+                .WithTitle($"War declared successfully")
+                .WithDescription("Both alliances are now at war against each other on staging!")
+                .AddField("Alliance", $"{allianceA}", true)
+                .AddField("vs", $"\u200B", true)
+                .AddField("Alliance", $"{allianceB}", true)
+                .WithColor(Color.Red)
+                .WithFooter(footer => footer
+                    .WithText($"War declared by moderator with id {discordId}"))
+                .WithCurrentTimestamp()
+                .Build();
 
-            var message = new ResponseMessage(embeds: new Embed[] { embed.Build() });
+            var message = new ResponseMessage(embeds: new Embed[] { embed });
             return new ModResult(ModResultType.Success, message);
         }
 
@@ -496,12 +566,18 @@ namespace AdvancedBot.Core.Services
             await _logs.LogGameActionAsync(LogAction.ForceStopWar, discordId, 0, $"Staging:{allianceA}:{allianceB}");
 
             var embed = new EmbedBuilder()
-            {
-                Title = $"Forced to stop war between **{allianceA}** and **{allianceB}**!",
-                Color = Color.Red
-            };
+                .WithTitle($"War ended successfully")
+                .WithDescription("Both alliances are no longer at war against each other on staging!")
+                .AddField("Alliance", $"{allianceA}", true)
+                .AddField("vs", $"\u200B", true)
+                .AddField("Alliance", $"{allianceB}", true)
+                .WithColor(Color.Red)
+                .WithFooter(footer => footer
+                    .WithText($"War ended by moderator with id {discordId}"))
+                .WithCurrentTimestamp()
+                .Build();
 
-            var message = new ResponseMessage(embeds: new Embed[] { embed.Build() });
+            var message = new ResponseMessage(embeds: new Embed[] { embed });
             return new ModResult(ModResultType.Success, message);
         }
 
