@@ -169,11 +169,8 @@ namespace AdvancedBot.Core.Commands
             if (string.IsNullOrEmpty(input)) input = Context.User.Username;
 
             var profile = await GLClient.Api.GetUserById(input);
-
-            if (profile == null)
-            {
-                profile = await GLClient.Api.GetUserByName(input);
-            }
+            
+            profile ??= await GLClient.Api.GetUserByName(input);
 
             return profile;
         }
@@ -199,10 +196,7 @@ namespace AdvancedBot.Core.Commands
             }
 
             // try to get user by name
-            if (user == null)
-            {
-                user = await GLClient.Phoenix.GetPhoenixUserByNameAsync(input);
-            }
+            user ??= await GLClient.Phoenix.GetPhoenixUserByNameAsync(input);
 
             // get user by id after getting it by name
             if (user != null && full)

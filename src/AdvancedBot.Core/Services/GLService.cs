@@ -206,10 +206,7 @@ namespace AdvancedBot.Core.Services
                 profile = await _client.Api.GetUserById(input);
             }
 
-            if (profile == null)
-            {
-                profile = await _client.Api.GetUserByName(input);
-            }
+            profile ??= await _client.Api.GetUserByName(input);
 
             return profile;
         }
@@ -234,10 +231,7 @@ namespace AdvancedBot.Core.Services
             }
 
             // try to get user by name
-            if (user == null)
-            {
-                user = await _client.Phoenix.GetPhoenixUserByNameAsync(input);
-            }
+            user ??= await _client.Phoenix.GetPhoenixUserByNameAsync(input);
 
             // get user by id after getting it by name
             if (user != null && full)
