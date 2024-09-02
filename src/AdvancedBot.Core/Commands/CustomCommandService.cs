@@ -15,7 +15,7 @@ namespace AdvancedBot.Core.Commands
         public ulong LogChannelId;
         private readonly string _documentationUrl;
         private readonly string _sourceRepo;
-        private readonly string _contributers;
+        private readonly string _contributors;
         private readonly bool _botIsPrivate;
 
         public CustomCommandService() : base() { }
@@ -24,7 +24,7 @@ namespace AdvancedBot.Core.Commands
         {
             _documentationUrl = config.DocumentationUrl;
             _sourceRepo = config.RepositoryUrl;
-            _contributers = config.Contributers;
+            _contributors = config.Contributors;
             _botIsPrivate = config.BotInviteIsPrivate;
             LogChannelId = config.LogChannelId;
         }
