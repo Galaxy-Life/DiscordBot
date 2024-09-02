@@ -30,20 +30,34 @@ namespace AdvancedBot.Core.Commands
         }
 
         public async Task SendBotInfoAsync(IInteractionContext context)
-        {
-            var documentation = string.IsNullOrEmpty(_documentationUrl) ? $"N/A" : $"[Click me!]({_documentationUrl})";
-            var sourceRepo = string.IsNullOrEmpty(_sourceRepo) ? $"N/A" : $"[Click me!]({_sourceRepo})";
-            var botInvite = _botIsPrivate ? $"Private Bot." : $"[Click me!](https://discordapp.com/api/oauth2/authorize?client_id={context.Client.CurrentUser.Id}&permissions=8&scope=bot)";
+        { 
+            var botName = context.Client.CurrentUser.Username;
+            var botAvatar = context.Client.CurrentUser.GetAvatarUrl() ?? context.Client.CurrentUser.GetDefaultAvatarUrl(); 
+
+            var repoLink = string.IsNullOrEmpty(_sourceRepo) ? $"Unavailable" : $"[GitHub repository]({_sourceRepo})";
+            var docsLink = string.IsNullOrEmpty(_documentationUrl) ? $"Unavailable" : $"[Read the docs]({_documentationUrl})";
+            var inviteLink = $"[Invite link](https://discordapp.com/api/oauth2/authorize?client_id={context.Client.CurrentUser.Id}&permissions=8&scope=bot)";
 
             var embed = new EmbedBuilder()
-            {
-                Title = "About the bot",
-                Description = $"**Documentation:** {documentation}\n\n**Source code:** {sourceRepo}\n\n" +
-                              $"**Developed by:** {_contributers}\n\n**Invite the bot:** {botInvite}",
-                ThumbnailUrl = context.Client.CurrentUser.GetAvatarUrl(),
-            }.Build();
+                .WithTitle($"About {botName}")
+                .WithColor(Color.DarkBlue)
+                .WithDescription("This is the official Discord bot for Galaxy Life.\nFind information about players, alliances or server status!")
+                .WithThumbnailUrl(botAvatar)
+                .AddField("Documentation", docsLink, true)
+                .AddField("Source Code", repoLink, true)
+                .WithFooter(footer => footer
+                    .WithText($"Bot information requested by {context.User.Username}#{context.User.Discriminator}")
+                    .WithIconUrl(context.User.GetAvatarUrl()))
+                .WithCurrentTimestamp();
 
-            await context.Interaction.ModifyOriginalResponseAsync(x => x.Embed = embed);
+            if (!_botIsPrivate)
+            {
+                embed.AddField("Invitation", inviteLink, true);
+            }
+
+            embed.AddField("Developed by", _contributors);
+
+            await context.Interaction.ModifyOriginalResponseAsync(msg => msg.Embeds = new Embed[] { embed.Build() });
         }
 
         public static string FormatCommandName(CommandInfo command)
