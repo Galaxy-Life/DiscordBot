@@ -462,7 +462,7 @@ namespace AdvancedBot.Core.Commands.Modules
         [SlashCommand("lb", "Shows all the possible leaderboards")]
         public async Task GetLeaderboardAsync([Choice("Xp", "xp"), Choice("Xp From Attack", "attackXp"), Choice("Rivals Won", "rivalsWon"), Choice("Chips", "chips"), Choice("Chips Spent", "chipsSpent"), Choice("Friends Helped", "friendsHelped"), Choice("Gifts Received", "giftsReceived"), Choice("Gifts Sent", "giftsSent"), Choice("Stars Visited", "starsVisited"), Choice("Obstacles Recycled", "obstaclesRecycled"), Choice("Utility Used", "utilityUsed"), Choice("Item", "item"), Choice("Warpoints", "warpoints"), Choice("Alliance Warpoints", "alliancewarpoints"), Choice("Advanced Chips", "advchips")]string type, string sku = "7000")
         {
-            List<string> displayTexts = new List<string>() { "Failed to get information" };
+            List<string> displayTexts = new() { "Failed to get information" };
             var title = "Galaxy Life Leaderboard";
 
             switch (type)

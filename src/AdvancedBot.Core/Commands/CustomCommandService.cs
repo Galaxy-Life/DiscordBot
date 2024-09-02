@@ -73,7 +73,7 @@ namespace AdvancedBot.Core.Commands
 
         public static string GenerateCommandUsage(CommandInfo command, string prefix)
         {
-            StringBuilder parameters = new StringBuilder();
+            StringBuilder parameters = new();
 
             for (int i = 0; i < command.Parameters.Count; i++)
             {

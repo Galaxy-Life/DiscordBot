@@ -101,7 +101,7 @@ namespace AdvancedBot.Core.Commands.Modules
         [SlashCommand("lb", "Obtain the in-game leaderboard of a certain statistic")]
         public async Task GetLeaderboardAsync([Choice("Xp", "xp"), Choice("Xp From Attack", "attackXp"), Choice("Rivals Won", "rivalsWon"), Choice("Warpoints", "warpoints"), Choice("Alliance Warpoints", "alliancewarpoints")]string type)
         {
-            List<string> displayTexts = new List<string>() { "Failed to get information" };
+            List<string> displayTexts = new() { "Failed to get information" };
             var title = "Galaxy Life Leaderboard";
 
             switch (type)
