@@ -69,8 +69,7 @@ namespace AdvancedBot.Core.Services
             var paginatorMessage = _activeMessages.First(x => x.DiscordMessageId == messageId);
             
             var channel = await _client.GetChannelAsync(paginatorMessage.DiscordChannelId) as SocketTextChannel;
-            var message = await channel.GetMessageAsync(paginatorMessage.DiscordMessageId) as SocketUserMessage;
-            if (message is null) return;
+            if (await channel.GetMessageAsync(paginatorMessage.DiscordMessageId) is not SocketUserMessage message) return;
 
             await message.ModifyAsync(x => x.Components = CreateMessageComponents(true));
 
