@@ -27,7 +27,7 @@ namespace AdvancedBot.Core.Services
         public async Task HandleNewPaginatedMessageAsync(SocketInteractionContext context, IEnumerable<EmbedField> displayFields, IEnumerable<string> displayTexts, Embed embed)
         {
             var message = await context.Interaction.GetOriginalResponseAsync();
-            await context.Interaction.ModifyOriginalResponseAsync(x => x.Embed = embed);
+            await context.Interaction.ModifyOriginalResponseAsync(msg => msg.Embeds = new Embed[] { embed });
 
             var paginatedMessage = new PaginatedMessage()
             {
@@ -43,7 +43,7 @@ namespace AdvancedBot.Core.Services
             
             if (paginatedMessage.TotalPages > 1)
             {
-                await context.Interaction.ModifyOriginalResponseAsync(x => x.Components = CreateMessageComponents());
+                await context.Interaction.ModifyOriginalResponseAsync(msg => msg.Components = CreateMessageComponents());
                 AddNewTimer(message.Id);
             }
 
@@ -93,10 +93,7 @@ namespace AdvancedBot.Core.Services
             if (interaction is SocketMessageComponent component)
             {
                 // Not our message to handle
-                if (_activeMessages.FirstOrDefault(x => x.DiscordMessageId == component.Message.Id) == null)
-                {
-                    return;
-                }
+                if (_activeMessages.FirstOrDefault(x => x.DiscordMessageId == component.Message.Id) == null) return;
 
                 await component.DeferAsync();
 
@@ -137,15 +134,18 @@ namespace AdvancedBot.Core.Services
             var oldEmbed = message.Embeds.First();
             
             var newEmbed = new EmbedBuilder()
-            {
-                Title = $"{oldEmbed.Title.Split('(').First()}(Page {msg.CurrentPage})",
-                Color = oldEmbed.Color,
-                Url = oldEmbed.Url
-            };
+                .WithTitle($"{oldEmbed.Title.Split('(').First()}(Page {msg.CurrentPage})")
+                .WithColor(oldEmbed.Color ?? Color.DarkBlue)
+                .WithUrl(oldEmbed.Url);
 
             if (oldEmbed.Footer != null)
             {
                 newEmbed.WithFooter(oldEmbed.Footer.Value.Text, oldEmbed.Footer.Value.IconUrl);
+            }
+
+            if (oldEmbed.Timestamp != null)
+            {
+                newEmbed.WithCurrentTimestamp();
             }
 
             if (msg.DisplayMessages != null)
@@ -165,7 +165,7 @@ namespace AdvancedBot.Core.Services
                 }
             }
 
-            await message.ModifyAsync(x => x.Embed = newEmbed.Build());
+            await message.ModifyAsync(msg => msg.Embeds = new Embed[] { newEmbed.Build() });
         }
 
         private async Task GoToLastPageAsync(ulong id)
