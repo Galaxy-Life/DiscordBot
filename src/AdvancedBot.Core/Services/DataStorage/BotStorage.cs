@@ -26,7 +26,7 @@ namespace AdvancedBot.Core.Services.DataStorage
 
         public void RemoveTempban(Tempban tempban)
         {
-            _storage.Remove<Tempban>(x => x.ModeratorId == tempban.ModeratorId && x.UserId == tempban.UserId);
+            _storage.Remove<Tempban>(ban => ban.ModeratorId == tempban.ModeratorId && ban.UserId == tempban.UserId);
         }
     }
 }

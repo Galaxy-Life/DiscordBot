@@ -37,10 +37,9 @@ namespace AdvancedBot.Core.Commands
             await DeferAsync();
         }
 
-        public override Task AfterExecuteAsync(ICommandInfo command)
-        {
-            return Task.CompletedTask;
-        }
+        public override Task AfterExecuteAsync(ICommandInfo command) 
+            => Task.CompletedTask;
+
 
         protected async Task SendPaginatedMessageAsync(IEnumerable<EmbedField> displayFields, IEnumerable<string> displayTexts, EmbedBuilder templateEmbed)
         {
@@ -86,11 +85,11 @@ namespace AdvancedBot.Core.Commands
 
             if (!string.IsNullOrEmpty(response.Content))
             {
-                await ModifyOriginalResponseAsync(x => x.Content = response.Content);
+                await ModifyOriginalResponseAsync(msg => msg.Content = response.Content);
             }
             if (response.Embeds != null)
             {
-                await ModifyOriginalResponseAsync(x => x.Embeds = response.Embeds);
+                await ModifyOriginalResponseAsync(msg => msg.Embeds = response.Embeds);
             }
         }
 
