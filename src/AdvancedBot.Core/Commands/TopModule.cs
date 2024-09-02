@@ -180,7 +180,7 @@ namespace AdvancedBot.Core.Commands
             if (string.IsNullOrEmpty(input)) input = Context.User.Username;
             PhoenixUser user = null;
 
-            var digitString = new String(input.Where(Char.IsDigit).ToArray());
+            var digitString = new string(input.Where(char.IsDigit).ToArray());
 
             // extra check to see if all characters were numbers
             if (digitString.Length == input.Length)
