@@ -32,18 +32,17 @@ namespace AdvancedBot.Core.Commands.Modules
 
             for (int i = 0; i < commands.Length; i++)
             {
-                fields.Add(new EmbedFieldBuilder()
-                            .WithName(commands[i].Name)
-                            .WithValue($"Executed {commands[i].TimesRun} times ({commands[i].TimesFailed} fails)")
-                            .Build());
+                fields.Add(
+                  new EmbedFieldBuilder()
+                      .WithName(commands[i].Name)
+                      .WithValue($"Executed {commands[i].TimesRun} times ({commands[i].TimesFailed} fails)")
+                      .Build());
             }
 
             var title = Context.Interaction.IsDMInteraction ? $"Stats for {Context.User.Username}'s DMS" : $"Stats for {Context.Guild.Name}";
 
             var templateEmbed = new EmbedBuilder()
-            {
-                Title = title
-            };
+                .WithTitle(title);
 
             await SendPaginatedMessageAsync(fields, null, templateEmbed);
         }
