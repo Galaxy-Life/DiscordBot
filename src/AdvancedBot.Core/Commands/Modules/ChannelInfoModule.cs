@@ -37,19 +37,18 @@ namespace AdvancedBot.Core.Commands.Modules
                 _counter.AddNewChannelCounter(Context.Guild.Id, counter);
                 await _counter.UpdateChannelAsync(Accounts.GetOrCreateAccount(Context.Guild.Id), counter);
 
-                await ModifyOriginalResponseAsync(x => x.Content = $"Setup the Server Status Voice Channel {voiceChannel.Mention}");
+                await ModifyOriginalResponseAsync(msg => msg.Content = $"Setup the Server Status Voice Channel {voiceChannel.Mention}");
             }
             catch (Exception e)
             {
                 await voiceChannel.DeleteAsync();
 
                 var embed = new EmbedBuilder()
-                {
-                    Title = "Failed to setup!",
-                    Description = e.Message
-                };
+                    .WithTitle("Failed to setup!")
+                    .WithDescription(e.Message)
+                    .Build();
 
-                await ModifyOriginalResponseAsync(x => x.Embed = embed.Build());
+                await ModifyOriginalResponseAsync(msg => msg.Embeds = new Embed[] { embed });
             }
         }
     }
