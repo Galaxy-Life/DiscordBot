@@ -175,7 +175,7 @@ namespace AdvancedBot.Core.Services
 
                 _serverStatus = "Offline";
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 _serverStatus = "Offline";
             }
