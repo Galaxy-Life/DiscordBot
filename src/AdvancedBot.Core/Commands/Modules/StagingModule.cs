@@ -19,25 +19,21 @@ namespace AdvancedBot.Core.Commands.Modules
         public async Task StagingOverviewAsync()
         {
             var embed = new EmbedBuilder()
-            {
-                Title = "Staging Overview",
-                Description = "Not really any info to give yet :/",
-                Color = Color.Blue
-            };
+                .WithTitle("Staging Overview")
+                .WithDescription("Our testing server, allowing us to test changes before releasing to production.")
+                .WithColor(Color.Blue)
+                .Build();
 
-            await SendResponseMessage(new ResponseMessage(embeds: new Embed[] { embed.Build() }), false);
+            await SendResponseMessage(new ResponseMessage(embeds: new Embed[] { embed }), false);
 
-            // add components
-            var components = new ComponentBuilder();
-
-            components.WithButton("Reload Rules", $"rules", ButtonStyle.Primary, Emote.Parse("<:Emoji_LETSGO:1081691478490894366>"));
-            components.WithButton("Run Kicker", $"kicker", ButtonStyle.Primary, Emote.Parse("<:Emoji_Bonkself:1109938953475338340>"));
-            components.WithButton("Reset helps", $"helps", ButtonStyle.Primary, Emote.Parse("<:Item_Helmet:1084821573975945267>"));
-
-            components.WithButton("Start War", $"startwar", ButtonStyle.Danger, new Emoji("⚔"), row: 1);
-            components.WithButton("End War", $"endwar", ButtonStyle.Danger, Emote.Parse("<:jijijijamikaze:948038940819075092>"), row: 1);
-
-            await ModifyOriginalResponseAsync(x => x.Components = components.Build());
+            var components = new ComponentBuilder()
+              .WithButton("Reload Rules", $"rules", ButtonStyle.Primary, Emote.Parse("<:Emoji_LETSGO:1081691478490894366>"))
+              .WithButton("Run Kicker", $"kicker", ButtonStyle.Primary, Emote.Parse("<:Emoji_Bonkself:1109938953475338340>"))
+              .WithButton("Reset helps", $"helps", ButtonStyle.Primary, Emote.Parse("<:Item_Helmet:1084821573975945267>"))
+              .WithButton("Start War", $"startwar", ButtonStyle.Danger, new Emoji("⚔"), row: 1)
+              .WithButton("End War", $"endwar", ButtonStyle.Danger, Emote.Parse("<:jijijijamikaze:948038940819075092>"), row: 1);
+              
+            await ModifyOriginalResponseAsync(msg => msg.Components = components.Build());
         }
 
         [SlashCommand("reloadrules", "Reload staging backend rules")]
@@ -82,25 +78,29 @@ namespace AdvancedBot.Core.Commands.Modules
 
             if (user == null)
             {
-                await ModifyOriginalResponseAsync(x => x.Content = $"No user found for **{userId}**");
+                await ModifyOriginalResponseAsync(msg => msg.Content = $"Could not find any user with id **{userId}**.");
                 return;
             }
             
             if (!await GLClient.Staging.TryResetUserAsync(userId.ToString()))
             {
-                await ModifyOriginalResponseAsync(x => x.Content = $"Failed to reset {user.UserName} ({user.UserId})");
+                await ModifyOriginalResponseAsync(msg => msg.Content = $"Could not reset {user.UserName} ({user.UserId}) progress on staging.");
                 return;
             }
 
             await LogService.LogGameActionAsync(LogAction.Reset, Context.User.Id, userId, "Staging");
 
             var embed = new EmbedBuilder()
-            {
-                Title = $"Reset {user.UserName} ({user.UserId}) on Staging",
-                Color = Color.Red
-            };
+                .WithTitle("Account staging progress successfully reset")
+                .WithDescription($"Account with **{user.UserId}**'s progress has been reset on staging")
+                .WithColor(Color.Green)
+                .WithFooter(footer => footer
+                    .WithText($"Staging progress reset requested by {Context.User.Username}#{Context.User.Discriminator}")
+                    .WithIconUrl(Context.User.GetAvatarUrl()))
+                .WithCurrentTimestamp()
+                .Build();
 
-            await ModifyOriginalResponseAsync(x => x.Embed = embed.Build() );
+            await ModifyOriginalResponseAsync(msg => msg.Embeds = new Embed[] { embed });  
         }
 
         [SlashCommand("addchips", "Adds chips to a user")]
@@ -131,16 +131,15 @@ namespace AdvancedBot.Core.Commands.Modules
             
             if (!result)
             {
-                await ModifyOriginalResponseAsync(x => x.Content = "Failed lol");
+                await ModifyOriginalResponseAsync(msg => msg.Content = "Failed lol");
             }
 
             var embed = new EmbedBuilder()
-            {
-                Title = $"Restarted Staging",
-                Color = Color.Blue
-            };
+                .WithTitle($"Restarted Staging")
+                .WithColor(Color.Green)
+                .Build();
 
-            await ModifyOriginalResponseAsync(x => x.Embed = embed.Build() );
+            await ModifyOriginalResponseAsync(msg => msg.Embeds = new Embed[] { embed });
         }
     }
 }
