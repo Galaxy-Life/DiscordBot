@@ -145,7 +145,7 @@ namespace AdvancedBot.Core.Services
             return embed.Build();
         }
 
-        private Color GetColorBasedOnAction(LogAction action)
+        private static Color GetColorBasedOnAction(LogAction action)
         {
             switch (action)
             {

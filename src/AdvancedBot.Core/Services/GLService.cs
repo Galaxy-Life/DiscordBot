@@ -248,7 +248,7 @@ namespace AdvancedBot.Core.Services
             return user;
         }
 
-        private string FormatNumbers(decimal experiencePoints)
+        private static string FormatNumbers(decimal experiencePoints)
         {
             // 1bil<
             if (experiencePoints > 1000000000) return $"{Math.Round(experiencePoints / 1000000000, 2)}B";

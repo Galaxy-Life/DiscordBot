@@ -121,7 +121,7 @@ namespace AdvancedBot.Core.Services
             }
         }
 
-        private MessageComponent CreateMessageComponents(bool disabled = false)
+        private static MessageComponent CreateMessageComponents(bool disabled = false)
         {
             var builder = new ComponentBuilder()
                 .WithButton("First", "first", ButtonStyle.Secondary, new Emoji("⏮️"), disabled: disabled)

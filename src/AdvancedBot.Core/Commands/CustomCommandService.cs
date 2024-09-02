@@ -46,7 +46,7 @@ namespace AdvancedBot.Core.Commands
             await context.Interaction.ModifyOriginalResponseAsync(x => x.Embed = embed);
         }
 
-        public string FormatCommandName(CommandInfo command)
+        public static string FormatCommandName(CommandInfo command)
             => $"{command.Module.Name}_{command.Name}".ToLower();
 
         public CommandInfo GetCommandInfo(string commandName)
@@ -57,7 +57,7 @@ namespace AdvancedBot.Core.Commands
             return searchResult.Commands.OrderBy(x => x.Command.Priority).FirstOrDefault().Command;
         }
 
-        public string GenerateCommandUsage(CommandInfo command, string prefix)
+        public static string GenerateCommandUsage(CommandInfo command, string prefix)
         {
             StringBuilder parameters = new StringBuilder();
 

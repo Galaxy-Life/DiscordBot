@@ -124,7 +124,7 @@ namespace AdvancedBot.Core.Commands
             return components.Build();
         }
 
-        protected MessageComponent CreateModerationComponents(string username, string userId, string alliance, bool isBanned)
+        protected static MessageComponent CreateModerationComponents(string username, string userId, string alliance, bool isBanned)
         {
             var components = new ComponentBuilder();
 
@@ -150,7 +150,7 @@ namespace AdvancedBot.Core.Commands
             return components.Build();
         }
 
-        protected MessageComponent CreateSemiModerationComponents(string username, string userId, string alliance)
+        protected static MessageComponent CreateSemiModerationComponents(string username, string userId, string alliance)
         {
             var components = new ComponentBuilder();
 
