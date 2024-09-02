@@ -19,17 +19,21 @@ namespace AdvancedBot.Core.Commands.Modules
             var status = await GLClient.Api.GetServerStatus();
 
             var embed = new EmbedBuilder()
-            {
-                Title = $"Server Status",
-                Color = Color.Blue
-            };
+                .WithTitle($"Server Status")
+                .WithColor(Color.DarkBlue)
+                .WithDescription("Here is the current status of all Galaxy Life servers.\n\u200b")
+                .WithThumbnailUrl(Context.Guild.IconUrl)
+                .WithFooter(footer => footer
+                    .WithText($"Servers status requested by {Context.User.Username}#{Context.User.Discriminator}")
+                    .WithIconUrl(Context.User.GetAvatarUrl()))
+                .WithCurrentTimestamp();
 
             for (int i = 0; i < status.Count; i++)
             {
-                embed.AddField($"{status[i].Name} ({status[i].Ping}ms)", status[i].IsOnline ? "✅ Running" : "🛑 Down", true);
+                embed.AddField($"{status[i].Name} ({status[i].Ping}ms)", status[i].IsOnline ? "✅ Operational" : "🛑 Offline", true);
             }
 
-            await ModifyOriginalResponseAsync(x => x.Embed = embed.Build() );
+            await ModifyOriginalResponseAsync(msg => msg.Embeds = new Embed[] { embed.Build() });
         }
 
         [SlashCommand("profile", "Displays a user's Galaxy Life profile")]
@@ -39,13 +43,10 @@ namespace AdvancedBot.Core.Commands.Modules
             await SendResponseMessage(response.Message, false);
 
             // no gl data found
-            if (response.User == null)
-            {
-                return;
-            }
+            if (response.User == null) return;
 
             var components = CreateDefaultComponents(response.PhoenixUser.UserName, response.User.Id, response.User.AllianceId, false);
-            await ModifyOriginalResponseAsync(x => x.Components = components);
+            await ModifyOriginalResponseAsync(msg => msg.Components = components);
         }
 
         [SlashCommand("stats", "Displays a user's Galaxy Life stats")]
@@ -55,13 +56,10 @@ namespace AdvancedBot.Core.Commands.Modules
             await SendResponseMessage(response.Message, false);
 
             // no gl data found
-            if (response.User == null)
-            {
-                return;
-            }
+            if (response.User == null) return;
 
             var components = CreateDefaultComponents(response.User.Name, response.User.Id, response.User.AllianceId, false);
-            await ModifyOriginalResponseAsync(x => x.Components = components);
+            await ModifyOriginalResponseAsync(msg => msg.Components = components);
         }
 
         [SlashCommand("alliance", "Displays basic info about an alliance")]
@@ -71,14 +69,11 @@ namespace AdvancedBot.Core.Commands.Modules
             await SendResponseMessage(response.Message, false);
 
             // no gl data found
-            if (response.Alliance == null)
-            {
-                return;
-            }
+            if (response.Alliance == null) return;
 
             var owner = response.Alliance.Members.First(x => x.AllianceRole == AllianceRole.LEADER);
             var components = CreateDefaultComponents(owner.Name, owner.Id, response.Alliance.Id, false);
-            await ModifyOriginalResponseAsync(x => x.Components = components);
+            await ModifyOriginalResponseAsync(msg => msg.Components = components);
         }
 
         [SlashCommand("members", "Displays a user's extensive Galaxy Life stats")]
@@ -88,18 +83,21 @@ namespace AdvancedBot.Core.Commands.Modules
             await SendResponseMessage(response.Message, false);
 
             // no gl data found
-            if (response.Alliance == null)
-            {
-                return;
-            }
+            if (response.Alliance == null) return;
 
-            var owner = response.Alliance.Members.First(x => x.AllianceRole == AllianceRole.LEADER);
+            var owner = response.Alliance.Members.First(member => member.AllianceRole == AllianceRole.LEADER);
             var components = CreateDefaultComponents(owner.Name, owner.Id, response.Alliance.Id, false);
-            await ModifyOriginalResponseAsync(x => x.Components = components);
+            await ModifyOriginalResponseAsync(msg => msg.Components = components);
         }
 
-        [SlashCommand("lb", "Obtain the in-game leaderboard of a certain statistic")]
-        public async Task GetLeaderboardAsync([Choice("Xp", "xp"), Choice("Xp From Attack", "attackXp"), Choice("Rivals Won", "rivalsWon"), Choice("Warpoints", "warpoints"), Choice("Alliance Warpoints", "alliancewarpoints")]string type)
+        [SlashCommand("lb", "Retrieve a specific statistic leaderboard")]
+        public async Task GetLeaderboardAsync([
+            Choice("Experience", "xp"), 
+            Choice("Experience from attacks", "attackXp"), 
+            Choice("Rivals", "rivalsWon"), 
+            Choice("Warpoints", "warpoints"), 
+            Choice("Alliances", "alliancewarpoints")
+        ] string type)
         {
             List<string> displayTexts = new() { "Failed to get information" };
             var title = "Galaxy Life Leaderboard";
@@ -107,67 +105,84 @@ namespace AdvancedBot.Core.Commands.Modules
             switch (type)
             {
                 case "attackXp":
-                    title = "Xp From Attack Leaderboard";
-                    displayTexts = (await GLClient.Api.GetXpFromAttackLeaderboard()).Select(x => $"<:RedExp:1082428998182768701>{x.Level} **{x.Name}**").ToList();
+                    title = "Experience from attacks | Leaderboard";
+                    displayTexts = (await GLClient.Api.GetXpFromAttackLeaderboard())
+                        .Select(player => $"<:RedExp:1082428998182768701>{player.Level} **{player.Name}**")
+                        .ToList();
                     break;
                 case "rivalsWon":
-                    title = "Rivals Won Leaderboard";
-                    displayTexts = (await GLClient.Api.GetRivalsWonLeaderboard()).Select(x => $"<:pistol:1082429024963395674>{x.RivalsWon} **{x.Name}**").ToList();
+                    title = "Rivals | Leaderboard";
+                    displayTexts = (await GLClient.Api.GetRivalsWonLeaderboard())
+                        .Select(player => $"<:pistol:1082429024963395674>{player.RivalsWon} **{player.Name}**")
+                        .ToList();
                     break;
                 case "warpoints":
-                    title = $"Warpoints Leaderboard";
-                    displayTexts = (await GLClient.Api.GetWarpointLeaderboard()).Select(x => $"<:Starling_Frenchling:1080133173352091708>{x.Warpoints} **{x.Name}**").ToList();
+                    title = "Warpoints | Leaderboard";
+                    displayTexts = (await GLClient.Api.GetWarpointLeaderboard())
+                        .Select(player => $"<:Starling_Frenchling:1080133173352091708>{player.Warpoints} **{player.Name}**")
+                        .ToList();
                     break;
                 case "alliancewarpoints":
-                    title = $"Alliance Warpoints Leaderboard";
-                    displayTexts = (await GLClient.Api.GetAllianceWarpointLeaderboard()).Select(x => $"<:TopNotch:1117073442236276809>{x.Warpoints} **{x.Name}**").ToList();
+                    title = "Alliances | Leaderboard";
+                    displayTexts = (await GLClient.Api.GetAllianceWarpointLeaderboard())
+                        .Select(alliance => $"<:TopNotch:1117073442236276809>{alliance.Warpoints} **{alliance.Name}**")
+                        .ToList();
                     break;
                 default:
                 case "xp":
-                    title = "Xp Leaderboard";
-                    displayTexts = (await GLClient.Api.GetXpLeaderboard()).Select(x => $"<:experience:920289172428849182> {x.Level} **{x.Name}**").ToList();
+                    title = "Experience | Leaderboard";
+                    displayTexts = (await GLClient.Api.GetXpLeaderboard())
+                        .Select(player => $"<:eplayerperience:920289172428849182> {player.Level} **{player.Name}**")
+                        .ToList();
                     break;
             }
 
             if (displayTexts.Count == 0)
             {
-                await ModifyOriginalResponseAsync(x => x.Content = $"<:BAAWorker_Happy:943308706555260928> Servers are still loading the leaderboard, please be patient!");
+                await ModifyOriginalResponseAsync(msg => msg.Content = $"<:BAAWorker_Happy:943308706555260928> Servers are still loading the leaderboard, please be patient!");
                 return;
             }
 
-            for (int i = 0; i < displayTexts.Count(); i++)
+            for (int i = 0; i < displayTexts.Count; i++)
             {
                 displayTexts[i] = $"**#{i + 1}** | {displayTexts[i]}";
             }
 
-            await SendPaginatedMessageAsync(null, displayTexts, new EmbedBuilder()
-            {
-                Title = title,
-                Color = Color.Purple
-            });
+            await SendPaginatedMessageAsync(
+                null, 
+                displayTexts, 
+                new EmbedBuilder()
+                    .WithTitle(title)
+                    .WithColor(Color.Purple)
+                    .WithThumbnailUrl(Context.Guild.IconUrl)
+                    .WithFooter(footer => footer
+                        .WithText($"Leaderbard requested by {Context.User.Username}#{Context.User.Discriminator}")
+                        .WithIconUrl(Context.User.GetAvatarUrl()))
+                    .WithCurrentTimestamp()
+                    
+            );
         }
 
-
-        [SlashCommand("compare", "Compare stats of two users", false, Discord.Interactions.RunMode.Async)]
-        public async Task CompareUsersAsync(string input1, string input2)
+        [SlashCommand("compare", "Compare two players on base statistics", false, RunMode.Async)]
+        public async Task CompareUsersAsync(string firstPlayer, string secondPlayer)
         {
-            if (input1.ToLower() == input2.ToLower())
+            if (firstPlayer.ToLower() == secondPlayer.ToLower())
             {
-                await ModifyOriginalResponseAsync(x => x.Content = $"You cannot compare a user to itself!");
+                await ModifyOriginalResponseAsync(msg => msg.Content = $"You must compare two differents players!");
             }
 
-            var baseUser = await GetUserByInput(input1);
-            var secondUser = await GetUserByInput(input2);
+            var baseUser = await GetUserByInput(firstPlayer);
+            var secondUser = await GetUserByInput(secondPlayer);
 
             if (baseUser == null)
             {
-                await ModifyOriginalResponseAsync(x => x.Content = $"<:shrugR:945740284308893696> No user found for **{input1}**");
+                await ModifyOriginalResponseAsync(msg => msg.Content = $"<:shrugR:945740284308893696> Could not find any player named **{firstPlayer}**");
                 return;
             }
 
             if (secondUser == null)
             {
-                await ModifyOriginalResponseAsync(x => x.Content = $"<:shrugR:945740284308893696> No user found for **{input2}**");
+                await ModifyOriginalResponseAsync(msg => msg.Content = $"<:shrugR:945740284308893696> Could not find any player named **{secondPlayer}**");
                 return;
             }
 
@@ -176,16 +191,22 @@ namespace AdvancedBot.Core.Commands.Modules
 
             var expDifference = Math.Round((decimal)baseUser.Experience / secondUser.Experience, 2);
 
-            await ModifyOriginalResponseAsync(x => x.Embed = new EmbedBuilder()
-            {
-                Title = $"Comparison between {baseUser.Name} & {secondUser.Name}",
-                Description = $"{baseUser.Name} has **{expDifference}x** the experience of {secondUser.Name}\n" +
-                              $"Difference of **{FormatNumbers(Math.Abs((decimal)baseUser.Experience - secondUser.Experience))}** experience.\n\n" +
-                              $"{baseUser.Name} has **{FormatNumbers(baseUser.Experience)}** experience and is level **{baseUser.Level}**.\n" +
-                              $"{secondUser.Name} has **{FormatNumbers(secondUser.Experience)}** experience and is level **{secondUser.Level}**.",
-                Color = expDifference > 1 ? Color.DarkGreen : Color.DarkOrange
-            }
-            .Build());
+            var embed = new EmbedBuilder()
+                .WithTitle($"{baseUser.Name} vs {secondUser.Name}")
+                .WithColor(expDifference > 1 ? Color.DarkGreen : Color.DarkOrange)
+                .WithThumbnailUrl(Context.Guild.IconUrl)
+                .WithDescription(
+                    $"{baseUser.Name} has **{FormatNumbers(expDifference)}x** the experience of {secondUser.Name}\n" +
+                    $"Difference of **{FormatNumbers(Math.Abs((decimal)baseUser.Experience - secondUser.Experience))}** experience.\n\n")
+                .AddField($"{baseUser.Name}", $"Level **{baseUser.Level}**\nExperience: **{FormatNumbers(baseUser.Experience)}**", true)
+                .AddField($"{secondUser.Name}", $"Level **{secondUser.Level}**\nExperience: **{FormatNumbers(secondUser.Experience)}**", true)
+                .WithFooter(footer => footer
+                    .WithText($"Comparison requested by {Context.User.Username}#{Context.User.Discriminator}")
+                    .WithIconUrl(Context.User.GetAvatarUrl()))
+                .WithCurrentTimestamp()
+                .Build();
+
+            await ModifyOriginalResponseAsync(msg => msg.Embeds = new Embed[] { embed });
         }
 
         private static string FormatNumbers(decimal experiencePoints)
