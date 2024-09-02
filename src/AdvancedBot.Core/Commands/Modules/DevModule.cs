@@ -12,7 +12,7 @@ namespace AdvancedBot.Core.Commands.Modules
     [RequirePrivateList]
     public class DevModule : TopModule
     {
-        private InteractionService _interactions;
+        private readonly InteractionService _interactions;
 
         public DevModule(InteractionService interactions)
         {

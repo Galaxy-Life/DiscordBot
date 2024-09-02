@@ -13,7 +13,7 @@ namespace AdvancedBot.Core.Services
 {
     public class GLService
     {
-        private GLClient _client;
+        private readonly GLClient _client;
 
         public GLService(GLClient client)
         {

@@ -7,7 +7,7 @@ namespace AdvancedBot.Core.Services.DataStorage
 {
     public class BotStorage
     {
-        private LiteDBHandler _storage;
+        private readonly LiteDBHandler _storage;
 
         public BotStorage(LiteDBHandler storage)
         {

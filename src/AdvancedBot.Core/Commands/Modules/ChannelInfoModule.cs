@@ -13,7 +13,7 @@ namespace AdvancedBot.Core.Commands.Modules
     [RequireCustomPermission(GuildPermission.ManageChannels)]
     public class ChannelInfoModule : TopModule
     {
-        private ChannelCounterService _counter;
+        private readonly ChannelCounterService _counter;
 
         public ChannelInfoModule(ChannelCounterService counter)
         {

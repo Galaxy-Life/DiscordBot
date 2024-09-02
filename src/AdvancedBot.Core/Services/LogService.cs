@@ -15,10 +15,10 @@ namespace AdvancedBot.Core.Services
     public class LogService
     {
         private int _id = 0;
-        private LiteDBHandler _storage;
-        private CustomCommandService _commands;
-        private DiscordSocketClient _client;
-        private GLClient _gl;
+        private readonly LiteDBHandler _storage;
+        private readonly CustomCommandService _commands;
+        private readonly DiscordSocketClient _client;
+        private readonly GLClient _gl;
 
         public LogService(LiteDBHandler storage, CustomCommandService commands, DiscordSocketClient client, GLClient gl)
         {

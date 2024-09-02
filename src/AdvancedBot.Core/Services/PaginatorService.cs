@@ -12,9 +12,9 @@ namespace AdvancedBot.Core.Services
 {
     public class PaginatorService
     {
-        private List<PaginatedMessage> _activeMessages;
-        private ConcurrentDictionary<ulong, Timer> _activeTimers;
-        private DiscordSocketClient _client;
+        private readonly List<PaginatedMessage> _activeMessages;
+        private readonly ConcurrentDictionary<ulong, Timer> _activeTimers;
+        private readonly DiscordSocketClient _client;
 
         public PaginatorService(DiscordSocketClient client)
         {

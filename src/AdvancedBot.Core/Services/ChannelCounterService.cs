@@ -14,11 +14,11 @@ namespace AdvancedBot.Core.Services
 {
     public class ChannelCounterService
     {
-        private List<ChannelCounterInfo> _activeCounters = new List<ChannelCounterInfo>();
-        private DiscordSocketClient _client;
-        private GLClient _gl;
-        private AccountService _guild;
-        private Timer _timer = new Timer(6 * 60 * 1000);
+        private readonly List<ChannelCounterInfo> _activeCounters = new();
+        private readonly DiscordSocketClient _client;
+        private readonly GLClient _gl;
+        private readonly AccountService _guild;
+        private readonly Timer _timer = new(6 * 60 * 1000);
         private string _serverStatus = "Offline";
 
         public ChannelCounterService(DiscordSocketClient client, GLClient gl, AccountService guild)

@@ -9,7 +9,7 @@ namespace AdvancedBot.Core.Services.DataStorage
     public class LiteDBHandler
     {
         private const string _dbFileName = "Data.db";
-        private LiteDatabase _db = new LiteDatabase(_dbFileName);
+        private readonly LiteDatabase _db = new(_dbFileName);
 
         public void Store<T>(T item)
         {
