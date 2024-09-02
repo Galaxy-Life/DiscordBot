@@ -8,7 +8,15 @@ namespace AdvancedBot.Core.Commands.Preconditions
 {
     public class RequirePrivateList : PreconditionAttribute
     {
-        private List<ulong> _userIds = new List<ulong>() { 202095042372829184, 942849642931032164, 209801906237865984, 180676108088246272, 356060824223350784, 275698828974489612 };
+        private readonly List<ulong> _userIds = new() 
+        { 
+            202095042372829184, // svr333
+            942849642931032164, // lifecoder
+            209801906237865984, // kibble00
+            180676108088246272, // lodethebig
+            356060824223350784, // andyvv.
+            275698828974489612  // magniolya 
+        };
 
         public override async Task<PreconditionResult> CheckRequirementsAsync(IInteractionContext context, ICommandInfo commandInfo, IServiceProvider services)
         {

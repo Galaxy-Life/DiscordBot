@@ -19,8 +19,16 @@ namespace AdvancedBot.Core.Commands
         public PaginatorService Paginator { get; set; }
         public LogService LogService { get; set; }
 
-        public readonly List<ulong> PowerUsers = new List<ulong>() { 202095042372829184, 209801906237865984, 942849642931032164, 180676108088246272, 356060824223350784, 275698828974489612 };
-        public readonly List<ulong> SemiPowerUsers = new List<ulong>() { };
+        public readonly List<ulong> PowerUsers = new() 
+        { 
+            202095042372829184, // svr333
+            942849642931032164, // lifecoder
+            209801906237865984, // kibble00
+            180676108088246272, // lodethebig
+            356060824223350784, // andyvv.
+            275698828974489612  // magniolya
+        };
+        public readonly List<ulong> SemiPowerUsers = new() {};
 
         public override async Task BeforeExecuteAsync(ICommandInfo command)
         {
