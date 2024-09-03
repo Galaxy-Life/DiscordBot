@@ -1,0 +1,24 @@
+name: Console CI/CD
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 7
+          
+      - name: Build
+        working-directory: src/AdvancedBot.Console
+        run: |
+          dotnet build -c Release
