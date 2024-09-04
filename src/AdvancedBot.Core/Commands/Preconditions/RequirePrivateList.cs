@@ -14,7 +14,8 @@ namespace AdvancedBot.Core.Commands.Preconditions
             942849642931032164, // lifecoder
             180676108088246272, // lodethebig
             356060824223350784, // andyvv.
-            275698828974489612  // magniolya 
+            275698828974489612, // magniolya
+            424689465450037278  // bryan
         };
 
         public override async Task<PreconditionResult> CheckRequirementsAsync(IInteractionContext context, ICommandInfo commandInfo, IServiceProvider services)
