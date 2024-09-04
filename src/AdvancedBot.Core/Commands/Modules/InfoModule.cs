@@ -8,7 +8,7 @@ namespace AdvancedBot.Core.Commands.Modules
 {
     public class InfoModule : TopModule
     {
-        private CustomCommandService _commands;
+        private readonly CustomCommandService _commands;
 
         public InfoModule(CustomCommandService commands)
         {

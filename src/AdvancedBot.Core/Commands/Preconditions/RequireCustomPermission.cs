@@ -8,7 +8,7 @@ namespace AdvancedBot.Core.Commands.Preconditions
 {
     public class RequireCustomPermission : PreconditionAttribute
     {
-        private GuildPermission _permission;
+        private readonly GuildPermission _permission;
 
         public RequireCustomPermission(GuildPermission permission = default)
         {

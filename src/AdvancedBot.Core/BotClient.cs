@@ -16,12 +16,12 @@ namespace AdvancedBot.Core
 {
     public class BotClient
     {
-        private DiscordSocketClient _client;
-        private CustomCommandService _commands;
+        private readonly DiscordSocketClient _client;
+        private readonly CustomCommandService _commands;
         private IServiceProvider _services;
-        private InteractionService _interactions;
+        private readonly InteractionService _interactions;
         private AccountService _accounts;
-        private GLClient _glClient;
+        private readonly GLClient _glClient;
 
         public BotClient(CustomCommandService commands = null, DiscordSocketClient client = null)
         {
