@@ -196,10 +196,11 @@ namespace AdvancedBot.Core.Commands.Modules
                 .WithColor(expDifference > 1 ? Color.DarkGreen : Color.DarkOrange)
                 .WithThumbnailUrl(Context.Guild.IconUrl)
                 .WithDescription(
-                    $"{baseUser.Name} has **{FormatNumbers(expDifference)}x** the experience of {secondUser.Name}\n" +
-                    $"Difference of **{FormatNumbers(Math.Abs((decimal)baseUser.Experience - secondUser.Experience))}** experience.\n\n")
-                .AddField($"{baseUser.Name}", $"Level **{baseUser.Level}**\nExperience: **{FormatNumbers(baseUser.Experience)}**", true)
-                .AddField($"{secondUser.Name}", $"Level **{secondUser.Level}**\nExperience: **{FormatNumbers(secondUser.Experience)}**", true)
+                    $"{baseUser.Name} has **{FormatNumber(expDifference)}x** the experience of {secondUser.Name}\n" +
+                    $"Difference of **{FormatNumber(Math.Abs((decimal)baseUser.Experience - secondUser.Experience))}** experience.\n\n")
+                .AddField($"{baseUser.Name}", $"Level **{baseUser.Level}**\nExperience: **{FormatNumber(baseUser.Experience)}**", true)
+                .AddField("   vs   ", $"\u200B", true)
+                .AddField($"{secondUser.Name}", $"Level **{secondUser.Level}**\nExperience: **{FormatNumber(secondUser.Experience)}**", true)
                 .WithFooter(footer => footer
                     .WithText($"Comparison requested by {Context.User.Username}#{Context.User.Discriminator}")
                     .WithIconUrl(Context.User.GetAvatarUrl()))
@@ -209,24 +210,18 @@ namespace AdvancedBot.Core.Commands.Modules
             await ModifyOriginalResponseAsync(msg => msg.Embeds = new Embed[] { embed });
         }
 
-        private static string FormatNumbers(decimal experiencePoints)
+        private static string FormatNumber(decimal number)
         {
-            // 1bil<
-            if (experiencePoints > 1000000000) return $"{Math.Round(experiencePoints / 1000000000, 2)}B";
-
-            // 10mil< 
-            else if (experiencePoints > 10000000) return $"{Math.Round(experiencePoints / 1000000, 1)}M";
-
-            // 1mil< 
-            else if (experiencePoints > 1000000) return $"{Math.Round(experiencePoints / 1000000, 2)}M";
-
-            // 100K<
-            else if (experiencePoints > 10000) return $"{Math.Round(experiencePoints / 1000, 1)}K";
-
-            // 10K<
-            else if (experiencePoints > 10000) return $"{Math.Round(experiencePoints / 1000, 2)}K";
-
-            else return experiencePoints.ToString();
+            return number switch
+            {
+                >= 1_000_000_000 => $"{Math.Round(number / 1_000_000_000, 2)}B",
+                >= 10_000_000    => $"{Math.Round(number / 1_000_000, 1)}M",
+                >= 1_000_000     => $"{Math.Round(number / 1_000_000, 2)}M", 
+                >= 100_000       => $"{Math.Round(number / 1_000, 1)}K",
+                >= 10_000        => $"{Math.Round(number / 1_000, 2)}K",
+                _                => number.ToString()
+            };
         }
+
     }
 }
