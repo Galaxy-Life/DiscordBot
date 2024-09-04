@@ -148,7 +148,6 @@ namespace AdvancedBot.Core.Commands.Modules
             }
 
             [SlashCommand("removeuser", "Kicks a user from an alliance.")]
-
             public async Task RemoveUserFromAllianceAsync(string allianceName, uint userId)
             {
                 var alliance = await GLClient.Api.GetAlliance(allianceName);
