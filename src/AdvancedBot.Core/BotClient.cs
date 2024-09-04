@@ -83,7 +83,14 @@ namespace AdvancedBot.Core
         private async Task OnReadyAsync()
         {
             Console.Title = $"Running Discord Bot: {_client.CurrentUser.Username}";
-            await _client.SetGameAsync("Galaxy Life");
+
+            Game activity = new(
+              "Galaxy Life",
+              ActivityType.Watching,
+              ActivityProperties.Instance
+            );
+
+            await _client.SetActivityAsync(activity);
             Console.WriteLine($"Guild count: {_client.Guilds.Count}");
 
             await _interactions.AddModulesAsync(Assembly.GetExecutingAssembly(), _services);
