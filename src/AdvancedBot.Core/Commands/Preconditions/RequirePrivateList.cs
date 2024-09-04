@@ -12,7 +12,6 @@ namespace AdvancedBot.Core.Commands.Preconditions
         { 
             202095042372829184, // svr333
             942849642931032164, // lifecoder
-            209801906237865984, // kibble00
             180676108088246272, // lodethebig
             356060824223350784, // andyvv.
             275698828974489612  // magniolya 
