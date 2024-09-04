@@ -485,7 +485,7 @@ namespace AdvancedBot.Core.Commands.Modules
         [SlashCommand("compensatechips", "Compensate chips to all users")]
         public async Task CompensateChips(uint amount)
         {
-            _ = GLClient.Production.CompensateChips(amount);
+            await GLClient.Production.CompensateChips(amount);
 
             await LogService.LogGameActionAsync(LogAction.Compensate, Context.User.Id, 0, $"Chips:{amount}");
 
