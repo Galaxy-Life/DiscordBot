@@ -18,7 +18,7 @@ Then, set up an environement variable named `Token`, and assign it your discord 
 
 #### Visual Studio
 
-First set `AdvancedBot.Console` as your startup project.
+First set `AdvancedBot.Console` as your startup project.<br/>
 Right-click the solution and select `Set as your Startup Project`, or use `CTRL + ALT + P` to open the project properties and then set your startup project here.
 - Press `F5` to run the application in debug mode.
 
