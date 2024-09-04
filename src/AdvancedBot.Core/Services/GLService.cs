@@ -58,7 +58,7 @@ namespace AdvancedBot.Core.Services
                 : phoenixUser.Role == PhoenixRole.Administrator ? Color.DarkRed
                 : Color.LightGrey;
 
-            var displayAlliance = "User is not in an alliance";
+            var displayAlliance = "This user is not a member of any alliance.";
 
             if (!string.IsNullOrEmpty(user.AllianceId))
             {
@@ -67,33 +67,30 @@ namespace AdvancedBot.Core.Services
                 // can happen due to 24hour player delay
                 if (alliance == null)
                 {
-                    displayAlliance = "User has recently changed alliance, please wait for it to update!";
+                    displayAlliance = "This user has recently changed alliance, please wait for it to update!";
                 }
                 else
                 {
-                    displayAlliance = $"User is in **{alliance.Name}**.";
+                    displayAlliance = $"This user is a member of **{alliance.Name}**.";
                 }
             }
 
             var embed = new EmbedBuilder()
-                .WithTitle($"{roleText} {phoenixUser.UserName}")
-                .WithDescription($"Id: **{phoenixUser.UserId}**\n{displayAlliance}\n\u200b")
+                .WithTitle($"Profile | {roleText} {phoenixUser.UserName}")
+                .WithThumbnailUrl(user.Avatar)
+                .WithDescription($"{displayAlliance}\n\u200b")
+                .AddField("Level", FormatNumber(user.Level), true)
+                .AddField("Starbase", user.Planets[0].HQLevel, true)
+                .AddField("Colonies", user.Planets.Count(x => x != null) - 1, true)
                 .WithColor(color)
-                .WithFooter($"Account created on {phoenixUser.Created.GetValueOrDefault().ToString("dd MMMM yyyy a\\t HH:mm")}");
+                .WithFooter(footer => footer
+                    .WithText($"ID: {phoenixUser.UserId} • Account created on {phoenixUser.Created.GetValueOrDefault():dd MMMM yyyy a\\t HH:mm}")
+                    .WithIconUrl(user.Avatar));
 
             if (!string.IsNullOrEmpty(phoenixUser.SteamId))
             {
                 embed.WithUrl($"https://steamcommunity.com/profiles/{steamId.Replace("\"", "")}");
             }
-
-            if (user != null)
-            {
-                embed.WithThumbnailUrl(user.Avatar);
-            }
-
-            embed.AddField("Level", FormatNumbers(user.Level), true);
-            embed.AddField("Starbase", user.Planets[0].HQLevel, true);
-            embed.AddField("Colonies", user.Planets.Count(x => x != null) - 1, true);
 
             var message = new ResponseMessage("", new Embed[] { embed.Build() });
             return new ModResult(ModResultType.Success, message, phoenixUser, user);
