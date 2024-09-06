@@ -495,7 +495,7 @@ namespace AdvancedBot.Core.Commands.Modules
         [SlashCommand("compensateitems", "Compensate items to all users")]
         public async Task CompensateItems(string sku, uint amount)
         {
-            await GLClient.Production.CompensateItems(sku, amount);
+            _ = GLClient.Production.CompensateItems(sku, amount);
 
             await LogService.LogGameActionAsync(LogAction.Compensate, Context.User.Id, 0, $"Items:{sku}:{amount}");
 
