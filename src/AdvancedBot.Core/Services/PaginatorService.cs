@@ -47,7 +47,7 @@ namespace AdvancedBot.Core.Services
                 AddNewTimer(message.Id);
             }
 
-            await GoToFirstPageAsync(message.Id);
+            await GoToFirstPageAsync(context.Interaction, message.Id);
         }
 
         public void AddNewTimer(ulong messageId)
@@ -100,16 +100,16 @@ namespace AdvancedBot.Core.Services
                 switch (component.Data.CustomId)
                 {
                     case "first":
-                        await GoToFirstPageAsync(component.Message.Id);
+                        await GoToFirstPageAsync(interaction, component.Message.Id);
                         break;
                     case "previous":
-                        await GoToPreviousPageAsync(component.Message.Id);
+                        await GoToPreviousPageAsync(interaction, component.Message.Id);
                         break;
                     case "next":
-                        await GoToNextPageAsync(component.Message.Id);
+                        await GoToNextPageAsync(interaction, component.Message.Id);
                         break;
                     case "last":
-                        await GoToLastPageAsync(component.Message.Id);
+                        await GoToLastPageAsync(interaction, component.Message.Id);
                         break;
                 }
 
@@ -128,32 +128,28 @@ namespace AdvancedBot.Core.Services
             return builder.Build();
         }
 
-        private async Task HandleUpdateMessagePagesAsync(PaginatedMessage msg)
-        {
-            var message = await (_client.GetChannel(msg.DiscordChannelId) as SocketTextChannel).GetMessageAsync(msg.DiscordMessageId) as SocketUserMessage;
-            var oldEmbed = message.Embeds.First();
+        private static async Task HandleUpdateMessagePagesAsync(SocketInteraction interaction, PaginatedMessage msg)
+        { 
+            var channel = interaction.Channel;
+            var message = await channel.GetMessageAsync(msg.DiscordMessageId);           
+
+            var originalEmbed = message.Embeds.First();
+
+            var updatedEmbed = new EmbedBuilder()
+                .WithTitle($"{originalEmbed.Title.Split('(').First().Trim()} (Page {msg.CurrentPage})")
+                .WithColor(originalEmbed.Color ?? Color.DarkBlue)
+                .WithThumbnailUrl(originalEmbed.Thumbnail?.Url)
+                .WithFooter(originalEmbed.Footer?.Text, originalEmbed.Footer?.IconUrl)
+                .WithUrl(originalEmbed.Url);
+
+            if (originalEmbed.Timestamp.HasValue) updatedEmbed.WithCurrentTimestamp();
             
-            var newEmbed = new EmbedBuilder()
-                .WithTitle($"{oldEmbed.Title.Split('(').First()}(Page {msg.CurrentPage})")
-                .WithColor(oldEmbed.Color ?? Color.DarkBlue)
-                .WithUrl(oldEmbed.Url);
-
-            if (oldEmbed.Footer != null)
-            {
-                newEmbed.WithFooter(oldEmbed.Footer.Value.Text, oldEmbed.Footer.Value.IconUrl);
-            }
-
-            if (oldEmbed.Timestamp != null)
-            {
-                newEmbed.WithCurrentTimestamp();
-            }
-
             if (msg.DisplayMessages != null)
             {
                 // get correct messages to display
                 var displayMessages = msg.DisplayMessages.Skip((msg.CurrentPage - 1) * 10).Take(10);
                 
-                newEmbed.Description = string.Join("\n", displayMessages);
+                updatedEmbed.Description = string.Join("\n", displayMessages);
             }
             else
             {
@@ -161,39 +157,39 @@ namespace AdvancedBot.Core.Services
 
                 for (int i = 0; i < displayFields.Length; i++)
                 {
-                    newEmbed.AddField(displayFields[i].Name, displayFields[i].Value, displayFields[i].Inline);
+                    updatedEmbed.AddField(displayFields[i].Name, displayFields[i].Value, displayFields[i].Inline);
                 }
             }
 
-            await message.ModifyAsync(msg => msg.Embeds = new Embed[] { newEmbed.Build() });
+            await channel.ModifyMessageAsync(msg.DiscordMessageId, msg => msg.Embeds = new Embed[] { updatedEmbed.Build() });
         }
 
-        private async Task GoToLastPageAsync(ulong id)
+        private async Task GoToLastPageAsync(SocketInteraction interaction, ulong id)
         {
             var paginatorMessage = _activeMessages.Find(x => x.DiscordMessageId == id);
             paginatorMessage.CurrentPage = paginatorMessage.TotalPages;
-            await HandleUpdateMessagePagesAsync(paginatorMessage);
+            await HandleUpdateMessagePagesAsync(interaction, paginatorMessage);
         }
 
-        private async Task GoToFirstPageAsync(ulong id)
+        private async Task GoToFirstPageAsync(SocketInteraction interaction, ulong id)
         {
             var paginatorMessage = _activeMessages.Find(x => x.DiscordMessageId == id);
             paginatorMessage.CurrentPage = 1;
-            await HandleUpdateMessagePagesAsync(paginatorMessage);
+            await HandleUpdateMessagePagesAsync(interaction, paginatorMessage);
         }
 
-        private async Task GoToNextPageAsync(ulong id)
+        private async Task GoToNextPageAsync(SocketInteraction interaction, ulong id)
         {
             var paginatorMessage = _activeMessages.First(x => x.DiscordMessageId == id);
             paginatorMessage.CurrentPage++;
-            await HandleUpdateMessagePagesAsync(paginatorMessage);
+            await HandleUpdateMessagePagesAsync(interaction, paginatorMessage);
         }
 
-        private async Task GoToPreviousPageAsync(ulong id)
+        private async Task GoToPreviousPageAsync(SocketInteraction interaction, ulong id)
         {
             var paginatorMessage = _activeMessages.Find(x => x.DiscordMessageId == id);
             paginatorMessage.CurrentPage--;
-            await HandleUpdateMessagePagesAsync(paginatorMessage);
+            await HandleUpdateMessagePagesAsync(interaction, paginatorMessage);
         }
     }
 }
