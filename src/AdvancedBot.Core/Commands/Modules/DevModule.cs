@@ -57,7 +57,7 @@ namespace AdvancedBot.Core.Commands.Modules
         }
 
         [SlashCommand("addmoduletoguild", "Adds moderation command to guild")]
-        [EnabledInDm(false)]
+        [CommandContextType(InteractionContextType.Guild, InteractionContextType.PrivateChannel)]
         public async Task AddModerationModuleToGuildAsync(string guildId, string modulename)
         {
             var module = _interactions.Modules.First(module => module.Name.ToLower() == modulename.ToLower());
