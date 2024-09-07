@@ -18,11 +18,16 @@ namespace AdvancedBot.Core.Commands.Modules
         {
             var status = await GLClient.Api.GetServerStatus();
 
+            var thumbnailUrl = 
+                Context.Channel is IGuildChannel 
+              ? Context.Guild.IconUrl 
+              : Context.Client.CurrentUser.GetDisplayAvatarUrl();
+
             var embed = new EmbedBuilder()
                 .WithTitle($"Server Status")
                 .WithColor(Color.DarkBlue)
                 .WithDescription("Here is the current status of all Galaxy Life servers.\n\u200b")
-                .WithThumbnailUrl(Context.Guild.IconUrl)
+                .WithThumbnailUrl(thumbnailUrl)
                 .WithFooter(footer => footer
                     .WithText($"Servers status requested by {Context.User.Username}#{Context.User.Discriminator}")
                     .WithIconUrl(Context.User.GetAvatarUrl()))
@@ -102,6 +107,11 @@ namespace AdvancedBot.Core.Commands.Modules
             List<string> displayTexts = new() { "Failed to get information" };
             var title = "Galaxy Life Leaderboard";
 
+            var thumbnailUrl = 
+                Context.Channel is IGuildChannel 
+              ? Context.Guild.IconUrl 
+              : Context.Client.CurrentUser.GetDisplayAvatarUrl();
+
             switch (type)
             {
                 case "attackXp":
@@ -154,7 +164,7 @@ namespace AdvancedBot.Core.Commands.Modules
                 new EmbedBuilder()
                     .WithTitle(title)
                     .WithColor(Color.Purple)
-                    .WithThumbnailUrl(Context.Guild.IconUrl)
+                    .WithThumbnailUrl(thumbnailUrl)
                     .WithFooter(footer => footer
                         .WithText($"Leaderbard requested by {Context.User.Username}#{Context.User.Discriminator}")
                         .WithIconUrl(Context.User.GetAvatarUrl()))
@@ -186,6 +196,11 @@ namespace AdvancedBot.Core.Commands.Modules
                 return;
             }
 
+            var thumbnailUrl = 
+                Context.Channel is IGuildChannel 
+              ? Context.Guild.IconUrl 
+              : Context.Client.CurrentUser.GetDisplayAvatarUrl();
+
             var baseUserStats = await GLClient.Api.GetUserStats(baseUser.Id);
             var secondUserStats = await GLClient.Api.GetUserStats(secondUser.Id);
 
@@ -194,7 +209,7 @@ namespace AdvancedBot.Core.Commands.Modules
             var embed = new EmbedBuilder()
                 .WithTitle($"{baseUser.Name} vs {secondUser.Name}")
                 .WithColor(expDifference > 1 ? Color.DarkGreen : Color.DarkOrange)
-                .WithThumbnailUrl(Context.Guild.IconUrl)
+                .WithThumbnailUrl(thumbnailUrl)
                 .WithDescription(
                     $"{baseUser.Name} has **{FormatNumber(expDifference)}x** the experience of {secondUser.Name}\n" +
                     $"Difference of **{FormatNumber(Math.Abs((decimal)baseUser.Experience - secondUser.Experience))}** experience.\n\n")
