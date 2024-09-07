@@ -176,7 +176,7 @@ namespace AdvancedBot.Core.Commands.Modules
         [SlashCommand("compare", "Compare two players on base statistics", false, RunMode.Async)]
         public async Task CompareUsersAsync(string firstPlayer, string secondPlayer)
         {
-            if (firstPlayer.ToLower() == secondPlayer.ToLower())
+            if (firstPlayer.Equals(secondPlayer, StringComparison.CurrentCultureIgnoreCase))
             {
                 await ModifyOriginalResponseAsync(msg => msg.Content = $"You must compare two differents players!");
             }
