@@ -115,32 +115,32 @@ namespace AdvancedBot.Core.Commands.Modules
             switch (type)
             {
                 case "attackXp":
-                    title = "Experience from attacks | Leaderboard";
+                    title = "Experience from attacks";
                     displayTexts = (await GLClient.Api.GetXpFromAttackLeaderboard())
                         .Select(player => $"<:RedExp:1082428998182768701>{player.Level} **{player.Name}**")
                         .ToList();
                     break;
                 case "rivalsWon":
-                    title = "Rivals | Leaderboard";
+                    title = "Rivals";
                     displayTexts = (await GLClient.Api.GetRivalsWonLeaderboard())
                         .Select(player => $"<:pistol:1082429024963395674>{player.RivalsWon} **{player.Name}**")
                         .ToList();
                     break;
                 case "warpoints":
-                    title = "Warpoints | Leaderboard";
+                    title = "Warpoints";
                     displayTexts = (await GLClient.Api.GetWarpointLeaderboard())
                         .Select(player => $"<:Starling_Frenchling:1080133173352091708>{player.Warpoints} **{player.Name}**")
                         .ToList();
                     break;
                 case "alliancewarpoints":
-                    title = "Alliances | Leaderboard";
+                    title = "Alliances";
                     displayTexts = (await GLClient.Api.GetAllianceWarpointLeaderboard())
                         .Select(alliance => $"<:TopNotch:1117073442236276809>{alliance.Warpoints} **{alliance.Name}**")
                         .ToList();
                     break;
                 default:
                 case "xp":
-                    title = "Experience | Leaderboard";
+                    title = "Experience";
                     displayTexts = (await GLClient.Api.GetXpLeaderboard())
                         .Select(player => $"<:eplayerperience:920289172428849182> {player.Level} **{player.Name}**")
                         .ToList();
@@ -149,7 +149,7 @@ namespace AdvancedBot.Core.Commands.Modules
 
             if (displayTexts.Count == 0)
             {
-                await ModifyOriginalResponseAsync(msg => msg.Content = $"<:BAAWorker_Happy:943308706555260928> Servers are still loading the leaderboard, please be patient!");
+                await ModifyOriginalResponseAsync(msg => msg.Content = $"<:BAAWorker_Happy:943308706555260928> Unable to retrieve the {title} leaderboard, please try again later.");
                 return;
             }
 
@@ -162,7 +162,7 @@ namespace AdvancedBot.Core.Commands.Modules
                 null, 
                 displayTexts, 
                 new EmbedBuilder()
-                    .WithTitle(title)
+                    .WithTitle($"Leaderboard | {title}")
                     .WithColor(Color.Purple)
                     .WithThumbnailUrl(thumbnailUrl)
                     .WithFooter(footer => footer

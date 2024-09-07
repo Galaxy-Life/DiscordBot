@@ -526,92 +526,92 @@ namespace AdvancedBot.Core.Commands.Modules
             switch (type)
             {
                 case "attackXp":
-                    title = "Experience from attacks | Leaderboard";
+                    title = "Experience from attacks";
                     displayTexts = (await GLClient.Api.GetXpFromAttackLeaderboard())
                         .Select(player => $"<:RedExp:1082428998182768701>{player.Level} **{player.Name}**")
                         .ToList();
                     break;
                 case "rivalsWon":
-                    title = "Rivals | Leaderboard";
+                    title = "Rivals";
                     displayTexts = (await GLClient.Api.GetRivalsWonLeaderboard())
                         .Select(player => $"<:pistol:1082429024963395674>{player.RivalsWon} **{player.Name}**")
                         .ToList();
                     break;
                 case "chips":
-                    title = "Chips | Leaderboard";
+                    title = "Chips";
                     displayTexts = (await GLClient.Api.GetChipsLeaderboard())
                         .Select(player => $"<:Resource_Chip:943313446940868678>{player.Chips} **{player.Name}**")
                         .ToList();
                     break;
                 case "chipsSpent":
-                    title = "Chips Spent | Leaderboard";
+                    title = "Chips Spent";
                     displayTexts = (await GLClient.Api.GetChipsSpentLeaderboard())
                         .Select(player => $"<:Resource_PileOfChips:943313554742865951>{player.ChipsSpent} **{player.Name}**")
                         .ToList();
                     break;
                 case "friendsHelped":
-                    title = "Friends Helped | Leaderboard";
+                    title = "Friends Helped";
                     displayTexts = (await GLClient.Api.GetFriendsHelpedLeaderboard())
                         .Select(player => $"<:Starling_Sorry:943311734196809821>{player.FriendsHelped} **{player.Name}**")
                         .ToList();
                     break;
                 case "giftsReceived":
-                    title = "Gifts Received | Leaderboard";
+                    title = "Gifts Received";
                     displayTexts = (await GLClient.Api.GetGiftsReceivedLeaderboard())
                         .Select(player => $"<:Story_Chubi_Happy:943325609113833492>{player.GiftsReceived} **{player.Name}**")
                         .ToList();
                     break;
                 case "giftsSent":
-                    title = "Gifts Sent | Leaderboard";
+                    title = "Gifts Sent";
                     displayTexts = (await GLClient.Api.GetGiftsSentLeaderboard())
                         .Select(player => $"<:Starling_Gentleman:945539138311061554>{player.GiftsSent} **{player.Name}**")
                         .ToList();
                     break;
                 case "starsVisited":
-                    title = "Stars Visited | Leaderboard";
+                    title = "Stars Visited";
                     displayTexts = (await GLClient.Api.GetStarsVisitedLeaderboard())
                         .Select(player => $"⭐{player.StarsVisited} **{player.Name}**")
                         .ToList();
                     break;
                 case "obstaclesRecycled":
-                    title = "Obstacles Recycled | Leaderboard";
+                    title = "Obstacles Recycled";
                     displayTexts = (await GLClient.Api.GetObstaclesRecycledLeaderboard())
                         .Select(player => $"<:TouchGrass:1085581198690099281>{player.ObstaclesRecycled} **{player.Name}**")
                         .ToList();
                     break;
                 case "utilityUsed":
-                    title = "Utility Used | Leaderboard";
+                    title = "Utility Used";
                     displayTexts = (await GLClient.Api.GetUtilityUsedLeaderboard())
                         .Select(player => $"<:Nuke:1034465682835898408>{player.UtilityUsed} **{player.Name}**")
                         .ToList();
                     break;
                 case "item":
-                    title = $"Item {sku} | Leaderboard";
+                    title = $"Item {sku}";
                     displayTexts = (await GLClient.Api.GetItemLeaderboard(sku))
                         .Select(player => $"<:Item_Helmet:1084821573975945267>{player.Quantity} **{player.Name}**")
                         .ToList();
                     break;
                 case "warpoints":
-                    title = $"Warpoints | Leaderboard";
+                    title = $"Warpoints";
                     displayTexts = (await GLClient.Api.GetWarpointLeaderboard())
                         .Select(player => $"<:Starling_Frenchling:1080133173352091708>{player.Warpoints} **{player.Name}** ({player.AllianceName})")
                         .ToList();
                     break;
                 case "alliancewarpoints":
-                    title = $"Alliance | Leaderboard";
+                    title = $"Alliances";
                     displayTexts = (await GLClient.Api.GetAllianceWarpointLeaderboard())
                         .Select(alliance => $"<:TopNotch:945458565538279515>{alliance.Warpoints} **{alliance.Name}** ({alliance.MemberCount} members)")
                         .ToList();
                     break;
                 case "advchips":
-                    title = $"Advanced Chips | Leaderboard";
+                    title = $"Advanced Chips";
                     displayTexts = (await GLClient.Api.GetAdvancedChipsLb())
                         .Select(player => $"<:Resource_PileOfChips:943313554742865951>{player.Chips + player.ChipsSpent - player.ChipsPurchased} **{player.Name}**")
                         .ToList();
                     break;
                 default:
                 case "xp":
-                    title = "Experience | Leaderboard";
+                    title = "Experience";
                     displayTexts = (await GLClient.Api.GetXpLeaderboard())
                         .Select(player => $"<:eplayerperience:920289172428849182> {player.Level} **{player.Name}**")
                         .ToList();
@@ -620,7 +620,7 @@ namespace AdvancedBot.Core.Commands.Modules
 
             if (displayTexts.Count == 0)
             {
-                await ModifyOriginalResponseAsync(msg => msg.Content = $"<:Starling_WorkerHappy:943308706555260928> Servers are still loading the leaderboard, please be patient!");
+                await ModifyOriginalResponseAsync(msg => msg.Content = $"<:BAAWorker_Happy:943308706555260928> Unable to retrieve the {title} leaderboard, please try again later.");
                 return;
             }
 
@@ -630,7 +630,7 @@ namespace AdvancedBot.Core.Commands.Modules
             }
 
             var embed = new EmbedBuilder()
-                .WithTitle(title)
+                .WithTitle($"Leaderboard | {title}")
                 .WithColor(Color.Purple);
 
             await SendPaginatedMessageAsync(null, displayTexts, embed);
