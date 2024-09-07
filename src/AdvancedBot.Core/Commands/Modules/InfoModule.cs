@@ -40,9 +40,18 @@ namespace AdvancedBot.Core.Commands.Modules
             }
 
             var title = Context.Interaction.IsDMInteraction ? $"Stats for {Context.User.Username}'s DMS" : $"Stats for {Context.Guild.Name}";
+            var thumbnailUrl = Context.Interaction.IsDMInteraction ? Context.User.GetDisplayAvatarUrl() : Context.Guild.IconUrl;
 
             var templateEmbed = new EmbedBuilder()
-                .WithTitle(title);
+                .WithTitle(title)
+                .WithThumbnailUrl(thumbnailUrl)
+                .WithFooter(footer => footer
+                    .WithText($"{(
+                        Context.Interaction.IsDMInteraction
+                        ? $"{Context.User.Username}'s DMS stats"
+                        : $"{Context.Guild.Name} guild stats")} requested by {Context.User.Username}#{Context.User.Discriminator}")
+                    .WithIconUrl(Context.User.GetDisplayAvatarUrl()))
+                .WithCurrentTimestamp();
 
             await SendPaginatedMessageAsync(fields, null, templateEmbed);
         }
