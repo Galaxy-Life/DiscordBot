@@ -96,7 +96,7 @@ namespace AdvancedBot.Core.Commands.Modules
                 .WithColor(Color.Green)
                 .WithFooter(footer => footer
                     .WithText($"Staging progress reset requested by {Context.User.Username}#{Context.User.Discriminator}")
-                    .WithIconUrl(Context.User.GetAvatarUrl()))
+                    .WithIconUrl(Context.User.GetDisplayAvatarUrl()))
                 .WithCurrentTimestamp()
                 .Build();
 

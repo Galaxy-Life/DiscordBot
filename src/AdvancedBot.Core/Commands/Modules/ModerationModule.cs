@@ -62,7 +62,7 @@ namespace AdvancedBot.Core.Commands.Modules
                     .AddField("W/L", $"{winLossRatio}%", true)
                     .WithFooter(footer => footer
                         .WithText($"Warlogs requested by {Context.User.Username}#{Context.User.Discriminator}")
-                        .WithIconUrl(Context.User.GetAvatarUrl()))
+                        .WithIconUrl(Context.User.GetDisplayAvatarUrl()))
                     .WithCurrentTimestamp();
 
                 await SendPaginatedMessageAsync(null, texts, templateEmbed);
@@ -102,7 +102,7 @@ namespace AdvancedBot.Core.Commands.Modules
                     .WithColor(Color.Green)
                     .WithFooter(footer => footer
                         .WithText($"Alliance rename requested by {Context.User.Username}#{Context.User.Discriminator}")
-                        .WithIconUrl(Context.User.GetAvatarUrl()))
+                        .WithIconUrl(Context.User.GetDisplayAvatarUrl()))
                     .WithCurrentTimestamp()
                     .Build();
 
@@ -140,7 +140,7 @@ namespace AdvancedBot.Core.Commands.Modules
                     .WithColor(Color.Green)
                     .WithFooter(footer => footer
                         .WithText($"Ownership transfer requested by {Context.User.Username}#{Context.User.Discriminator}")
-                        .WithIconUrl(Context.User.GetAvatarUrl()))
+                        .WithIconUrl(Context.User.GetDisplayAvatarUrl()))
                     .WithCurrentTimestamp()
                     .Build();
 
@@ -179,7 +179,7 @@ namespace AdvancedBot.Core.Commands.Modules
                     .WithColor(Color.Green)
                     .WithFooter(footer => footer
                         .WithText($"Kick requested by {Context.User.Username}#{Context.User.Discriminator}")
-                        .WithIconUrl(Context.User.GetAvatarUrl()))
+                        .WithIconUrl(Context.User.GetDisplayAvatarUrl()))
                     .WithCurrentTimestamp()
                     .Build();
 
@@ -226,7 +226,7 @@ namespace AdvancedBot.Core.Commands.Modules
                 .AddField("Account creation date", $"{user.Created.GetValueOrDefault():dd MMMM yyyy a\\t HH:mm}", true)
                 .WithFooter(footer => footer
                     .WithText($"Full profile requested by {Context.User.Username}#{Context.User.Discriminator}")
-                    .WithIconUrl(Context.User.GetAvatarUrl()))
+                    .WithIconUrl(Context.User.GetDisplayAvatarUrl()))
                 .WithCurrentTimestamp();
 
             if (user.SteamId != null)
@@ -284,7 +284,7 @@ namespace AdvancedBot.Core.Commands.Modules
                 .WithColor(Color.Green)
                 .WithFooter(footer => footer
                     .WithText($"Email change requested by {Context.User.Username}#{Context.User.Discriminator}")
-                    .WithIconUrl(Context.User.GetAvatarUrl()))
+                    .WithIconUrl(Context.User.GetDisplayAvatarUrl()))
                 .WithCurrentTimestamp()
                 .Build();
 
@@ -327,7 +327,7 @@ namespace AdvancedBot.Core.Commands.Modules
                 .WithColor(backendSuccess ? Color.Green : Color.Orange)
                 .WithFooter(footer => footer
                     .WithText($"Username change requested by {Context.User.Username}#{Context.User.Discriminator}")
-                    .WithIconUrl(Context.User.GetAvatarUrl()))
+                    .WithIconUrl(Context.User.GetDisplayAvatarUrl()))
                 .WithCurrentTimestamp()
                 .Build();
 
@@ -429,7 +429,7 @@ namespace AdvancedBot.Core.Commands.Modules
                 .WithColor(Color.Green)
                 .WithFooter(footer => footer
                     .WithText($"Offline kick requested by {Context.User.Username}#{Context.User.Discriminator}")
-                    .WithIconUrl(Context.User.GetAvatarUrl()))
+                    .WithIconUrl(Context.User.GetDisplayAvatarUrl()))
                 .WithCurrentTimestamp()
                 .Build();
 
@@ -461,7 +461,7 @@ namespace AdvancedBot.Core.Commands.Modules
                 .WithColor(Color.Green)
                 .WithFooter(footer => footer
                     .WithText($"Progress reset requested by {Context.User.Username}#{Context.User.Discriminator}")
-                    .WithIconUrl(Context.User.GetAvatarUrl()))
+                    .WithIconUrl(Context.User.GetDisplayAvatarUrl()))
                 .WithCurrentTimestamp()
                 .Build();
 

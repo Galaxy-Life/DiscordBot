@@ -32,7 +32,7 @@ namespace AdvancedBot.Core.Commands
         public async Task SendBotInfoAsync(IInteractionContext context)
         { 
             var botName = context.Client.CurrentUser.Username;
-            var botAvatar = context.Client.CurrentUser.GetAvatarUrl() ?? context.Client.CurrentUser.GetDefaultAvatarUrl(); 
+            var botAvatar = context.Client.CurrentUser.GetDisplayAvatarUrl(); 
 
             var repoLink = string.IsNullOrEmpty(_sourceRepo) ? $"Unavailable" : $"[GitHub repository]({_sourceRepo})";
             var docsLink = string.IsNullOrEmpty(_documentationUrl) ? $"Unavailable" : $"[Read the docs]({_documentationUrl})";
@@ -47,7 +47,7 @@ namespace AdvancedBot.Core.Commands
                 .AddField("Source Code", repoLink, true)
                 .WithFooter(footer => footer
                     .WithText($"Bot information requested by {context.User.Username}#{context.User.Discriminator}")
-                    .WithIconUrl(context.User.GetAvatarUrl()))
+                    .WithIconUrl(context.User.GetDisplayAvatarUrl()))
                 .WithCurrentTimestamp();
 
             if (!_botIsPrivate)

@@ -30,7 +30,7 @@ namespace AdvancedBot.Core.Commands.Modules
                 .WithThumbnailUrl(thumbnailUrl)
                 .WithFooter(footer => footer
                     .WithText($"Servers status requested by {Context.User.Username}#{Context.User.Discriminator}")
-                    .WithIconUrl(Context.User.GetAvatarUrl()))
+                    .WithIconUrl(Context.User.GetDisplayAvatarUrl()))
                 .WithCurrentTimestamp();
 
             for (int i = 0; i < status.Count; i++)
@@ -167,7 +167,7 @@ namespace AdvancedBot.Core.Commands.Modules
                     .WithThumbnailUrl(thumbnailUrl)
                     .WithFooter(footer => footer
                         .WithText($"Leaderbard requested by {Context.User.Username}#{Context.User.Discriminator}")
-                        .WithIconUrl(Context.User.GetAvatarUrl()))
+                        .WithIconUrl(Context.User.GetDisplayAvatarUrl()))
                     .WithCurrentTimestamp()
                     
             );
@@ -218,7 +218,7 @@ namespace AdvancedBot.Core.Commands.Modules
                 .AddField($"{secondUser.Name}", $"Level **{secondUser.Level}**\nExperience: **{FormatNumber(secondUser.Experience)}**", true)
                 .WithFooter(footer => footer
                     .WithText($"Comparison requested by {Context.User.Username}#{Context.User.Discriminator}")
-                    .WithIconUrl(Context.User.GetAvatarUrl()))
+                    .WithIconUrl(Context.User.GetDisplayAvatarUrl()))
                 .WithCurrentTimestamp()
                 .Build();
 
