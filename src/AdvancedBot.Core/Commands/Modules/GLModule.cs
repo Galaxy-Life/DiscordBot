@@ -179,6 +179,7 @@ namespace AdvancedBot.Core.Commands.Modules
             if (firstPlayer.Equals(secondPlayer, StringComparison.CurrentCultureIgnoreCase))
             {
                 await ModifyOriginalResponseAsync(msg => msg.Content = $"You must compare two differents players!");
+                return;
             }
 
             var baseUser = await GetUserByInput(firstPlayer);
