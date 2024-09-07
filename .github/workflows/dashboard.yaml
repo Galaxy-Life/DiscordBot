@@ -16,10 +16,9 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: 7
-          
+          dotnet-version: 8
+
       - name: Build
         working-directory: src/AdvancedBot.Dashboard
         run: |
           dotnet build -c Release
-
