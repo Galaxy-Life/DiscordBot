@@ -523,6 +523,11 @@ namespace AdvancedBot.Core.Commands.Modules
             List<string> displayTexts = new() { "Failed to get information" };
             var title = "Galaxy Life Leaderboard";
 
+            var thumbnailUrl =
+                Context.Channel is IGuildChannel
+              ? Context.Guild.IconUrl
+              : Context.Client.CurrentUser.GetDisplayAvatarUrl();
+
             switch (type)
             {
                 case "attackXp":
@@ -631,7 +636,12 @@ namespace AdvancedBot.Core.Commands.Modules
 
             var embed = new EmbedBuilder()
                 .WithTitle($"Leaderboard | {title}")
-                .WithColor(Color.Purple);
+                .WithColor(Color.Purple)
+                .WithThumbnailUrl(thumbnailUrl)
+                .WithFooter(footer => footer
+                    .WithText($"Leaderboard requested by {Context.User.Username}#{Context.User.Discriminator}")
+                    .WithIconUrl(Context.User.GetDisplayAvatarUrl()))
+                .WithCurrentTimestamp();
 
             await SendPaginatedMessageAsync(null, displayTexts, embed);
 
