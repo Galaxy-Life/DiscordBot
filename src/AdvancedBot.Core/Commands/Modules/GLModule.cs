@@ -166,7 +166,7 @@ namespace AdvancedBot.Core.Commands.Modules
                     .WithColor(Color.Purple)
                     .WithThumbnailUrl(thumbnailUrl)
                     .WithFooter(footer => footer
-                        .WithText($"Leaderbard requested by {Context.User.Username}#{Context.User.Discriminator}")
+                        .WithText($"Leaderboard requested by {Context.User.Username}#{Context.User.Discriminator}")
                         .WithIconUrl(Context.User.GetDisplayAvatarUrl()))
                     .WithCurrentTimestamp()
                     
