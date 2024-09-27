@@ -508,7 +508,7 @@ namespace AdvancedBot.Core.Services
 
             if (!success)
             {
-                return new ModResult(ModResultType.BackendError, new ResponseMessage($"Failed to reset helps for {userId}!"));
+                return new ModResult(ModResultType.BackendError, new ResponseMessage($"Failed to reset helps for user with id {userId}!"));
             }
 
             await logs.LogGameActionAsync(LogAction.ResetHelps, discordId, 0, "Staging");
