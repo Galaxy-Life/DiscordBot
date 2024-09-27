@@ -1,5 +1,5 @@
-using AdvancedBot.Core.Entities.Enums;
 using System;
+using AdvancedBot.Core.Entities.Enums;
 
 namespace AdvancedBot.Core.Entities
 {

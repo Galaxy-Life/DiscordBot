@@ -1,11 +1,11 @@
+using System;
+using System.Threading.Tasks;
 using AdvancedBot.Core.Commands.Preconditions;
 using AdvancedBot.Core.Entities;
 using AdvancedBot.Core.Entities.Enums;
 using AdvancedBot.Core.Services;
 using Discord;
 using Discord.Interactions;
-using System;
-using System.Threading.Tasks;
 
 namespace AdvancedBot.Core.Commands.Modules
 {
@@ -13,11 +13,11 @@ namespace AdvancedBot.Core.Commands.Modules
     [RequireCustomPermission(GuildPermission.ManageChannels)]
     public class ChannelInfoModule : TopModule
     {
-        private readonly ChannelCounterService _counter;
+        private readonly ChannelCounterService counter;
 
         public ChannelInfoModule(ChannelCounterService counter)
         {
-            _counter = counter;
+            this.counter = counter;
         }
 
         [SlashCommand("setup", "Set up the channel counter")]
@@ -34,8 +34,8 @@ namespace AdvancedBot.Core.Commands.Modules
             {
                 var counter = new ChannelCounter(voiceChannel.Id, ChannelCounterType.FlashStatus);
 
-                _counter.AddNewChannelCounter(Context.Guild.Id, counter);
-                await _counter.UpdateChannelAsync(Accounts.GetOrCreateAccount(Context.Guild.Id), counter);
+                this.counter.AddNewChannelCounter(Context.Guild.Id, counter);
+                await this.counter.UpdateChannelAsync(Accounts.GetOrCreateAccount(Context.Guild.Id), counter);
 
                 await ModifyOriginalResponseAsync(msg => msg.Content = $"Setup the Server Status Voice Channel {voiceChannel.Mention}");
             }

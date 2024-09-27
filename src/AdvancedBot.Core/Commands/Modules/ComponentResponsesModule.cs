@@ -1,6 +1,6 @@
+using System.Threading.Tasks;
 using AdvancedBot.Core.Services;
 using Discord.Interactions;
-using System.Threading.Tasks;
 
 namespace AdvancedBot.Core.Commands.Modules
 {

@@ -1,53 +1,53 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using System.Timers;
 using AdvancedBot.Core.Entities;
 using AdvancedBot.Core.Entities.Enums;
 using AdvancedBot.Core.Services.DataStorage;
 using Discord;
 using Discord.WebSocket;
 using GL.NET;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Timers;
 
 namespace AdvancedBot.Core.Services
 {
     public class ChannelCounterService
     {
-        private readonly List<ChannelCounterInfo> _activeCounters = new();
-        private readonly DiscordSocketClient _client;
-        private readonly GLClient _gl;
-        private readonly AccountService _guild;
-        private readonly Timer _timer = new(6 * 60 * 1000);
-        private string _serverStatus = "Offline";
+        private readonly List<ChannelCounterInfo> activeCounters = new();
+        private readonly DiscordSocketClient client;
+        private readonly GLClient gl;
+        private readonly AccountService guild;
+        private readonly Timer timer = new(6 * 60 * 1000);
+        private string serverStatus = "Offline";
 
         public ChannelCounterService(DiscordSocketClient client, GLClient gl, AccountService guild)
         {
-            _client = client;
-            _gl = gl;
-            _guild = guild;
+            this.client = client;
+            this.gl = gl;
+            this.guild = guild;
 
-            _timer.Start();
-            _timer.Elapsed += OnTimerElapsed;
+            timer.Start();
+            timer.Elapsed += onTimerElapsed;
 
-            OnTimerElapsed(null, null);
+            onTimerElapsed(null, null);
             InitializeCounters();
         }
 
-        private async void OnTimerElapsed(object timerObj, ElapsedEventArgs e)
+        private async void onTimerElapsed(object timerObj, ElapsedEventArgs e)
         {
-            _timer.Stop();
+            timer.Stop();
 
             try
             {
-                await HandleActiveChannelCounters();
+                await handleActiveChannelCounters();
             }
             catch (Exception err)
             {
                 Console.WriteLine(err);
             }
 
-            _timer.Start();
+            timer.Start();
         }
 
         public void InitializeCounters()
@@ -56,16 +56,16 @@ namespace AdvancedBot.Core.Services
 
             for (int i = 0; i < enumValues.Length; i++)
             {
-                _activeCounters.Add(new ChannelCounterInfo(enumValues[i]));
+                activeCounters.Add(new ChannelCounterInfo(enumValues[i]));
             }
         }
 
         public ChannelCounterInfo[] GetAllChannelCounters()
-            => _activeCounters.ToArray();
+            => activeCounters.ToArray();
 
         public void AddNewChannelCounter(ulong guildId, ChannelCounter counter)
         {
-            var guild = _guild.GetOrCreateAccount(guildId, true);
+            var guild = this.guild.GetOrCreateAccount(guildId, true);
             var fCounter = guild.ChannelCounters.Find(x => x.Type == counter.Type);
             var cCounter = guild.ChannelCounters.Find(x => x.ChannelId == counter.ChannelId);
 
@@ -75,53 +75,43 @@ namespace AdvancedBot.Core.Services
                 throw new Exception($"This channel already has the '{cCounter.Type}' active.");
 
             guild.ChannelCounters.Add(counter);
-            _guild.SaveAccount(guild);
+            this.guild.SaveAccount(guild);
         }
 
         public void RemoveChannelCounterByType(ulong guildId, ChannelCounterType counterType)
         {
-            var guild = _guild.GetOrCreateAccount(guildId);
+            var guild = this.guild.GetOrCreateAccount(guildId);
 
-            var counter = guild.ChannelCounters.Find(x => x.Type == counterType);
-
-            if (counter is null)
-                throw new Exception($"There is no counter active of type '{counterType}'.");
-
+            var counter = guild.ChannelCounters.Find(x => x.Type == counterType) ?? throw new Exception($"There is no counter active of type '{counterType}'.");
             guild.ChannelCounters.Remove(counter);
 
-            _guild.SaveAccount(guild);
+            this.guild.SaveAccount(guild);
         }
 
         public void RemoveChannelCounterByChannel(ulong guildId, ulong channelId)
         {
-            var guild = _guild.GetOrCreateAccount(guildId);
+            var guild = this.guild.GetOrCreateAccount(guildId);
 
-            var counter = guild.ChannelCounters.Find(x => x.ChannelId == channelId);
-
-            if (counter is null)
-                throw new Exception($"This channel has no active counter.");
-
+            var counter = guild.ChannelCounters.Find(x => x.ChannelId == channelId) ?? throw new Exception($"This channel has no active counter.");
             guild.ChannelCounters.Remove(counter);
 
-            _guild.SaveAccount(guild);
+            this.guild.SaveAccount(guild);
         }
 
         public async Task UpdateChannelAsync(Account account, ChannelCounter counter)
         {
-            var channel = await _client.GetChannelAsync(counter.ChannelId) as IVoiceChannel;
-
             /* Channel got removed */
-            if (channel == null)
+            if (await client.GetChannelAsync(counter.ChannelId) is not IVoiceChannel channel)
             {
                 account.ChannelCounters.Remove(counter);
-                _guild.SaveAccount(account);
+                guild.SaveAccount(account);
                 return;
             }
 
             switch (counter.Type)
             {
                 case ChannelCounterType.FlashStatus:
-                    string newName = $"Server Status: {_serverStatus}";
+                    string newName = $"Server Status: {serverStatus}";
                     if (channel.Name != newName)
                         await channel.ModifyAsync(x => x.Name = newName);
                     break;
@@ -130,17 +120,17 @@ namespace AdvancedBot.Core.Services
             }
         }
 
-        private async Task HandleActiveChannelCounters()
+        private async Task handleActiveChannelCounters()
         {
             Console.WriteLine($"Started handling all counters");
             var start = DateTime.UtcNow;
 
-            var guilds = _guild.GetManyAccounts(x => x.IsGuild);
-            await UpdateServerInfo();
+            var guilds = guild.GetManyAccounts(x => x.IsGuild);
+            await updateServerInfo();
 
             for (int i = 0; i < guilds.Length; i++)
             {
-                if (!guilds[i].ChannelCounters.Any())
+                if (guilds[i].ChannelCounters.Count == 0)
                     continue;
 
                 for (int j = 0; j < guilds[i].ChannelCounters.Count; j++)
@@ -152,32 +142,32 @@ namespace AdvancedBot.Core.Services
             Console.WriteLine($"Finished updating all counters ({(DateTime.UtcNow - start).TotalSeconds}s)");
         }
 
-        private async Task UpdateServerInfo()
+        private async Task updateServerInfo()
         {
             try
             {
-                var status = await _gl.Api.GetServerStatus();
+                var status = await gl.Api.GetServerStatus();
                 var authStatus = status.Find(x => x.Name == "Auth Server");
 
                 if (authStatus == null || !authStatus.IsOnline)
                 {
-                    _serverStatus = "Auth server down";
+                    serverStatus = "Auth server down";
                     return;
                 }
 
-                var onlineBackends = status.Count(x => x.Name.Contains("Backend") && x.IsOnline);
+                int onlineBackends = status.Count(x => x.Name.Contains("Backend") && x.IsOnline);
 
                 if (onlineBackends >= 3)
                 {
-                    _serverStatus = "Online";
+                    serverStatus = "Online";
                     return;
                 }
 
-                _serverStatus = "Offline";
+                serverStatus = "Offline";
             }
             catch (Exception)
             {
-                _serverStatus = "Offline";
+                serverStatus = "Offline";
             }
         }
     }

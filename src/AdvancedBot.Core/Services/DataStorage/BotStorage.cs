@@ -1,31 +1,31 @@
-using AdvancedBot.Core.Entities;
 using System.Collections.Generic;
 using System.Linq;
+using AdvancedBot.Core.Entities;
 
 namespace AdvancedBot.Core.Services.DataStorage
 {
     public class BotStorage
     {
-        private readonly LiteDBHandler _storage;
+        private readonly LiteDBHandler storage;
 
         public BotStorage(LiteDBHandler storage)
         {
-            _storage = storage;
+            this.storage = storage;
         }
 
         public void AddTempBan(Tempban ban)
         {
-            _storage.Store(ban);
+            storage.Store(ban);
         }
 
         public List<Tempban> GetTempbans()
         {
-            return _storage.RestoreAll<Tempban>().ToList();
+            return storage.RestoreAll<Tempban>().ToList();
         }
 
         public void RemoveTempban(Tempban tempban)
         {
-            _storage.Remove<Tempban>(ban => ban.ModeratorId == tempban.ModeratorId && ban.UserId == tempban.UserId);
+            storage.Remove<Tempban>(ban => ban.ModeratorId == tempban.ModeratorId && ban.UserId == tempban.UserId);
         }
     }
 }

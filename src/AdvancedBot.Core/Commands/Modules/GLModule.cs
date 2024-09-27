@@ -1,11 +1,11 @@
-﻿using AdvancedBot.Core.Services;
-using Discord;
-using Discord.Interactions;
-using GL.NET.Entities;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AdvancedBot.Core.Services;
+using Discord;
+using Discord.Interactions;
+using GL.NET.Entities;
 
 namespace AdvancedBot.Core.Commands.Modules
 {
@@ -18,7 +18,7 @@ namespace AdvancedBot.Core.Commands.Modules
         {
             var status = await GLClient.Api.GetServerStatus();
 
-            var thumbnailUrl =
+            string thumbnailUrl =
                 Context.Channel is IGuildChannel
               ? Context.Guild.IconUrl
               : Context.Client.CurrentUser.GetDisplayAvatarUrl();
@@ -105,9 +105,9 @@ namespace AdvancedBot.Core.Commands.Modules
         ] string type)
         {
             List<string> displayTexts = new() { "Failed to get information" };
-            var title = "Galaxy Life Leaderboard";
+            string title = "Galaxy Life Leaderboard";
 
-            var thumbnailUrl =
+            string thumbnailUrl =
                 Context.Channel is IGuildChannel
               ? Context.Guild.IconUrl
               : Context.Client.CurrentUser.GetDisplayAvatarUrl();
@@ -197,7 +197,7 @@ namespace AdvancedBot.Core.Commands.Modules
                 return;
             }
 
-            var thumbnailUrl =
+            string thumbnailUrl =
                 Context.Channel is IGuildChannel
               ? Context.Guild.IconUrl
               : Context.Client.CurrentUser.GetDisplayAvatarUrl();
@@ -205,18 +205,18 @@ namespace AdvancedBot.Core.Commands.Modules
             var baseUserStats = await GLClient.Api.GetUserStats(baseUser.Id);
             var secondUserStats = await GLClient.Api.GetUserStats(secondUser.Id);
 
-            var expDifference = Math.Round((decimal)baseUser.Experience / secondUser.Experience, 2);
+            decimal expDifference = Math.Round((decimal)baseUser.Experience / secondUser.Experience, 2);
 
             var embed = new EmbedBuilder()
                 .WithTitle($"{baseUser.Name} vs {secondUser.Name}")
                 .WithColor(expDifference > 1 ? Color.DarkGreen : Color.DarkOrange)
                 .WithThumbnailUrl(thumbnailUrl)
                 .WithDescription(
-                    $"{baseUser.Name} has **{FormatNumber(expDifference)}x** the experience of {secondUser.Name}\n" +
-                    $"Difference of **{FormatNumber(Math.Abs((decimal)baseUser.Experience - secondUser.Experience))}** experience.\n\n")
-                .AddField($"{baseUser.Name}", $"Level **{baseUser.Level}**\nExperience: **{FormatNumber(baseUser.Experience)}**", true)
+                    $"{baseUser.Name} has **{formatNumber(expDifference)}x** the experience of {secondUser.Name}\n" +
+                    $"Difference of **{formatNumber(Math.Abs((decimal)baseUser.Experience - secondUser.Experience))}** experience.\n\n")
+                .AddField($"{baseUser.Name}", $"Level **{baseUser.Level}**\nExperience: **{formatNumber(baseUser.Experience)}**", true)
                 .AddField("   vs   ", $"\u200B", true)
-                .AddField($"{secondUser.Name}", $"Level **{secondUser.Level}**\nExperience: **{FormatNumber(secondUser.Experience)}**", true)
+                .AddField($"{secondUser.Name}", $"Level **{secondUser.Level}**\nExperience: **{formatNumber(secondUser.Experience)}**", true)
                 .WithFooter(footer => footer
                     .WithText($"Comparison requested by {Context.User.Username}#{Context.User.Discriminator}")
                     .WithIconUrl(Context.User.GetDisplayAvatarUrl()))
@@ -226,7 +226,7 @@ namespace AdvancedBot.Core.Commands.Modules
             await ModifyOriginalResponseAsync(msg => msg.Embeds = new Embed[] { embed });
         }
 
-        private static string FormatNumber(decimal number)
+        private static string formatNumber(decimal number)
         {
             return number switch
             {

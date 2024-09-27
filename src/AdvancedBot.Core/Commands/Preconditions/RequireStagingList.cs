@@ -1,14 +1,14 @@
-using Discord;
-using Discord.Interactions;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Discord;
+using Discord.Interactions;
 
 namespace AdvancedBot.Core.Commands.Preconditions
 {
     public class RequireStagingList : PreconditionAttribute
     {
-        private readonly List<ulong> _userIds = new()
+        private readonly List<ulong> userIds = new()
         {
             202095042372829184, // svr333
             942849642931032164, // lifecoder
@@ -21,7 +21,7 @@ namespace AdvancedBot.Core.Commands.Preconditions
 
         public override async Task<PreconditionResult> CheckRequirementsAsync(IInteractionContext context, ICommandInfo commandInfo, IServiceProvider services)
         {
-            if (!_userIds.Contains(context.User.Id))
+            if (!userIds.Contains(context.User.Id))
             {
                 if (!context.Interaction.HasResponded)
                 {

@@ -1,28 +1,28 @@
-using AdvancedBot.Core.Entities;
-using Discord;
-using Discord.Interactions;
-using Discord.WebSocket;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Timers;
+using AdvancedBot.Core.Entities;
+using Discord;
+using Discord.Interactions;
+using Discord.WebSocket;
 
 namespace AdvancedBot.Core.Services
 {
     public class PaginatorService
     {
-        private readonly List<PaginatedMessage> _activeMessages;
-        private readonly ConcurrentDictionary<ulong, Timer> _activeTimers;
-        private readonly DiscordSocketClient _client;
+        private readonly List<PaginatedMessage> activeMessages;
+        private readonly ConcurrentDictionary<ulong, Timer> activeTimers;
+        private readonly DiscordSocketClient client;
 
         public PaginatorService(DiscordSocketClient client)
         {
-            _activeMessages = new List<PaginatedMessage>();
-            _activeTimers = new ConcurrentDictionary<ulong, Timer>();
+            activeMessages = new List<PaginatedMessage>();
+            activeTimers = new ConcurrentDictionary<ulong, Timer>();
 
-            _client = client;
-            _client.InteractionCreated += OnInteraction;
+            this.client = client;
+            this.client.InteractionCreated += onInteraction;
         }
         public async Task HandleNewPaginatedMessageAsync(SocketInteractionContext context, IEnumerable<EmbedField> displayFields, IEnumerable<string> displayTexts, Embed embed)
         {
@@ -39,15 +39,15 @@ namespace AdvancedBot.Core.Services
             if (displayFields == null) paginatedMessage.DisplayMessages = displayTexts.ToArray();
             else paginatedMessage.DisplayFields = displayFields.ToArray();
 
-            _activeMessages.Add(paginatedMessage);
+            activeMessages.Add(paginatedMessage);
 
             if (paginatedMessage.TotalPages > 1)
             {
-                await context.Interaction.ModifyOriginalResponseAsync(msg => msg.Components = CreateMessageComponents());
+                await context.Interaction.ModifyOriginalResponseAsync(msg => msg.Components = createMessageComponents());
                 AddNewTimer(message.Id);
             }
 
-            await GoToFirstPageAsync(context.Interaction, message.Id);
+            await goToFirstPageAsync(context.Interaction, message.Id);
         }
 
         public void AddNewTimer(ulong messageId)
@@ -55,61 +55,61 @@ namespace AdvancedBot.Core.Services
             var timer = new Timer(30 * 60 * 1000);
             timer.Start();
 
-            timer.Elapsed += DisposeActivePaginatorMessage;
-            _activeTimers.TryAdd(messageId, timer);
+            timer.Elapsed += disposeActivePaginatorMessage;
+            activeTimers.TryAdd(messageId, timer);
         }
 
-        private async void DisposeActivePaginatorMessage(object timerObj, ElapsedEventArgs e)
+        private async void disposeActivePaginatorMessage(object timerObj, ElapsedEventArgs e)
         {
             var timer = timerObj as Timer;
 
-            var messageId = _activeTimers.First(x => x.Value == timer).Key;
+            ulong messageId = activeTimers.First(x => x.Value == timer).Key;
             timer.Enabled = false;
 
-            var paginatorMessage = _activeMessages.First(x => x.DiscordMessageId == messageId);
+            var paginatorMessage = activeMessages.First(x => x.DiscordMessageId == messageId);
 
-            var channel = await _client.GetChannelAsync(paginatorMessage.DiscordChannelId) as SocketTextChannel;
+            var channel = await client.GetChannelAsync(paginatorMessage.DiscordChannelId) as SocketTextChannel;
             if (await channel.GetMessageAsync(paginatorMessage.DiscordMessageId) is not SocketUserMessage message) return;
 
-            await message.ModifyAsync(x => x.Components = CreateMessageComponents(true));
+            await message.ModifyAsync(x => x.Components = createMessageComponents(true));
 
-            _activeMessages.Remove(paginatorMessage);
-            _activeTimers.TryRemove(messageId, out Timer oldTimer);
+            activeMessages.Remove(paginatorMessage);
+            activeTimers.TryRemove(messageId, out Timer oldTimer);
             timer.Dispose();
         }
 
         public void ResetTimer(ulong messageId)
         {
-            _activeTimers.TryRemove(messageId, out Timer currentTimer);
+            activeTimers.TryRemove(messageId, out Timer currentTimer);
 
             currentTimer.Stop();
             currentTimer.Start();
 
-            _activeTimers.TryAdd(messageId, currentTimer);
+            activeTimers.TryAdd(messageId, currentTimer);
         }
 
-        private async Task OnInteraction(SocketInteraction interaction)
+        private async Task onInteraction(SocketInteraction interaction)
         {
             if (interaction is SocketMessageComponent component)
             {
                 // Not our message to handle
-                if (_activeMessages.FirstOrDefault(x => x.DiscordMessageId == component.Message.Id) == null) return;
+                if (activeMessages.FirstOrDefault(x => x.DiscordMessageId == component.Message.Id) == null) return;
 
                 await component.DeferAsync();
 
                 switch (component.Data.CustomId)
                 {
                     case "first":
-                        await GoToFirstPageAsync(interaction, component.Message.Id);
+                        await goToFirstPageAsync(interaction, component.Message.Id);
                         break;
                     case "previous":
-                        await GoToPreviousPageAsync(interaction, component.Message.Id);
+                        await goToPreviousPageAsync(interaction, component.Message.Id);
                         break;
                     case "next":
-                        await GoToNextPageAsync(interaction, component.Message.Id);
+                        await goToNextPageAsync(interaction, component.Message.Id);
                         break;
                     case "last":
-                        await GoToLastPageAsync(interaction, component.Message.Id);
+                        await goToLastPageAsync(interaction, component.Message.Id);
                         break;
                 }
 
@@ -117,7 +117,7 @@ namespace AdvancedBot.Core.Services
             }
         }
 
-        private static MessageComponent CreateMessageComponents(bool disabled = false)
+        private static MessageComponent createMessageComponents(bool disabled = false)
         {
             var builder = new ComponentBuilder()
                 .WithButton("First", "first", ButtonStyle.Secondary, new Emoji("⏮️"), disabled: disabled)
@@ -128,7 +128,7 @@ namespace AdvancedBot.Core.Services
             return builder.Build();
         }
 
-        private static async Task HandleUpdateMessagePagesAsync(SocketInteraction interaction, PaginatedMessage msg)
+        private static async Task handleUpdateMessagePagesAsync(SocketInteraction interaction, PaginatedMessage msg)
         {
             var channel = interaction.Channel;
             var message = await channel.GetMessageAsync(msg.DiscordMessageId);
@@ -164,32 +164,32 @@ namespace AdvancedBot.Core.Services
             await channel.ModifyMessageAsync(msg.DiscordMessageId, msg => msg.Embeds = new Embed[] { updatedEmbed.Build() });
         }
 
-        private async Task GoToLastPageAsync(SocketInteraction interaction, ulong id)
+        private async Task goToLastPageAsync(SocketInteraction interaction, ulong id)
         {
-            var paginatorMessage = _activeMessages.Find(x => x.DiscordMessageId == id);
+            var paginatorMessage = activeMessages.Find(x => x.DiscordMessageId == id);
             paginatorMessage.CurrentPage = paginatorMessage.TotalPages;
-            await HandleUpdateMessagePagesAsync(interaction, paginatorMessage);
+            await handleUpdateMessagePagesAsync(interaction, paginatorMessage);
         }
 
-        private async Task GoToFirstPageAsync(SocketInteraction interaction, ulong id)
+        private async Task goToFirstPageAsync(SocketInteraction interaction, ulong id)
         {
-            var paginatorMessage = _activeMessages.Find(x => x.DiscordMessageId == id);
+            var paginatorMessage = activeMessages.Find(x => x.DiscordMessageId == id);
             paginatorMessage.CurrentPage = 1;
-            await HandleUpdateMessagePagesAsync(interaction, paginatorMessage);
+            await handleUpdateMessagePagesAsync(interaction, paginatorMessage);
         }
 
-        private async Task GoToNextPageAsync(SocketInteraction interaction, ulong id)
+        private async Task goToNextPageAsync(SocketInteraction interaction, ulong id)
         {
-            var paginatorMessage = _activeMessages.First(x => x.DiscordMessageId == id);
+            var paginatorMessage = activeMessages.First(x => x.DiscordMessageId == id);
             paginatorMessage.CurrentPage++;
-            await HandleUpdateMessagePagesAsync(interaction, paginatorMessage);
+            await handleUpdateMessagePagesAsync(interaction, paginatorMessage);
         }
 
-        private async Task GoToPreviousPageAsync(SocketInteraction interaction, ulong id)
+        private async Task goToPreviousPageAsync(SocketInteraction interaction, ulong id)
         {
-            var paginatorMessage = _activeMessages.Find(x => x.DiscordMessageId == id);
+            var paginatorMessage = activeMessages.Find(x => x.DiscordMessageId == id);
             paginatorMessage.CurrentPage--;
-            await HandleUpdateMessagePagesAsync(interaction, paginatorMessage);
+            await handleUpdateMessagePagesAsync(interaction, paginatorMessage);
         }
     }
 }

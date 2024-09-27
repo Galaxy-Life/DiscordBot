@@ -1,3 +1,6 @@
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 using AdvancedBot.Core.Entities;
 using AdvancedBot.Core.Entities.Enums;
 using Discord;
@@ -5,31 +8,28 @@ using GL.NET;
 using GL.NET.Entities;
 using Humanizer;
 using Humanizer.Localisation;
-using System;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace AdvancedBot.Core.Services
 {
     public class GLService
     {
-        private readonly GLClient _client;
+        private readonly GLClient client;
 
         public GLService(GLClient client)
         {
-            _client = client;
+            this.client = client;
         }
 
         public async Task<ModResult> GetUserProfileAsync(string input)
         {
-            var phoenixUser = await GetPhoenixUserByInput(input);
+            var phoenixUser = await getPhoenixUserByInput(input);
 
             if (phoenixUser == null)
             {
                 return new ModResult(ModResultType.NotFound, message: new ResponseMessage($"<:shrugR:945740284308893696> Could not find any user for **{input}**."));
             }
 
-            var user = await GetUserByInput(input);
+            var user = await getUserByInput(input);
 
             if (user == null)
             {
@@ -43,10 +43,10 @@ namespace AdvancedBot.Core.Services
                 }
             }
 
-            var stats = await _client.Api.GetUserStats(user.Id);
+            var stats = await client.Api.GetUserStats(user.Id);
 
-            var steamId = phoenixUser.SteamId ?? "No steam linked";
-            var roleText = phoenixUser.Role == PhoenixRole.Banned ? "[BANNED]"
+            string steamId = phoenixUser.SteamId ?? "No steam linked";
+            string roleText = phoenixUser.Role == PhoenixRole.Banned ? "[BANNED]"
                 : phoenixUser.Role == PhoenixRole.Donator ? "[Donator]"
                 : phoenixUser.Role == PhoenixRole.Staff ? "[Staff]"
                 : phoenixUser.Role == PhoenixRole.Administrator ? "[Admin]"
@@ -58,11 +58,11 @@ namespace AdvancedBot.Core.Services
                 : phoenixUser.Role == PhoenixRole.Administrator ? Color.DarkRed
                 : Color.LightGrey;
 
-            var displayAlliance = "This user is not a member of any alliance.";
+            string displayAlliance = "This user is not a member of any alliance.";
 
             if (!string.IsNullOrEmpty(user.AllianceId))
             {
-                var alliance = await _client.Api.GetAlliance(user.AllianceId);
+                var alliance = await client.Api.GetAlliance(user.AllianceId);
 
                 // can happen due to 24hour player delay
                 if (alliance == null)
@@ -79,7 +79,7 @@ namespace AdvancedBot.Core.Services
                 .WithTitle($"Profile | {roleText} {phoenixUser.UserName}")
                 .WithThumbnailUrl(user.Avatar)
                 .WithDescription($"{displayAlliance}\n\u200b")
-                .AddField("Level", FormatNumber(user.Level), true)
+                .AddField("Level", formatNumber(user.Level), true)
                 .AddField("Starbase", user.Planets[0].HQLevel, true)
                 .AddField("Colonies", user.Planets.Count(x => x != null) - 1, true)
                 .WithColor(color)
@@ -98,15 +98,15 @@ namespace AdvancedBot.Core.Services
 
         public async Task<ModResult> GetUserStatsAsync(string input)
         {
-            var user = await GetUserByInput(input);
+            var user = await getUserByInput(input);
 
             if (user == null)
             {
                 return new ModResult(ModResultType.NotFound, message: new ResponseMessage($"<:shrugR:945740284308893696> Could not find any user for **{input}**."));
             }
 
-            var stats = await _client.Api.GetUserStats(user.Id);
-            var displayAlliance = string.IsNullOrEmpty(user.AllianceId) ? "This user is not a member of any alliance." : $"This user is a member of **{user.AllianceId}**.";
+            var stats = await client.Api.GetUserStats(user.Id);
+            string displayAlliance = string.IsNullOrEmpty(user.AllianceId) ? "This user is not a member of any alliance." : $"This user is a member of **{user.AllianceId}**.";
 
             var embed = new EmbedBuilder()
                 .WithTitle($"Statistics | {user.Name}")
@@ -116,11 +116,11 @@ namespace AdvancedBot.Core.Services
                 .AddField("Level", user.Level, true)
                 .AddField("Players attacked", stats.PlayersAttacked, true)
                 .AddField("NPCs attacked", stats.NpcsAttacked, true)
-                .AddField("Coins spent", FormatNumber(stats.CoinsSpent), true)
-                .AddField("Minerals spent", FormatNumber(stats.MineralsSpent), true)
-                .AddField("Friends helped", FormatNumber(stats.FriendsHelped), true)
-                .AddField("Gifts received", FormatNumber(stats.GiftsReceived), true)
-                .AddField("Gifts sent", FormatNumber(stats.GiftsSent), true)
+                .AddField("Coins spent", formatNumber(stats.CoinsSpent), true)
+                .AddField("Minerals spent", formatNumber(stats.MineralsSpent), true)
+                .AddField("Friends helped", formatNumber(stats.FriendsHelped), true)
+                .AddField("Gifts received", formatNumber(stats.GiftsReceived), true)
+                .AddField("Gifts sent", formatNumber(stats.GiftsSent), true)
                 .AddField("Obstacles recycled", stats.ObstaclesRecycled, true)
                 .AddField("Troops trained", stats.TroopsTrained, true)
                 .AddField("Troopsize donated", stats.TroopSizesDonated, true)
@@ -137,19 +137,19 @@ namespace AdvancedBot.Core.Services
 
         public async Task<ModResult> GetAllianceAsync(string input)
         {
-            var alliance = await _client.Api.GetAlliance(input);
+            var alliance = await client.Api.GetAlliance(input);
 
             if (alliance == null)
             {
                 return new ModResult(ModResultType.NotFound, message: new ResponseMessage($"<:shrugR:945740284308893696> Could not find any alliance for **{input}**."));
             }
 
-            var emblemUrl = $"https://cdn.galaxylifegame.net/content/img/alliance_flag/AllianceLogos/flag_{(int)alliance.Emblem.Shape}_{(int)alliance.Emblem.Pattern}_{(int)alliance.Emblem.Icon}.png";
+            string emblemUrl = $"https://cdn.galaxylifegame.net/content/img/alliance_flag/AllianceLogos/flag_{(int)alliance.Emblem.Shape}_{(int)alliance.Emblem.Pattern}_{(int)alliance.Emblem.Icon}.png";
 
             var owner = alliance.Members.FirstOrDefault(x => x.AllianceRole == AllianceRole.LEADER);
 
-            var warsWon = alliance.WarsWon;
-            var warsLost = alliance.WarsLost;
+            int warsWon = alliance.WarsWon;
+            int warsLost = alliance.WarsLost;
             int warsTotal = warsWon + warsLost;
             double winRatio = (warsTotal > 0) ? (double)warsWon / warsTotal * 100 : 0;
 
@@ -178,7 +178,7 @@ namespace AdvancedBot.Core.Services
 
         public async Task<ModResult> GetAllianceMembersAsync(string input)
         {
-            var alliance = await _client.Api.GetAlliance(input);
+            var alliance = await client.Api.GetAlliance(input);
 
             if (alliance == null)
             {
@@ -189,10 +189,10 @@ namespace AdvancedBot.Core.Services
             var captains = alliance.Members.Where(x => x.AllianceRole == AllianceRole.ADMIN);
             var regulars = alliance.Members.Where(x => x.AllianceRole == AllianceRole.REGULAR);
 
-            var formattedCaptains = $"{string.Join(" | ", captains.Select(x => $"**{x.Name}** ({x.Id})"))}\n\u200b";
-            var formattedMembers = $"{string.Join(", ", regulars.Select(x => x.Name))}";
+            string formattedCaptains = $"{string.Join(" | ", captains.Select(x => $"**{x.Name}** ({x.Id})"))}\n\u200b";
+            string formattedMembers = $"{string.Join(", ", regulars.Select(x => x.Name))}";
 
-            var emblemUrl = $"https://cdn.galaxylifegame.net/content/img/alliance_flag/AllianceLogos/flag_{(int)alliance.Emblem.Shape}_{(int)alliance.Emblem.Pattern}_{(int)alliance.Emblem.Icon}.png";
+            string emblemUrl = $"https://cdn.galaxylifegame.net/content/img/alliance_flag/AllianceLogos/flag_{(int)alliance.Emblem.Shape}_{(int)alliance.Emblem.Pattern}_{(int)alliance.Emblem.Icon}.png";
 
             var embed = new EmbedBuilder()
                 .WithTitle($"{alliance.Name} | Members")
@@ -211,53 +211,53 @@ namespace AdvancedBot.Core.Services
             return new ModResult(ModResultType.Success, message, null, null) { Alliance = alliance };
         }
 
-        private async Task<User> GetUserByInput(string input)
+        private async Task<User> getUserByInput(string input)
         {
             User profile = null;
-            var digitString = new string(input.Where(char.IsDigit).ToArray());
+            string digitString = new string(input.Where(char.IsDigit).ToArray());
 
             if (digitString.Length == input.Length)
             {
-                profile = await _client.Api.GetUserById(input);
+                profile = await client.Api.GetUserById(input);
             }
 
-            profile ??= await _client.Api.GetUserByName(input);
+            profile ??= await client.Api.GetUserByName(input);
 
             return profile;
         }
 
-        private async Task<PhoenixUser> GetPhoenixUserByInput(string input, bool full = false)
+        private async Task<PhoenixUser> getPhoenixUserByInput(string input, bool full = false)
         {
             PhoenixUser user = null;
 
-            var digitString = new string(input.Where(char.IsDigit).ToArray());
+            string digitString = new string(input.Where(char.IsDigit).ToArray());
 
             // extra check to see if all characters were numbers
             if (digitString.Length == input.Length)
             {
                 if (full)
                 {
-                    user = await _client.Phoenix.GetFullPhoenixUserAsync(input);
+                    user = await client.Phoenix.GetFullPhoenixUserAsync(input);
                 }
                 else
                 {
-                    user = await _client.Phoenix.GetPhoenixUserAsync(input);
+                    user = await client.Phoenix.GetPhoenixUserAsync(input);
                 }
             }
 
             // try to get user by name
-            user ??= await _client.Phoenix.GetPhoenixUserByNameAsync(input);
+            user ??= await client.Phoenix.GetPhoenixUserByNameAsync(input);
 
             // get user by id after getting it by name
             if (user != null && full)
             {
-                user = await _client.Phoenix.GetFullPhoenixUserAsync(user.UserId);
+                user = await client.Phoenix.GetFullPhoenixUserAsync(user.UserId);
             }
 
             return user;
         }
 
-        private static string FormatNumber(decimal number)
+        private static string formatNumber(decimal number)
         {
             return number switch
             {

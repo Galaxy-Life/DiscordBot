@@ -1,38 +1,38 @@
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using System.Timers;
 using AdvancedBot.Core.Entities;
 using AdvancedBot.Core.Entities.Enums;
 using AdvancedBot.Core.Services.DataStorage;
 using Discord;
 using GL.NET;
 using GL.NET.Entities;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using System.Timers;
 
 namespace AdvancedBot.Core.Services
 {
     public class ModerationService
     {
-        private readonly GLClient _gl;
-        private readonly LogService _logs;
-        private readonly BotStorage _storage;
+        private readonly GLClient gl;
+        private readonly LogService logs;
+        private readonly BotStorage storage;
 
-        private readonly Timer _banTimer = new(1000 * 60 * 30);
+        private readonly Timer banTimer = new(1000 * 60 * 30);
 
         public ModerationService(GLClient gl, LogService logs, BotStorage storage)
         {
-            _gl = gl;
-            _logs = logs;
-            _storage = storage;
+            this.gl = gl;
+            this.logs = logs;
+            this.storage = storage;
 
-            _banTimer.Elapsed += OnBanTimer;
-            _banTimer.Start();
-            OnBanTimer(null, null);
+            banTimer.Elapsed += onBanTimer;
+            banTimer.Start();
+            onBanTimer(null, null);
         }
 
         public async Task<ModResult> BanUserAsync(ulong discordId, uint userId, string reason, uint days = 0)
         {
-            var user = await _gl.Phoenix.GetPhoenixUserAsync(userId);
+            var user = await gl.Phoenix.GetPhoenixUserAsync(userId);
 
             if (user == null)
             {
@@ -44,7 +44,7 @@ namespace AdvancedBot.Core.Services
                 return new ModResult(ModResultType.AlreadyDone, new ResponseMessage($"{user.UserName} ({user.UserId}) is already banned."), user);
             }
 
-            if (!await _gl.Phoenix.TryBanUser(userId, reason))
+            if (!await gl.Phoenix.TryBanUser(userId, reason))
             {
                 return new ModResult(ModResultType.BackendError, new ResponseMessage($"Failed to ban {user.UserName} ({user.UserId})"), user);
             }
@@ -65,11 +65,11 @@ namespace AdvancedBot.Core.Services
             if (days > 0)
             {
                 banDuration = DateTime.UtcNow.AddDays(days);
-                _storage.AddTempBan(new Tempban(discordId, userId, banDuration.Value));
+                storage.AddTempBan(new Tempban(discordId, userId, banDuration.Value));
             }
 
-            await _gl.Production.TryKickUserOfflineAsync(userId.ToString());
-            await _logs.LogGameActionAsync(LogAction.Ban, discordId, userId, reason, banDuration);
+            await gl.Production.TryKickUserOfflineAsync(userId.ToString());
+            await logs.LogGameActionAsync(LogAction.Ban, discordId, userId, reason, banDuration);
 
             var message = new ResponseMessage(embeds: new Embed[] { embed });
             return new ModResult(ModResultType.Success, message, user);
@@ -77,7 +77,7 @@ namespace AdvancedBot.Core.Services
 
         public async Task<ModResult> UnbanUserAsync(ulong discordId, uint userId, bool auto = false)
         {
-            var user = await _gl.Phoenix.GetPhoenixUserAsync(userId);
+            var user = await gl.Phoenix.GetPhoenixUserAsync(userId);
 
             if (user == null)
             {
@@ -89,13 +89,13 @@ namespace AdvancedBot.Core.Services
                 return new ModResult(ModResultType.AlreadyDone, new ResponseMessage($"{user.UserName} ({user.UserId}) is not banned."), user);
             }
 
-            if (!await _gl.Phoenix.TryUnbanUser(userId))
+            if (!await gl.Phoenix.TryUnbanUser(userId))
             {
                 return new ModResult(ModResultType.BackendError, new ResponseMessage($"Failed to unban {user.UserName} ({user.UserId})"), user);
             }
 
-            var extra = auto ? "Auto Unban" : "";
-            await _logs.LogGameActionAsync(LogAction.Unban, discordId, userId, extra);
+            string extra = auto ? "Auto Unban" : "";
+            await logs.LogGameActionAsync(LogAction.Unban, discordId, userId, extra);
 
             var embed = new EmbedBuilder()
                 .WithTitle($"{user.UserName} ({user.UserId}) is no longer banned in-game!")
@@ -111,19 +111,19 @@ namespace AdvancedBot.Core.Services
 
         public async Task<ModResult> AddBetaToUserAsync(ulong discordId, uint userId)
         {
-            var user = await _gl.Phoenix.GetPhoenixUserAsync(userId);
+            var user = await gl.Phoenix.GetPhoenixUserAsync(userId);
 
             if (user == null)
             {
                 return new ModResult(ModResultType.NotFound, new ResponseMessage($"Could not find any user with id **{userId}**."));
             }
 
-            if (!await _gl.Phoenix.AddGlBeta(userId))
+            if (!await gl.Phoenix.AddGlBeta(userId))
             {
                 return new ModResult(ModResultType.BackendError, new ResponseMessage($"Failed to add beta access to {user.UserName} ({user.UserId})"));
             }
 
-            await _logs.LogGameActionAsync(LogAction.AddBeta, discordId, userId);
+            await logs.LogGameActionAsync(LogAction.AddBeta, discordId, userId);
 
             var embed = new EmbedBuilder()
                 .WithTitle($"Entitlement successfully added")
@@ -140,19 +140,19 @@ namespace AdvancedBot.Core.Services
 
         public async Task<ModResult> RemoveBetaFromUserAsync(ulong discordId, uint userId)
         {
-            var user = await _gl.Phoenix.GetPhoenixUserAsync(userId);
+            var user = await gl.Phoenix.GetPhoenixUserAsync(userId);
 
             if (user == null)
             {
                 return new ModResult(ModResultType.NotFound, new ResponseMessage($"Could not find any user with id **{userId}**."));
             }
 
-            if (!await _gl.Phoenix.RemoveGlBeta(userId))
+            if (!await gl.Phoenix.RemoveGlBeta(userId))
             {
                 return new ModResult(ModResultType.BackendError, new ResponseMessage($"Failed to remove beta access from {user.UserName} ({user.UserId})"));
             }
 
-            await _logs.LogGameActionAsync(LogAction.RemoveBeta, discordId, userId);
+            await logs.LogGameActionAsync(LogAction.RemoveBeta, discordId, userId);
 
             var embed = new EmbedBuilder()
                 .WithTitle($"Entitlement successfully removed")
@@ -169,19 +169,19 @@ namespace AdvancedBot.Core.Services
 
         public async Task<ModResult> AddEmulateToUserAsync(ulong discordId, uint userId)
         {
-            var user = await _gl.Phoenix.GetPhoenixUserAsync(userId);
+            var user = await gl.Phoenix.GetPhoenixUserAsync(userId);
 
             if (user == null)
             {
                 return new ModResult(ModResultType.NotFound, new ResponseMessage($"Could not find any user with id **{userId}**."));
             }
 
-            if (!await _gl.Phoenix.AddEmulate(userId))
+            if (!await gl.Phoenix.AddEmulate(userId))
             {
                 return new ModResult(ModResultType.BackendError, new ResponseMessage($"Failed to add emulate access to {user.UserName} ({user.UserId})"));
             }
 
-            await _logs.LogGameActionAsync(LogAction.AddEmulate, discordId, userId);
+            await logs.LogGameActionAsync(LogAction.AddEmulate, discordId, userId);
 
             var embed = new EmbedBuilder()
                 .WithTitle($"Entitlement successfully added")
@@ -198,19 +198,19 @@ namespace AdvancedBot.Core.Services
 
         public async Task<ModResult> RemoveEmulateFromUserAsync(ulong discordId, uint userId)
         {
-            var user = await _gl.Phoenix.GetPhoenixUserAsync(userId);
+            var user = await gl.Phoenix.GetPhoenixUserAsync(userId);
 
             if (user == null)
             {
                 return new ModResult(ModResultType.NotFound, new ResponseMessage($"Could not find any user with id **{userId}**."));
             }
 
-            if (!await _gl.Phoenix.RemoveGlBeta(userId))
+            if (!await gl.Phoenix.RemoveGlBeta(userId))
             {
                 return new ModResult(ModResultType.BackendError, new ResponseMessage($"Failed to remove emulate access from {user.UserName} ({user.UserId})"));
             }
 
-            await _logs.LogGameActionAsync(LogAction.RemoveEmulate, discordId, userId);
+            await logs.LogGameActionAsync(LogAction.RemoveEmulate, discordId, userId);
 
             var embed = new EmbedBuilder()
                 .WithTitle($"Entitlement successfully removed")
@@ -227,14 +227,14 @@ namespace AdvancedBot.Core.Services
 
         public async Task<ModResult> GiveRoleAsync(ulong discordId, uint userId, PhoenixRole newRole)
         {
-            var user = await _gl.Phoenix.GetPhoenixUserAsync(userId);
+            var user = await gl.Phoenix.GetPhoenixUserAsync(userId);
 
             if (user == null)
             {
                 return new ModResult(ModResultType.NotFound, new ResponseMessage($"Could not find any user with id **{userId}**."));
             }
 
-            var roleText = newRole == PhoenixRole.Donator ? "a Donator"
+            string roleText = newRole == PhoenixRole.Donator ? "a Donator"
                 : newRole == PhoenixRole.Staff ? "a Staff Member"
                 : newRole == PhoenixRole.Administrator ? "an Admin"
                 : newRole.ToString();
@@ -244,12 +244,12 @@ namespace AdvancedBot.Core.Services
                 return new ModResult(ModResultType.AlreadyDone, new ResponseMessage($"User is already {roleText}!"));
             }
 
-            if (!await _gl.Phoenix.GiveRoleAsync(userId, newRole))
+            if (!await gl.Phoenix.GiveRoleAsync(userId, newRole))
             {
                 return new ModResult(ModResultType.BackendError, new ResponseMessage($"Failed to give {newRole} to {user.UserName} ({user.UserId})"), user);
             }
 
-            await _logs.LogGameActionAsync(LogAction.GiveRole, discordId, userId, newRole.ToString());
+            await logs.LogGameActionAsync(LogAction.GiveRole, discordId, userId, newRole.ToString());
 
             var embed = new EmbedBuilder()
                 .WithTitle($"User role successfully updated")
@@ -268,17 +268,17 @@ namespace AdvancedBot.Core.Services
 
         public async Task<ModResult> GetChipsBoughtAsync(ulong discordId, uint userId)
         {
-            var user = await _gl.Api.GetUserById(userId.ToString());
+            var user = await gl.Api.GetUserById(userId.ToString());
 
             if (user == null)
             {
                 return new ModResult(ModResultType.NotFound, new ResponseMessage($"Could not find any user with id **{userId}**."));
             }
 
-            var chipsBought = await _gl.Api.GetChipsBoughtAsync(userId.ToString());
-            await _logs.LogGameActionAsync(LogAction.GetChipsBought, discordId, userId);
+            int chipsBought = await gl.Api.GetChipsBoughtAsync(userId.ToString());
+            await logs.LogGameActionAsync(LogAction.GetChipsBought, discordId, userId);
 
-            var description = chipsBought == 0 ?
+            string description = chipsBought == 0 ?
                   $"This player hasn't bought any chips."
                 : $"This player has bought **{chipsBought}** chips.";
 
@@ -297,17 +297,17 @@ namespace AdvancedBot.Core.Services
 
         public async Task<ModResult> GetChipsSpentAsync(ulong discordId, uint userId)
         {
-            var user = await _gl.Api.GetUserById(userId.ToString());
+            var user = await gl.Api.GetUserById(userId.ToString());
 
             if (user == null)
             {
                 return new ModResult(ModResultType.NotFound, new ResponseMessage($"Could not find any user with id **{userId}**."));
             }
 
-            var chipsSpent = await _gl.Api.GetChipsSpentAsync(userId.ToString());
-            await _logs.LogGameActionAsync(LogAction.GetChipsSpent, discordId, userId);
+            int chipsSpent = await gl.Api.GetChipsSpentAsync(userId.ToString());
+            await logs.LogGameActionAsync(LogAction.GetChipsSpent, discordId, userId);
 
-            var description = chipsSpent == 0 ?
+            string description = chipsSpent == 0 ?
                   $"This player hasn't spent any chips."
                 : $"This player has spent **{chipsSpent}** chips.";
 
@@ -326,23 +326,23 @@ namespace AdvancedBot.Core.Services
 
         public async Task<ModResult> AddChipsAsync(ulong discordId, uint userId, int amount, bool staging = false)
         {
-            var user = await _gl.Api.GetUserById(userId.ToString());
+            var user = await gl.Api.GetUserById(userId.ToString());
 
             if (user == null)
             {
                 return new ModResult(ModResultType.NotFound, new ResponseMessage($"Could not find any user with id **{userId}**."));
             }
 
-            var success = staging ? await _gl.Staging.TryAddChipsToUserAsync(userId.ToString(), amount) : await _gl.Production.TryAddChipsToUserAsync(userId.ToString(), amount);
+            bool success = staging ? await gl.Staging.TryAddChipsToUserAsync(userId.ToString(), amount) : await gl.Production.TryAddChipsToUserAsync(userId.ToString(), amount);
 
             if (!success)
             {
                 return new ModResult(ModResultType.BackendError, new ResponseMessage($"Failed to add chips to {user.Name} ({user.Id})"), null, user);
             }
 
-            await _logs.LogGameActionAsync(LogAction.AddChips, discordId, userId, amount.ToString());
+            await logs.LogGameActionAsync(LogAction.AddChips, discordId, userId, amount.ToString());
 
-            var action = Math.Sign(amount) < 0 ? "removed" : "added";
+            string action = Math.Sign(amount) < 0 ? "removed" : "added";
 
             var embed = new EmbedBuilder()
                 .WithTitle($"Chips {action} successfully")
@@ -361,23 +361,23 @@ namespace AdvancedBot.Core.Services
 
         public async Task<ModResult> AddItemsAsync(ulong discordId, uint userId, string sku, int amount, bool staging = false)
         {
-            var user = await _gl.Api.GetUserById(userId.ToString());
+            var user = await gl.Api.GetUserById(userId.ToString());
 
             if (user == null)
             {
                 return new ModResult(ModResultType.NotFound, new ResponseMessage($"Could not find any user with id **{userId}**."));
             }
 
-            var success = staging ? await _gl.Staging.TryAddItemToUserAsync(userId.ToString(), sku, amount) : await _gl.Production.TryAddItemToUserAsync(userId.ToString(), sku, amount);
+            bool success = staging ? await gl.Staging.TryAddItemToUserAsync(userId.ToString(), sku, amount) : await gl.Production.TryAddItemToUserAsync(userId.ToString(), sku, amount);
 
             if (!success)
             {
                 return new ModResult(ModResultType.BackendError, new ResponseMessage($"Failed to add item with sku {sku} to {user.Name} ({user.Id})"), null, user);
             }
 
-            await _logs.LogGameActionAsync(LogAction.AddItem, discordId, userId, $"{sku}:{amount}");
+            await logs.LogGameActionAsync(LogAction.AddItem, discordId, userId, $"{sku}:{amount}");
 
-            var action = Math.Sign(amount) < 0 ? "removed" : "added";
+            string action = Math.Sign(amount) < 0 ? "removed" : "added";
 
             var embed = new EmbedBuilder()
                 .WithTitle($"Item {action} successfully")
@@ -397,22 +397,22 @@ namespace AdvancedBot.Core.Services
 
         public async Task<ModResult> AddXpAsync(ulong discordId, uint userId, int amount, bool staging = false)
         {
-            var user = await _gl.Api.GetUserById(userId.ToString());
+            var user = await gl.Api.GetUserById(userId.ToString());
 
             if (user == null)
             {
                 return new ModResult(ModResultType.NotFound, new ResponseMessage($"Could not find any user with id **{userId}**."));
             }
 
-            var success = staging ? await _gl.Staging.TryAddXpToUserAsync(userId.ToString(), amount) : await _gl.Production.TryAddXpToUserAsync(userId.ToString(), amount);
+            bool success = staging ? await gl.Staging.TryAddXpToUserAsync(userId.ToString(), amount) : await gl.Production.TryAddXpToUserAsync(userId.ToString(), amount);
             if (!success)
             {
                 return new ModResult(ModResultType.BackendError, new ResponseMessage($"Failed to add xp to {user.Name} ({user.Id})"), null, user);
             }
 
-            await _logs.LogGameActionAsync(LogAction.AddXp, discordId, userId, $"{amount}");
+            await logs.LogGameActionAsync(LogAction.AddXp, discordId, userId, $"{amount}");
 
-            var action = Math.Sign(amount) < 0 ? "removed" : "added";
+            string action = Math.Sign(amount) < 0 ? "removed" : "added";
 
             var embed = new EmbedBuilder()
                 .WithTitle($"Experience {action} successfully")
@@ -431,14 +431,14 @@ namespace AdvancedBot.Core.Services
 
         public async Task<ModResult> EnableMaintenance(ulong discordId, uint minutes)
         {
-            var success = await _gl.Production.EnableMaintenance(minutes);
+            bool success = await gl.Production.EnableMaintenance(minutes);
 
             if (!success)
             {
                 return new ModResult(ModResultType.BackendError, new ResponseMessage($"Failed to enable maintenance for {minutes} minutes"));
             }
 
-            await _logs.LogGameActionAsync(LogAction.EnableMaintenance, discordId, 0, minutes.ToString());
+            await logs.LogGameActionAsync(LogAction.EnableMaintenance, discordId, 0, minutes.ToString());
 
             var embed = new EmbedBuilder()
                 .WithTitle($"Maintenance enabled successfully")
@@ -455,15 +455,15 @@ namespace AdvancedBot.Core.Services
 
         public async Task<ModResult> ReloadRules(ulong discordId, bool staging = false)
         {
-            var success = staging ? await _gl.Staging.ReloadRules() : await _gl.Production.ReloadRules();
-            var serverText = staging ? "Staging" : "Production";
+            bool success = staging ? await gl.Staging.ReloadRules() : await gl.Production.ReloadRules();
+            string serverText = staging ? "Staging" : "Production";
 
             if (!success)
             {
                 return new ModResult(ModResultType.BackendError, new ResponseMessage($"Could not reload rules on the {serverText.ToLower()} backend!"));
             }
 
-            await _logs.LogGameActionAsync(LogAction.ReloadRules, discordId, 0, serverText);
+            await logs.LogGameActionAsync(LogAction.ReloadRules, discordId, 0, serverText);
 
             var embed = new EmbedBuilder()
                 .WithTitle($"Rules reloaded successfully")
@@ -480,14 +480,14 @@ namespace AdvancedBot.Core.Services
 
         public async Task<ModResult> RunStagingKickerAsync(ulong discordId)
         {
-            var success = await _gl.Staging.RunKicker();
+            bool success = await gl.Staging.RunKicker();
 
             if (!success)
             {
                 return new ModResult(ModResultType.BackendError, new ResponseMessage($"Failed to run kicker on staging!"));
             }
 
-            await _logs.LogGameActionAsync(LogAction.RunKicker, discordId, 0, "Staging");
+            await logs.LogGameActionAsync(LogAction.RunKicker, discordId, 0, "Staging");
 
             var embed = new EmbedBuilder()
                 .WithTitle($"Kicker ran successfully")
@@ -504,14 +504,14 @@ namespace AdvancedBot.Core.Services
 
         public async Task<ModResult> ResetHelpsStagingAsync(ulong discordId, uint userId)
         {
-            var success = await _gl.Staging.ResetPlanetHelps(userId.ToString());
+            bool success = await gl.Staging.ResetPlanetHelps(userId.ToString());
 
             if (!success)
             {
                 return new ModResult(ModResultType.BackendError, new ResponseMessage($"Failed to reset helps for {userId}!"));
             }
 
-            await _logs.LogGameActionAsync(LogAction.ResetHelps, discordId, 0, "Staging");
+            await logs.LogGameActionAsync(LogAction.ResetHelps, discordId, 0, "Staging");
 
             var embed = new EmbedBuilder()
                 .WithTitle($"Helps reset successfully")
@@ -529,14 +529,14 @@ namespace AdvancedBot.Core.Services
 
         public async Task<ModResult> ForceWarStagingAsync(ulong discordId, string allianceA, string allianceB)
         {
-            var success = await _gl.Staging.ForceWar(allianceA, allianceB);
+            bool success = await gl.Staging.ForceWar(allianceA, allianceB);
 
             if (!success)
             {
                 return new ModResult(ModResultType.BackendError, new ResponseMessage($"Failed to force war between **{allianceA}** and **{allianceB}**!"));
             }
 
-            await _logs.LogGameActionAsync(LogAction.ForceWar, discordId, 0, $"Staging:{allianceA}:{allianceB}");
+            await logs.LogGameActionAsync(LogAction.ForceWar, discordId, 0, $"Staging:{allianceA}:{allianceB}");
 
             var embed = new EmbedBuilder()
                 .WithTitle($"War declared successfully")
@@ -556,14 +556,14 @@ namespace AdvancedBot.Core.Services
 
         public async Task<ModResult> ForceEndWarStagingAsync(ulong discordId, string allianceA, string allianceB)
         {
-            var success = await _gl.Staging.ForceStopWar(allianceA, allianceB);
+            bool success = await gl.Staging.ForceStopWar(allianceA, allianceB);
 
             if (!success)
             {
                 return new ModResult(ModResultType.BackendError, new ResponseMessage($"Failed to end war between **{allianceA}** and **{allianceB}**!"));
             }
 
-            await _logs.LogGameActionAsync(LogAction.ForceStopWar, discordId, 0, $"Staging:{allianceA}:{allianceB}");
+            await logs.LogGameActionAsync(LogAction.ForceStopWar, discordId, 0, $"Staging:{allianceA}:{allianceB}");
 
             var embed = new EmbedBuilder()
                 .WithTitle($"War ended successfully")
@@ -583,44 +583,44 @@ namespace AdvancedBot.Core.Services
 
         public async Task<ModResult<List<BattleLog>>> GetBattleLogTelemetry(ulong discordId, uint userId)
         {
-            var result = await _gl.Api.GetBattlelogTelemetry(userId.ToString());
-            await _logs.LogGameActionAsync(LogAction.GetTelemetry, discordId, userId, "BattleLogs");
+            var result = await gl.Api.GetBattlelogTelemetry(userId.ToString());
+            await logs.LogGameActionAsync(LogAction.GetTelemetry, discordId, userId, "BattleLogs");
 
             return new ModResult<List<BattleLog>>(result, ModResultType.Success);
         }
 
         public async Task<ModResult<List<Gift>>> GetGiftsTelemetry(ulong discordId, uint userId)
         {
-            var result = await _gl.Api.GetGiftsTelemetry(userId.ToString());
-            await _logs.LogGameActionAsync(LogAction.GetTelemetry, discordId, userId, "Gifts");
+            var result = await gl.Api.GetGiftsTelemetry(userId.ToString());
+            await logs.LogGameActionAsync(LogAction.GetTelemetry, discordId, userId, "Gifts");
 
             return new ModResult<List<Gift>>(result, ModResultType.Success);
         }
 
         public async Task<ModResult<List<Login>>> GetLoginsTelemetry(ulong discordId, uint userId)
         {
-            var result = await _gl.Api.GetLoginsTelemetry(userId.ToString());
-            await _logs.LogGameActionAsync(LogAction.GetTelemetry, discordId, userId, "Gifts");
+            var result = await gl.Api.GetLoginsTelemetry(userId.ToString());
+            await logs.LogGameActionAsync(LogAction.GetTelemetry, discordId, userId, "Gifts");
 
             return new ModResult<List<Login>>(result, ModResultType.Success);
         }
 
         public async Task<ModResult<Dictionary<string, Dictionary<string, Fingerprint>>>> GetPossibleAlts(ulong discordId, uint userId)
         {
-            var result = await _gl.Api.GetFingerprint(userId.ToString());
-            await _logs.LogGameActionAsync(LogAction.GetAccounts, discordId, userId);
+            var result = await gl.Api.GetFingerprint(userId.ToString());
+            await logs.LogGameActionAsync(LogAction.GetAccounts, discordId, userId);
 
             return new ModResult<Dictionary<string, Dictionary<string, Fingerprint>>>(result, ModResultType.Success);
         }
 
-        private void OnBanTimer(object sender, ElapsedEventArgs e)
+        private void onBanTimer(object sender, ElapsedEventArgs e)
         {
-            var bans = _storage.GetTempbans();
+            var bans = storage.GetTempbans();
             var bansToRemove = new List<Tempban>();
 
             for (int i = 0; i < bans.Count; i++)
             {
-                var time = (bans[i].BanEnd - DateTime.UtcNow).TotalMinutes;
+                double time = (bans[i].BanEnd - DateTime.UtcNow).TotalMinutes;
 
                 if (time <= 0)
                 {
@@ -633,7 +633,7 @@ namespace AdvancedBot.Core.Services
             // remove bans that were handled
             for (int i = 0; i < bansToRemove.Count; i++)
             {
-                _storage.RemoveTempban(bansToRemove[i]);
+                storage.RemoveTempban(bansToRemove[i]);
             }
         }
     }

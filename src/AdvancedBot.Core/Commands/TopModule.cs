@@ -1,14 +1,14 @@
-﻿using AdvancedBot.Core.Entities;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using AdvancedBot.Core.Entities;
 using AdvancedBot.Core.Services;
 using AdvancedBot.Core.Services.DataStorage;
 using Discord;
 using Discord.Interactions;
 using GL.NET;
 using GL.NET.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace AdvancedBot.Core.Commands
 {
@@ -44,7 +44,7 @@ namespace AdvancedBot.Core.Commands
 
         protected async Task SendPaginatedMessageAsync(IEnumerable<EmbedField> displayFields, IEnumerable<string> displayTexts, EmbedBuilder templateEmbed)
         {
-            var displayItems = 0;
+            int displayItems = 0;
 
             if (displayTexts != null)
             {
@@ -177,7 +177,7 @@ namespace AdvancedBot.Core.Commands
             if (string.IsNullOrEmpty(input)) input = Context.User.Username;
             PhoenixUser user = null;
 
-            var digitString = new string(input.Where(char.IsDigit).ToArray());
+            string digitString = new string(input.Where(char.IsDigit).ToArray());
 
             // extra check to see if all characters were numbers
             if (digitString.Length == input.Length)

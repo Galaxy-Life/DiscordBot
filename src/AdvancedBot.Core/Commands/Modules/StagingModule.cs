@@ -1,10 +1,10 @@
+using System.Threading.Tasks;
 using AdvancedBot.Core.Commands.Preconditions;
 using AdvancedBot.Core.Entities;
 using AdvancedBot.Core.Entities.Enums;
 using AdvancedBot.Core.Services;
 using Discord;
 using Discord.Interactions;
-using System.Threading.Tasks;
 
 namespace AdvancedBot.Core.Commands.Modules
 {
@@ -127,7 +127,7 @@ namespace AdvancedBot.Core.Commands.Modules
         [SlashCommand("restart", "Restarts staging server")]
         public async Task RestartStagingAsync()
         {
-            var result = await GLClient.Staging.RestartServer();
+            bool result = await GLClient.Staging.RestartServer();
 
             if (!result)
             {

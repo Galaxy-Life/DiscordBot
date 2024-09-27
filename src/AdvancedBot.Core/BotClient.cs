@@ -1,4 +1,8 @@
-﻿using AdvancedBot.Core.Commands;
+﻿using System;
+using System.IO;
+using System.Reflection;
+using System.Threading.Tasks;
+using AdvancedBot.Core.Commands;
 using AdvancedBot.Core.Entities;
 using AdvancedBot.Core.Services;
 using AdvancedBot.Core.Services.DataStorage;
@@ -7,32 +11,28 @@ using Discord.Interactions;
 using Discord.WebSocket;
 using GL.NET;
 using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.IO;
-using System.Reflection;
-using System.Threading.Tasks;
 
 namespace AdvancedBot.Core
 {
     public class BotClient
     {
-        private readonly DiscordSocketClient _client;
-        private readonly CustomCommandService _commands;
-        private IServiceProvider _services;
-        private readonly InteractionService _interactions;
-        private AccountService _accounts;
-        private readonly GLClient _glClient;
+        private readonly DiscordSocketClient client;
+        private readonly CustomCommandService commands;
+        private IServiceProvider services;
+        private readonly InteractionService interactions;
+        private AccountService accounts;
+        private readonly GLClient glClient;
 
         public BotClient(CustomCommandService commands = null, DiscordSocketClient client = null)
         {
-            _client = client ?? new DiscordSocketClient(new DiscordSocketConfig
+            this.client = client ?? new DiscordSocketClient(new DiscordSocketConfig
             {
                 LogLevel = LogSeverity.Info,
                 AlwaysDownloadUsers = true,
                 MessageCacheSize = 1000
             });
 
-            _commands = commands ?? new CustomCommandService(new CustomCommandServiceConfig
+            this.commands = commands ?? new CustomCommandService(new CustomCommandServiceConfig
             {
                 CaseSensitiveCommands = false,
                 LogLevel = LogSeverity.Info,
@@ -45,44 +45,44 @@ namespace AdvancedBot.Core
 #endif
             });
 
-            _interactions = new InteractionService(_client.Rest, new InteractionServiceConfig() { UseCompiledLambda = true });
+            interactions = new InteractionService(this.client.Rest, new InteractionServiceConfig() { UseCompiledLambda = true });
 
-            var envVar = Environment.GetEnvironmentVariable("PhoenixApiCred");
+            string envVar = Environment.GetEnvironmentVariable("PhoenixApiCred");
 
             if (envVar == null)
             {
-                LogAsync(new LogMessage(LogSeverity.Warning, "BotClient", "Initializing GLClient without tokens!"));
-                _glClient = new GLClient("", "", "");
+                logAsync(new LogMessage(LogSeverity.Warning, "BotClient", "Initializing GLClient without tokens!"));
+                glClient = new GLClient("", "", "");
                 return;
             }
 
-            var creds = envVar.Split(';');
-            _glClient = new GLClient(creds[0], creds[1], creds[2]);
+            string[] creds = envVar.Split(';');
+            glClient = new GLClient(creds[0], creds[1], creds[2]);
         }
 
         public async Task InitializeAsync()
         {
             Console.Title = $"Launching Discord Bot...";
-            _services = ConfigureServices();
-            _accounts = _services.GetRequiredService<AccountService>();
+            services = configureServices();
+            accounts = services.GetRequiredService<AccountService>();
 
-            _client.Ready += OnReadyAsync;
-            _interactions.SlashCommandExecuted += OnSlashCommandExecuted;
+            client.Ready += onReadyAsync;
+            interactions.SlashCommandExecuted += onSlashCommandExecuted;
 
-            _client.Log += LogAsync;
-            _commands.Log += LogAsync;
+            client.Log += logAsync;
+            commands.Log += logAsync;
 
-            var token = Environment.GetEnvironmentVariable("Token");
+            string token = Environment.GetEnvironmentVariable("Token");
 
-            await Task.Delay(10).ContinueWith(t => _client.LoginAsync(TokenType.Bot, token));
-            await _client.StartAsync();
+            await Task.Delay(10).ContinueWith(t => client.LoginAsync(TokenType.Bot, token));
+            await client.StartAsync();
 
             await Task.Delay(-1);
         }
 
-        private async Task OnReadyAsync()
+        private async Task onReadyAsync()
         {
-            Console.Title = $"Running Discord Bot: {_client.CurrentUser.Username}";
+            Console.Title = $"Running Discord Bot: {client.CurrentUser.Username}";
 
             Game activity = new(
               "Galaxy Life",
@@ -90,37 +90,37 @@ namespace AdvancedBot.Core
               ActivityProperties.Instance
             );
 
-            await _client.SetActivityAsync(activity);
-            Console.WriteLine($"Guild count: {_client.Guilds.Count}");
+            await client.SetActivityAsync(activity);
+            Console.WriteLine($"Guild count: {client.Guilds.Count}");
 
-            await _interactions.AddModulesAsync(Assembly.GetExecutingAssembly(), _services);
-            Console.WriteLine($"Modules count: {_interactions.Modules.Count}");
-            Console.WriteLine($"SlashCommands count: {_interactions.SlashCommands.Count}");
+            await interactions.AddModulesAsync(Assembly.GetExecutingAssembly(), services);
+            Console.WriteLine($"Modules count: {interactions.Modules.Count}");
+            Console.WriteLine($"SlashCommands count: {interactions.SlashCommands.Count}");
 
 #if DEBUG
             Console.WriteLine("Registered all commands to test server");
-            await _interactions.RegisterCommandsToGuildAsync(696343127144923158, false);
+            await interactions.RegisterCommandsToGuildAsync(696343127144923158, false);
 #else
-                Console.WriteLine("Registered all commands globally");
-                await _interactions.RegisterCommandsGloballyAsync();
+            Console.WriteLine("Registered all commands globally");
+            await interactions.RegisterCommandsGloballyAsync();
 #endif
 
-            _client.InteractionCreated += async (x) =>
+            client.InteractionCreated += async (x) =>
             {
-                var context = new SocketInteractionContext(_client, x);
-                await _interactions.ExecuteCommandAsync(context, _services);
+                var context = new SocketInteractionContext(client, x);
+                await interactions.ExecuteCommandAsync(context, services);
             };
 
-            _glClient.ErrorThrown += OnGLErrorThrown;
+            glClient.ErrorThrown += onGLErrorThrown;
         }
 
-        private async void OnGLErrorThrown(object sender, ErrorEventArgs e)
+        private async void onGLErrorThrown(object sender, ErrorEventArgs e)
         {
             var exception = e.GetException();
-            await LogAsync(new LogMessage(LogSeverity.Critical, "GL.NET", exception.Message, exception));
+            await logAsync(new LogMessage(LogSeverity.Critical, "GL.NET", exception.Message, exception));
         }
 
-        private Task LogAsync(LogMessage msg)
+        private Task logAsync(LogMessage msg)
         {
             if (msg.Exception != null)
             {
@@ -134,7 +134,7 @@ namespace AdvancedBot.Core
             return Task.CompletedTask;
         }
 
-        private async Task OnSlashCommandExecuted(SlashCommandInfo cmd, IInteractionContext context, IResult result)
+        private async Task onSlashCommandExecuted(SlashCommandInfo cmd, IInteractionContext context, IResult result)
         {
             if (!result.IsSuccess)
             {
@@ -149,8 +149,8 @@ namespace AdvancedBot.Core
                 }
             }
 
-            var id = context.Interaction.IsDMInteraction ? context.User.Id : context.Guild.Id;
-            var acc = _accounts.GetOrCreateAccount(id, !context.Interaction.IsDMInteraction);
+            ulong id = context.Interaction.IsDMInteraction ? context.User.Id : context.Guild.Id;
+            var acc = accounts.GetOrCreateAccount(id, !context.Interaction.IsDMInteraction);
 
             var cmdInfo = acc.CommandStats.Find(x => x.Name == cmd.Name);
 
@@ -167,16 +167,16 @@ namespace AdvancedBot.Core
                 cmdInfo.TimesFailed++;
             }
 
-            _accounts.SaveAccount(acc);
+            accounts.SaveAccount(acc);
         }
 
-        private ServiceProvider ConfigureServices()
+        private ServiceProvider configureServices()
         {
             return new ServiceCollection()
-                .AddSingleton(_client)
-                .AddSingleton(_commands)
-                .AddSingleton(_interactions)
-                .AddSingleton(_glClient)
+                .AddSingleton(client)
+                .AddSingleton(commands)
+                .AddSingleton(interactions)
+                .AddSingleton(glClient)
                 .AddSingleton<LiteDBHandler>()
                 .AddSingleton<AccountService>()
                 .AddSingleton<PaginatorService>()

@@ -1,3 +1,7 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using AdvancedBot.Core.Commands.Preconditions;
 using AdvancedBot.Core.Entities.Enums;
 using AdvancedBot.Core.Services;
@@ -5,10 +9,6 @@ using Discord;
 using Discord.Interactions;
 using GL.NET.Entities;
 using Humanizer;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace AdvancedBot.Core.Commands.Modules
 {
@@ -35,7 +35,7 @@ namespace AdvancedBot.Core.Commands.Modules
 
                 var warlogs = await GLClient.Api.GetAllianceWarlogs(alliance.Id);
                 var texts = new List<string>();
-                var wins = warlogs.Count(war => war.WinnerId == alliance.Id);
+                int wins = warlogs.Count(war => war.WinnerId == alliance.Id);
 
                 for (int i = 0; i < warlogs.Count; i++)
                 {
@@ -43,15 +43,15 @@ namespace AdvancedBot.Core.Commands.Modules
                     var endDate = new DateTime(1970, 1, 1).AddMilliseconds(log.WarEndTime);
                     var duration = TimeSpan.FromMilliseconds(log.WarEndTime - log.WarStartTime);
 
-                    var statusText = warlogs[i].WinnerId == alliance.Id ? "**Won** against" : "**Lost** against";
-                    var dateText = $"ended **{endDate:dd/MM/yyyy (HH:mm)}**";
-                    var durationText = duration.Days == 3 ? $"" : $"(KO after {(TimeSpan.FromDays(3) - duration).Humanize(3)})";
+                    string statusText = warlogs[i].WinnerId == alliance.Id ? "**Won** against" : "**Lost** against";
+                    string dateText = $"ended **{endDate:dd/MM/yyyy (HH:mm)}**";
+                    string durationText = duration.Days == 3 ? $"" : $"(KO after {(TimeSpan.FromDays(3) - duration).Humanize(3)})";
 
                     texts.Add($"{statusText} **{log.EnemyAllianceName}** {dateText}\n"
                     + $"**{log.SelfAllianceWarScore}**wp versus **{log.EnemyAllianceWarScore}**wp {durationText}\n");
                 }
 
-                var winLossRatio = wins / (warlogs.Count - wins == 0 ? 1 : warlogs.Count - wins);
+                int winLossRatio = wins / (warlogs.Count - wins == 0 ? 1 : warlogs.Count - wins);
 
                 await LogService.LogGameActionAsync(LogAction.GetWarlogs, Context.User.Id, 0, alliance.Id);
 
@@ -198,10 +198,10 @@ namespace AdvancedBot.Core.Commands.Modules
 
             await LogService.LogGameActionAsync(LogAction.GetFull, Context.User.Id, user.UserId);
 
-            var steamId = user.SteamId ?? "No account linked";
-            var discordTag = string.IsNullOrEmpty(user.DiscordId) ? "No account linked" : $"<@{user.DiscordId}>";
+            string steamId = user.SteamId ?? "No account linked";
+            string discordTag = string.IsNullOrEmpty(user.DiscordId) ? "No account linked" : $"<@{user.DiscordId}>";
 
-            var description =
+            string description =
                   user.Role == PhoenixRole.Banned ? $"**This user has been banned!!**\nBan Reason: **{user.BanReason}**\n\n"
                 : user.Role == PhoenixRole.Donator ? "This user is a Donator\n\n"
                 : user.Role == PhoenixRole.Staff ? "This user is a Staff Member\n\n"
@@ -314,7 +314,7 @@ namespace AdvancedBot.Core.Commands.Modules
                 return;
             }
 
-            var backendSuccess = await GLClient.Api.UpdateNameFromPhoenixAsync(userId.ToString());
+            bool backendSuccess = await GLClient.Api.UpdateNameFromPhoenixAsync(userId.ToString());
 
             await LogService.LogGameActionAsync(LogAction.UpdateName, Context.User.Id, userId, $"{user.UserName}:{newName}");
 
@@ -521,9 +521,9 @@ namespace AdvancedBot.Core.Commands.Modules
             Choice("Chips (advanced)", "advchips")] string type, string sku = "7000")
         {
             List<string> displayTexts = new() { "Failed to get information" };
-            var title = "Galaxy Life Leaderboard";
+            string title = "Galaxy Life Leaderboard";
 
-            var thumbnailUrl =
+            string thumbnailUrl =
                 Context.Channel is IGuildChannel
               ? Context.Guild.IconUrl
               : Context.Client.CurrentUser.GetDisplayAvatarUrl();

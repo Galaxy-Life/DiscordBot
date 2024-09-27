@@ -1,11 +1,11 @@
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using AdvancedBot.Core.Commands.Preconditions;
 using AdvancedBot.Core.Entities;
 using AdvancedBot.Core.Services;
 using Discord;
 using Discord.Interactions;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace AdvancedBot.Core.Commands.Modules
 {
@@ -75,7 +75,7 @@ namespace AdvancedBot.Core.Commands.Modules
 
             for (int i = 0; i < result.Output.Count; i++)
             {
-                var trackerKey = result.Output.ElementAt(i).Key;
+                string trackerKey = result.Output.ElementAt(i).Key;
                 var trackerResult = result.Output.ElementAt(i).Value;
 
                 var a = trackerResult.First().Value;

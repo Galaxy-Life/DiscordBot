@@ -1,3 +1,5 @@
+using System;
+using System.Threading.Tasks;
 using AdvancedBot.Core.Commands;
 using AdvancedBot.Core.Entities;
 using AdvancedBot.Core.Entities.Enums;
@@ -7,38 +9,36 @@ using Discord.WebSocket;
 using GL.NET;
 using GL.NET.Entities;
 using Humanizer;
-using System;
-using System.Threading.Tasks;
 
 namespace AdvancedBot.Core.Services
 {
     public class LogService
     {
-        private int _id = 0;
-        private readonly LiteDBHandler _storage;
-        private readonly CustomCommandService _commands;
-        private readonly DiscordSocketClient _client;
-        private readonly GLClient _gl;
+        private int id = 0;
+        private readonly LiteDBHandler storage;
+        private readonly CustomCommandService commands;
+        private readonly DiscordSocketClient client;
+        private readonly GLClient gl;
 
         public LogService(LiteDBHandler storage, CustomCommandService commands, DiscordSocketClient client, GLClient gl)
         {
-            _storage = storage;
-            _commands = commands;
-            _client = client;
-            _gl = gl;
+            this.storage = storage;
+            this.commands = commands;
+            this.client = client;
+            this.gl = gl;
 
-            _id = _storage.RestoreCount<Log>();
+            id = this.storage.RestoreCount<Log>();
         }
 
         public async Task LogGameActionAsync(LogAction action, ulong discordModId, uint victimGameId, string reason = "", DateTime? until = null)
         {
-            _id++;
-            var log = new Log(_id, action, discordModId, victimGameId, reason, until);
+            id++;
+            var log = new Log(id, action, discordModId, victimGameId, reason, until);
 
-            _storage.Store(log);
+            storage.Store(log);
 
-            var channel = await _client.GetChannelAsync(_commands.LogChannelId) as ISocketMessageChannel;
-            var user = await _gl.Api.GetUserById(victimGameId.ToString());
+            var channel = await client.GetChannelAsync(commands.LogChannelId) as ISocketMessageChannel;
+            var user = await gl.Api.GetUserById(victimGameId.ToString());
 
             await channel.SendMessageAsync(embed: GetEmbedForLog(log, user));
         }
@@ -47,7 +47,7 @@ namespace AdvancedBot.Core.Services
         {
             var embed = new EmbedBuilder()
                 .WithTitle($"Overview | {log.Type.Humanize()}")
-                .WithColor(GetColorBasedOnAction(log.Type))
+                .WithColor(getColorBasedOnAction(log.Type))
                 .AddField("Moderator", $"<@{log.DiscordModId}>", true)
                 .WithFooter(footer => footer
                     .WithText($"Case #{log.Id} • Requested by moderator with id {log.DiscordModId}"))
@@ -79,7 +79,7 @@ namespace AdvancedBot.Core.Services
                 case LogAction.UpdateEmail:
                 case LogAction.UpdateName:
                 case LogAction.RenameAlliance:
-                    var splits = log.Reason.Split(':');
+                    string[] splits = log.Reason.Split(':');
                     embed.AddField("Previous", splits[0]);
                     embed.AddField("Updated", splits[1], true);
                     break;
@@ -89,7 +89,7 @@ namespace AdvancedBot.Core.Services
                     break;
 
                 case LogAction.AddItem:
-                    var itemSplit = log.Reason.Split(':');
+                    string[] itemSplit = log.Reason.Split(':');
                     embed.AddField("Item SKU", itemSplit[0]);
                     embed.AddField("Quantity", itemSplit[1]);
                     break;
@@ -117,14 +117,14 @@ namespace AdvancedBot.Core.Services
 
                 case LogAction.ForceWar:
                 case LogAction.ForceStopWar:
-                    var warSplit = log.Reason.Split(':');
+                    string[] warSplit = log.Reason.Split(':');
                     embed.AddField("Server", warSplit[0], true);
                     embed.AddField("Alliance A", warSplit[1]);
                     embed.AddField("Alliance B", warSplit[2]);
                     break;
 
                 case LogAction.Compensate:
-                    var compensateSplit = log.Reason.Split(':');
+                    string[] compensateSplit = log.Reason.Split(':');
                     embed.AddField("Type", compensateSplit[0]);
 
                     if (compensateSplit.Length > 2)
@@ -155,7 +155,7 @@ namespace AdvancedBot.Core.Services
             return embed.Build();
         }
 
-        private static Color GetColorBasedOnAction(LogAction action)
+        private static Color getColorBasedOnAction(LogAction action)
         {
             return action switch
             {

@@ -1,10 +1,10 @@
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using AdvancedBot.Core.Commands.Preconditions;
 using AdvancedBot.Core.Entities;
 using Discord;
 using Discord.Interactions;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace AdvancedBot.Core.Commands.Modules
 {
@@ -12,11 +12,11 @@ namespace AdvancedBot.Core.Commands.Modules
     [RequirePrivateList]
     public class DevModule : TopModule
     {
-        private readonly InteractionService _interactions;
+        private readonly InteractionService interactions;
 
         public DevModule(InteractionService interactions)
         {
-            _interactions = interactions;
+            this.interactions = interactions;
         }
 
         [SlashCommand("allstats", "Shows combined stats from all servers")]
@@ -34,7 +34,7 @@ namespace AdvancedBot.Core.Commands.Modules
             }
             else accounts = Accounts.GetAllAccounts();
 
-            var allInfos = CalculateCommandStatsOnAccounts(accounts);
+            var allInfos = calculateCommandStatsOnAccounts(accounts);
 
             var fields = new List<EmbedField>();
             var commands = allInfos.OrderByDescending(x => x.TimesRun).ToArray();
@@ -48,7 +48,7 @@ namespace AdvancedBot.Core.Commands.Modules
                       .Build());
             }
 
-            var title = Context.Interaction.IsDMInteraction ? $"Stats for {Context.User.Username}'s DMS" : $"Stats for {Context.Guild.Name}";
+            string title = Context.Interaction.IsDMInteraction ? $"Stats for {Context.User.Username}'s DMS" : $"Stats for {Context.Guild.Name}";
 
             var templateEmbed = new EmbedBuilder()
                 .WithTitle(title);
@@ -60,7 +60,7 @@ namespace AdvancedBot.Core.Commands.Modules
         [CommandContextType(InteractionContextType.Guild, InteractionContextType.PrivateChannel)]
         public async Task AddModerationModuleToGuildAsync(string guildId, string modulename)
         {
-            var module = _interactions.Modules.First(module => module.Name.ToLower() == modulename.ToLower());
+            var module = interactions.Modules.First(module => module.Name.Equals(modulename, System.StringComparison.CurrentCultureIgnoreCase));
 
             if (module == null)
             {
@@ -68,7 +68,7 @@ namespace AdvancedBot.Core.Commands.Modules
                 return;
             }
 
-            await _interactions.AddModulesToGuildAsync(ulong.Parse(guildId), false, module);
+            await interactions.AddModulesToGuildAsync(ulong.Parse(guildId), false, module);
 
             var embed = new EmbedBuilder()
                 .WithTitle("Module successfully added")
@@ -84,7 +84,7 @@ namespace AdvancedBot.Core.Commands.Modules
             await ModifyOriginalResponseAsync(msg => msg.Embeds = new Embed[] { embed });
         }
 
-        private static List<CommandStats> CalculateCommandStatsOnAccounts(Account[] accounts)
+        private static List<CommandStats> calculateCommandStatsOnAccounts(Account[] accounts)
         {
             var allInfos = new List<CommandStats>();
 

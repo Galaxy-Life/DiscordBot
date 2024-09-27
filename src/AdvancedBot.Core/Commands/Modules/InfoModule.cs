@@ -1,30 +1,30 @@
-using Discord;
-using Discord.Interactions;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Discord;
+using Discord.Interactions;
 
 namespace AdvancedBot.Core.Commands.Modules
 {
     public class InfoModule : TopModule
     {
-        private readonly CustomCommandService _commands;
+        private readonly CustomCommandService commands;
 
         public InfoModule(CustomCommandService commands)
         {
-            _commands = commands;
+            this.commands = commands;
         }
 
         [SlashCommand("help", "View basic help and information about the Galaxy Life bot.")]
         public async Task DisplayBotInfoAsync()
         {
-            await _commands.SendBotInfoAsync(Context);
+            await commands.SendBotInfoAsync(Context);
         }
 
         [SlashCommand("serverstats", "Shows guild stats related to the bot")]
         public async Task DisplayGuildOrDmStatsAsync()
         {
-            var id = Context.Interaction.IsDMInteraction ? Context.User.Id : Context.Guild.Id;
+            ulong id = Context.Interaction.IsDMInteraction ? Context.User.Id : Context.Guild.Id;
             var guild = Accounts.GetOrCreateAccount(id, !Context.Interaction.IsDMInteraction);
 
             var fields = new List<EmbedField>();
@@ -39,8 +39,8 @@ namespace AdvancedBot.Core.Commands.Modules
                       .Build());
             }
 
-            var title = Context.Interaction.IsDMInteraction ? $"Stats for {Context.User.Username}'s DMS" : $"Stats for {Context.Guild.Name}";
-            var thumbnailUrl = Context.Interaction.IsDMInteraction ? Context.User.GetDisplayAvatarUrl() : Context.Guild.IconUrl;
+            string title = Context.Interaction.IsDMInteraction ? $"Stats for {Context.User.Username}'s DMS" : $"Stats for {Context.Guild.Name}";
+            string thumbnailUrl = Context.Interaction.IsDMInteraction ? Context.User.GetDisplayAvatarUrl() : Context.Guild.IconUrl;
 
             var templateEmbed = new EmbedBuilder()
                 .WithTitle(title)

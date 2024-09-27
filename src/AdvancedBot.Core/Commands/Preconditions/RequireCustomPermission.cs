@@ -1,18 +1,18 @@
+using System;
+using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
-using System;
-using System.Threading.Tasks;
 
 namespace AdvancedBot.Core.Commands.Preconditions
 {
     public class RequireCustomPermission : PreconditionAttribute
     {
-        private readonly GuildPermission _permission;
+        private readonly GuildPermission permission;
 
         public RequireCustomPermission(GuildPermission permission = default)
         {
-            _permission = permission;
+            this.permission = permission;
         }
 
         public override async Task<PreconditionResult> CheckPermissionsAsync(ICommandContext context, CommandInfo command, IServiceProvider services)
@@ -24,7 +24,7 @@ namespace AdvancedBot.Core.Commands.Preconditions
 
             var guildUser = context.User as SocketGuildUser;
 
-            if (guildUser.GuildPermissions.Has(_permission) || guildUser.GuildPermissions.Has(GuildPermission.Administrator))
+            if (guildUser.GuildPermissions.Has(permission) || guildUser.GuildPermissions.Has(GuildPermission.Administrator))
             {
                 return PreconditionResult.FromSuccess();
             }
