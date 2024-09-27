@@ -6,107 +6,106 @@ using AdvancedBot.Core.Entities;
 using Discord;
 using Discord.Interactions;
 
-namespace AdvancedBot.Core.Commands.Modules
+namespace AdvancedBot.Core.Commands.Modules;
+
+[DontAutoRegister]
+[RequirePrivateList]
+public class DevModule : TopModule
 {
-    [DontAutoRegister]
-    [RequirePrivateList]
-    public class DevModule : TopModule
+    private readonly InteractionService interactions;
+
+    public DevModule(InteractionService interactions)
     {
-        private readonly InteractionService interactions;
+        this.interactions = interactions;
+    }
 
-        public DevModule(InteractionService interactions)
+    [SlashCommand("allstats", "Shows combined stats from all servers")]
+    public async Task ShowAllStatsAsync([Choice("All", "all"), Choice("Dms", "dms"), Choice("Guilds", "guilds")] string type)
+    {
+        Account[] accounts;
+
+        if (type == "dms")
         {
-            this.interactions = interactions;
+            accounts = Accounts.GetManyAccounts(x => !x.IsGuild);
+        }
+        else if (type == "guilds")
+        {
+            accounts = Accounts.GetManyAccounts(x => x.IsGuild);
+        }
+        else accounts = Accounts.GetAllAccounts();
+
+        var allInfos = calculateCommandStatsOnAccounts(accounts);
+
+        var fields = new List<EmbedField>();
+        var commands = allInfos.OrderByDescending(x => x.TimesRun).ToArray();
+
+        for (int i = 0; i < commands.Length; i++)
+        {
+            fields.Add(
+              new EmbedFieldBuilder()
+                  .WithName(commands[i].Name)
+                  .WithValue($"Executed {commands[i].TimesRun} times ({commands[i].TimesFailed} fails)")
+                  .Build());
         }
 
-        [SlashCommand("allstats", "Shows combined stats from all servers")]
-        public async Task ShowAllStatsAsync([Choice("All", "all"), Choice("Dms", "dms"), Choice("Guilds", "guilds")] string type)
+        string title = Context.Interaction.IsDMInteraction ? $"Stats for {Context.User.Username}'s DMS" : $"Stats for {Context.Guild.Name}";
+
+        var templateEmbed = new EmbedBuilder()
+            .WithTitle(title);
+
+        await SendPaginatedMessageAsync(fields, null, templateEmbed);
+    }
+
+    [SlashCommand("addmoduletoguild", "Adds moderation command to guild")]
+    [CommandContextType(InteractionContextType.Guild, InteractionContextType.PrivateChannel)]
+    public async Task AddModerationModuleToGuildAsync(string guildId, string modulename)
+    {
+        var module = interactions.Modules.First(module => module.Name.Equals(modulename, System.StringComparison.CurrentCultureIgnoreCase));
+
+        if (module == null)
         {
-            Account[] accounts;
-
-            if (type == "dms")
-            {
-                accounts = Accounts.GetManyAccounts(x => !x.IsGuild);
-            }
-            else if (type == "guilds")
-            {
-                accounts = Accounts.GetManyAccounts(x => x.IsGuild);
-            }
-            else accounts = Accounts.GetAllAccounts();
-
-            var allInfos = calculateCommandStatsOnAccounts(accounts);
-
-            var fields = new List<EmbedField>();
-            var commands = allInfos.OrderByDescending(x => x.TimesRun).ToArray();
-
-            for (int i = 0; i < commands.Length; i++)
-            {
-                fields.Add(
-                  new EmbedFieldBuilder()
-                      .WithName(commands[i].Name)
-                      .WithValue($"Executed {commands[i].TimesRun} times ({commands[i].TimesFailed} fails)")
-                      .Build());
-            }
-
-            string title = Context.Interaction.IsDMInteraction ? $"Stats for {Context.User.Username}'s DMS" : $"Stats for {Context.Guild.Name}";
-
-            var templateEmbed = new EmbedBuilder()
-                .WithTitle(title);
-
-            await SendPaginatedMessageAsync(fields, null, templateEmbed);
+            await ModifyOriginalResponseAsync(msg => msg.Content = $"Could not find any module named **{modulename}**.");
+            return;
         }
 
-        [SlashCommand("addmoduletoguild", "Adds moderation command to guild")]
-        [CommandContextType(InteractionContextType.Guild, InteractionContextType.PrivateChannel)]
-        public async Task AddModerationModuleToGuildAsync(string guildId, string modulename)
+        await interactions.AddModulesToGuildAsync(ulong.Parse(guildId), false, module);
+
+        var embed = new EmbedBuilder()
+            .WithTitle("Module successfully added")
+            .WithDescription($"Added **{module.Name}** to the server.")
+            .AddField("Slash Commands", $"{module.SlashCommands.Count}", true)
+            .WithColor(Color.Green)
+            .WithFooter(footer => footer
+                .WithText($"Module added by {Context.User.Username}#{Context.User.Discriminator}")
+                .WithIconUrl(Context.User.GetDisplayAvatarUrl()))
+            .WithCurrentTimestamp()
+            .Build();
+
+        await ModifyOriginalResponseAsync(msg => msg.Embeds = new Embed[] { embed });
+    }
+
+    private static List<CommandStats> calculateCommandStatsOnAccounts(Account[] accounts)
+    {
+        var allInfos = new List<CommandStats>();
+
+        for (int i = 0; i < accounts.Length; i++)
         {
-            var module = interactions.Modules.First(module => module.Name.Equals(modulename, System.StringComparison.CurrentCultureIgnoreCase));
-
-            if (module == null)
+            for (int j = 0; j < accounts[i].CommandStats.Count; j++)
             {
-                await ModifyOriginalResponseAsync(msg => msg.Content = $"Could not find any module named **{modulename}**.");
-                return;
-            }
+                var cmdStats = accounts[i].CommandStats[j];
+                var foundCmd = allInfos.Find(x => x.Name == cmdStats.Name);
 
-            await interactions.AddModulesToGuildAsync(ulong.Parse(guildId), false, module);
-
-            var embed = new EmbedBuilder()
-                .WithTitle("Module successfully added")
-                .WithDescription($"Added **{module.Name}** to the server.")
-                .AddField("Slash Commands", $"{module.SlashCommands.Count}", true)
-                .WithColor(Color.Green)
-                .WithFooter(footer => footer
-                    .WithText($"Module added by {Context.User.Username}#{Context.User.Discriminator}")
-                    .WithIconUrl(Context.User.GetDisplayAvatarUrl()))
-                .WithCurrentTimestamp()
-                .Build();
-
-            await ModifyOriginalResponseAsync(msg => msg.Embeds = new Embed[] { embed });
-        }
-
-        private static List<CommandStats> calculateCommandStatsOnAccounts(Account[] accounts)
-        {
-            var allInfos = new List<CommandStats>();
-
-            for (int i = 0; i < accounts.Length; i++)
-            {
-                for (int j = 0; j < accounts[i].CommandStats.Count; j++)
+                if (foundCmd == null)
                 {
-                    var cmdStats = accounts[i].CommandStats[j];
-                    var foundCmd = allInfos.Find(x => x.Name == cmdStats.Name);
-
-                    if (foundCmd == null)
-                    {
-                        allInfos.Add(cmdStats);
-                        continue;
-                    }
-
-                    foundCmd.TimesRun += cmdStats.TimesRun;
-                    foundCmd.TimesFailed += cmdStats.TimesFailed;
+                    allInfos.Add(cmdStats);
+                    continue;
                 }
-            }
 
-            return allInfos;
+                foundCmd.TimesRun += cmdStats.TimesRun;
+                foundCmd.TimesFailed += cmdStats.TimesFailed;
+            }
         }
+
+        return allInfos;
     }
 }

@@ -1,10 +1,9 @@
-namespace AdvancedBot.Core.Entities.Enums
+namespace AdvancedBot.Core.Entities.Enums;
+
+public enum ModResultType
 {
-    public enum ModResultType
-    {
-        Success = 0,
-        NotFound = 1,
-        AlreadyDone = 2,
-        BackendError = 3,
-    }
+    Success = 0,
+    NotFound = 1,
+    AlreadyDone = 2,
+    BackendError = 3,
 }
