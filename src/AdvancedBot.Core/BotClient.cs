@@ -1,16 +1,16 @@
-﻿using Discord;
-using Discord.WebSocket;
+﻿using AdvancedBot.Core.Commands;
+using AdvancedBot.Core.Entities;
+using AdvancedBot.Core.Services;
 using AdvancedBot.Core.Services.DataStorage;
+using Discord;
+using Discord.Interactions;
+using Discord.WebSocket;
+using GL.NET;
 using Microsoft.Extensions.DependencyInjection;
 using System;
-using System.Threading.Tasks;
-using AdvancedBot.Core.Commands;
-using AdvancedBot.Core.Services;
-using Discord.Interactions;
-using System.Reflection;
-using AdvancedBot.Core.Entities;
-using GL.NET;
 using System.IO;
+using System.Reflection;
+using System.Threading.Tasks;
 
 namespace AdvancedBot.Core
 {
@@ -38,11 +38,11 @@ namespace AdvancedBot.Core
                 LogLevel = LogSeverity.Info,
                 BotInviteIsPrivate = false,
                 RepositoryUrl = "https://github.com/Galaxy-Life/DiscordBot",
-                #if DEBUG
+#if DEBUG
                 LogChannelId = 697920194559082547
-                #else
+#else
                 LogChannelId = 1090274237572468796
-                #endif
+#endif
             });
 
             _interactions = new InteractionService(_client.Rest, new InteractionServiceConfig() { UseCompiledLambda = true });
@@ -97,13 +97,13 @@ namespace AdvancedBot.Core
             Console.WriteLine($"Modules count: {_interactions.Modules.Count}");
             Console.WriteLine($"SlashCommands count: {_interactions.SlashCommands.Count}");
 
-            #if DEBUG
-                Console.WriteLine("Registered all commands to test server");
-                await _interactions.RegisterCommandsToGuildAsync(696343127144923158, false);
-            #else
+#if DEBUG
+            Console.WriteLine("Registered all commands to test server");
+            await _interactions.RegisterCommandsToGuildAsync(696343127144923158, false);
+#else
                 Console.WriteLine("Registered all commands globally");
                 await _interactions.RegisterCommandsGloballyAsync();
-            #endif
+#endif
 
             _client.InteractionCreated += async (x) =>
             {

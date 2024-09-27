@@ -1,5 +1,5 @@
-using System;
 using Discord;
+using System;
 
 namespace AdvancedBot.Core.Entities
 {
@@ -12,7 +12,7 @@ namespace AdvancedBot.Core.Entities
         public ulong DiscordUserId { get; set; }
         public string[] DisplayMessages { get; set; }
         public EmbedField[] DisplayFields { get; set; }
-        public int CurrentPage 
+        public int CurrentPage
         {
             get => _currentPage;
             set
@@ -27,7 +27,7 @@ namespace AdvancedBot.Core.Entities
             get
             {
                 var totalPages = DisplayMessages == null ? DisplayFields.Length : DisplayMessages.Length;
-                var decimalValue = (double) totalPages / 10;
+                var decimalValue = (double)totalPages / 10;
                 var roundedUpValue = Math.Ceiling(decimalValue);
                 return int.Parse(roundedUpValue.ToString());
             }

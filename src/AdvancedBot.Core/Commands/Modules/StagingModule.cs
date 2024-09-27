@@ -1,10 +1,10 @@
-using System.Threading.Tasks;
 using AdvancedBot.Core.Commands.Preconditions;
 using AdvancedBot.Core.Entities;
 using AdvancedBot.Core.Entities.Enums;
 using AdvancedBot.Core.Services;
 using Discord;
 using Discord.Interactions;
+using System.Threading.Tasks;
 
 namespace AdvancedBot.Core.Commands.Modules
 {
@@ -32,7 +32,7 @@ namespace AdvancedBot.Core.Commands.Modules
               .WithButton("Reset helps", $"helps", ButtonStyle.Primary, Emote.Parse("<:Item_Helmet:1084821573975945267>"))
               .WithButton("Start War", $"startwar", ButtonStyle.Danger, new Emoji("⚔"), row: 1)
               .WithButton("End War", $"endwar", ButtonStyle.Danger, Emote.Parse("<:jijijijamikaze:948038940819075092>"), row: 1);
-              
+
             await ModifyOriginalResponseAsync(msg => msg.Components = components.Build());
         }
 
@@ -81,7 +81,7 @@ namespace AdvancedBot.Core.Commands.Modules
                 await ModifyOriginalResponseAsync(msg => msg.Content = $"Could not find any user with id **{userId}**.");
                 return;
             }
-            
+
             if (!await GLClient.Staging.TryResetUserAsync(userId.ToString()))
             {
                 await ModifyOriginalResponseAsync(msg => msg.Content = $"Could not reset {user.UserName} ({user.UserId}) progress on staging.");
@@ -100,7 +100,7 @@ namespace AdvancedBot.Core.Commands.Modules
                 .WithCurrentTimestamp()
                 .Build();
 
-            await ModifyOriginalResponseAsync(msg => msg.Embeds = new Embed[] { embed });  
+            await ModifyOriginalResponseAsync(msg => msg.Embeds = new Embed[] { embed });
         }
 
         [SlashCommand("addchips", "Adds chips to a user")]
@@ -128,7 +128,7 @@ namespace AdvancedBot.Core.Commands.Modules
         public async Task RestartStagingAsync()
         {
             var result = await GLClient.Staging.RestartServer();
-            
+
             if (!result)
             {
                 await ModifyOriginalResponseAsync(msg => msg.Content = "Failed lol");

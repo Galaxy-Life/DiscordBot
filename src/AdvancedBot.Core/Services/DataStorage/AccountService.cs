@@ -1,7 +1,7 @@
 using AdvancedBot.Core.Entities;
+using System;
 using System.Linq;
 using System.Linq.Expressions;
-using System;
 
 namespace AdvancedBot.Core.Services.DataStorage
 {
@@ -23,7 +23,7 @@ namespace AdvancedBot.Core.Services.DataStorage
                 SaveAccount(account);
                 return account;
             }
-            
+
             return _storage.RestoreSingle<Account>(x => x.Id == id);
         }
 

@@ -1,14 +1,14 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Timers;
 using AdvancedBot.Core.Entities;
 using AdvancedBot.Core.Entities.Enums;
 using AdvancedBot.Core.Services.DataStorage;
 using Discord;
 using Discord.WebSocket;
 using GL.NET;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using System.Timers;
 
 namespace AdvancedBot.Core.Services
 {
@@ -86,7 +86,7 @@ namespace AdvancedBot.Core.Services
 
             if (counter is null)
                 throw new Exception($"There is no counter active of type '{counterType}'.");
-            
+
             guild.ChannelCounters.Remove(counter);
 
             _guild.SaveAccount(guild);
@@ -100,7 +100,7 @@ namespace AdvancedBot.Core.Services
 
             if (counter is null)
                 throw new Exception($"This channel has no active counter.");
-            
+
             guild.ChannelCounters.Remove(counter);
 
             _guild.SaveAccount(guild);
@@ -148,7 +148,7 @@ namespace AdvancedBot.Core.Services
                     await UpdateChannelAsync(guilds[i], guilds[i].ChannelCounters[j]);
                 }
             }
-            
+
             Console.WriteLine($"Finished updating all counters ({(DateTime.UtcNow - start).TotalSeconds}s)");
         }
 

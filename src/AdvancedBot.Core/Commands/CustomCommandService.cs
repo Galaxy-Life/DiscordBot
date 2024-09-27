@@ -1,11 +1,11 @@
-using System;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using AdvancedBot.Core.Services;
 using Discord;
 using Discord.Commands;
 using Humanizer;
+using System;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace AdvancedBot.Core.Commands
 {
@@ -30,9 +30,9 @@ namespace AdvancedBot.Core.Commands
         }
 
         public async Task SendBotInfoAsync(IInteractionContext context)
-        { 
+        {
             var botName = context.Client.CurrentUser.Username;
-            var botAvatar = context.Client.CurrentUser.GetDisplayAvatarUrl(); 
+            var botAvatar = context.Client.CurrentUser.GetDisplayAvatarUrl();
 
             var repoLink = string.IsNullOrEmpty(_sourceRepo) ? $"Unavailable" : $"[GitHub repository]({_sourceRepo})";
             var docsLink = string.IsNullOrEmpty(_documentationUrl) ? $"Unavailable" : $"[Read the docs]({_documentationUrl})";
@@ -79,10 +79,10 @@ namespace AdvancedBot.Core.Commands
             {
                 var pref = command.Parameters[i].IsOptional ? "[" : "<";
                 var suff = command.Parameters[i].IsOptional ? "]" : ">";
-                
+
                 parameters.Append($"{pref}{command.Parameters[i].Name.Underscore().Dasherize()}{suff} ");
             }
-            
+
             return $"{prefix}{command.Aliases[0]} {parameters}";
         }
     }

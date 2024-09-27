@@ -1,11 +1,11 @@
-using System;
-using System.Threading.Tasks;
 using AdvancedBot.Core.Commands.Preconditions;
 using AdvancedBot.Core.Entities;
 using AdvancedBot.Core.Entities.Enums;
 using AdvancedBot.Core.Services;
 using Discord;
 using Discord.Interactions;
+using System;
+using System.Threading.Tasks;
 
 namespace AdvancedBot.Core.Commands.Modules
 {
@@ -20,11 +20,11 @@ namespace AdvancedBot.Core.Commands.Modules
             _counter = counter;
         }
 
-    [SlashCommand("setup", "Set up the channel counter")]
-    [RequireBotPermission(GuildPermission.ManageChannels)]
-    [RequireBotPermission(GuildPermission.ManageRoles)]
-    [CommandContextType(InteractionContextType.Guild, InteractionContextType.PrivateChannel)]
-    public async Task SetupChannelCountersAsync()
+        [SlashCommand("setup", "Set up the channel counter")]
+        [RequireBotPermission(GuildPermission.ManageChannels)]
+        [RequireBotPermission(GuildPermission.ManageRoles)]
+        [CommandContextType(InteractionContextType.Guild, InteractionContextType.PrivateChannel)]
+        public async Task SetupChannelCountersAsync()
         {
             var voiceChannel = await Context.Guild.CreateVoiceChannelAsync($"Server Status");
             await voiceChannel.AddPermissionOverwriteAsync(Context.Client.CurrentUser, new OverwritePermissions(connect: PermValue.Allow));

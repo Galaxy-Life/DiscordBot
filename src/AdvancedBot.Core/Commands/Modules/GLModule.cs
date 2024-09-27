@@ -1,11 +1,11 @@
-﻿using Discord;
+﻿using AdvancedBot.Core.Services;
+using Discord;
 using Discord.Interactions;
-using System;
-using System.Threading.Tasks;
-using System.Linq;
-using System.Collections.Generic;
-using AdvancedBot.Core.Services;
 using GL.NET.Entities;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace AdvancedBot.Core.Commands.Modules
 {
@@ -18,9 +18,9 @@ namespace AdvancedBot.Core.Commands.Modules
         {
             var status = await GLClient.Api.GetServerStatus();
 
-            var thumbnailUrl = 
-                Context.Channel is IGuildChannel 
-              ? Context.Guild.IconUrl 
+            var thumbnailUrl =
+                Context.Channel is IGuildChannel
+              ? Context.Guild.IconUrl
               : Context.Client.CurrentUser.GetDisplayAvatarUrl();
 
             var embed = new EmbedBuilder()
@@ -57,7 +57,7 @@ namespace AdvancedBot.Core.Commands.Modules
         [SlashCommand("stats", "Displays a user's Galaxy Life stats")]
         public async Task ShowUserStatsAsync(string input = "")
         {
-            var response = await  GLService.GetUserStatsAsync(string.IsNullOrEmpty(input) ? Context.User.Username : input);
+            var response = await GLService.GetUserStatsAsync(string.IsNullOrEmpty(input) ? Context.User.Username : input);
             await SendResponseMessage(response.Message, false);
 
             // no gl data found
@@ -97,19 +97,19 @@ namespace AdvancedBot.Core.Commands.Modules
 
         [SlashCommand("lb", "Retrieve a specific statistic leaderboard")]
         public async Task GetLeaderboardAsync([
-            Choice("Experience", "xp"), 
-            Choice("Experience from attacks", "attackXp"), 
-            Choice("Rivals", "rivalsWon"), 
-            Choice("Warpoints", "warpoints"), 
+            Choice("Experience", "xp"),
+            Choice("Experience from attacks", "attackXp"),
+            Choice("Rivals", "rivalsWon"),
+            Choice("Warpoints", "warpoints"),
             Choice("Alliances", "alliancewarpoints")
         ] string type)
         {
             List<string> displayTexts = new() { "Failed to get information" };
             var title = "Galaxy Life Leaderboard";
 
-            var thumbnailUrl = 
-                Context.Channel is IGuildChannel 
-              ? Context.Guild.IconUrl 
+            var thumbnailUrl =
+                Context.Channel is IGuildChannel
+              ? Context.Guild.IconUrl
               : Context.Client.CurrentUser.GetDisplayAvatarUrl();
 
             switch (type)
@@ -159,8 +159,8 @@ namespace AdvancedBot.Core.Commands.Modules
             }
 
             await SendPaginatedMessageAsync(
-                null, 
-                displayTexts, 
+                null,
+                displayTexts,
                 new EmbedBuilder()
                     .WithTitle($"Leaderboard | {title}")
                     .WithColor(Color.Purple)
@@ -169,7 +169,7 @@ namespace AdvancedBot.Core.Commands.Modules
                         .WithText($"Leaderboard requested by {Context.User.Username}#{Context.User.Discriminator}")
                         .WithIconUrl(Context.User.GetDisplayAvatarUrl()))
                     .WithCurrentTimestamp()
-                    
+
             );
         }
 
@@ -197,9 +197,9 @@ namespace AdvancedBot.Core.Commands.Modules
                 return;
             }
 
-            var thumbnailUrl = 
-                Context.Channel is IGuildChannel 
-              ? Context.Guild.IconUrl 
+            var thumbnailUrl =
+                Context.Channel is IGuildChannel
+              ? Context.Guild.IconUrl
               : Context.Client.CurrentUser.GetDisplayAvatarUrl();
 
             var baseUserStats = await GLClient.Api.GetUserStats(baseUser.Id);
@@ -231,11 +231,11 @@ namespace AdvancedBot.Core.Commands.Modules
             return number switch
             {
                 >= 1_000_000_000 => $"{Math.Round(number / 1_000_000_000, 2)}B",
-                >= 10_000_000    => $"{Math.Round(number / 1_000_000, 1)}M",
-                >= 1_000_000     => $"{Math.Round(number / 1_000_000, 2)}M", 
-                >= 100_000       => $"{Math.Round(number / 1_000, 1)}K",
-                >= 10_000        => $"{Math.Round(number / 1_000, 2)}K",
-                _                => number.ToString()
+                >= 10_000_000 => $"{Math.Round(number / 1_000_000, 1)}M",
+                >= 1_000_000 => $"{Math.Round(number / 1_000_000, 2)}M",
+                >= 100_000 => $"{Math.Round(number / 1_000, 1)}K",
+                >= 10_000 => $"{Math.Round(number / 1_000, 2)}K",
+                _ => number.ToString()
             };
         }
 

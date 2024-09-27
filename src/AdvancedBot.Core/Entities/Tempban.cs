@@ -4,7 +4,7 @@ namespace AdvancedBot.Core.Entities
 {
     public class Tempban
     {
-        public Tempban() {}
+        public Tempban() { }
 
         public Tempban(ulong modId, uint userId, DateTime until)
         {
@@ -18,7 +18,7 @@ namespace AdvancedBot.Core.Entities
         public uint UserId { get; set; }
 
         public DateTime BanStart { get; set; } = DateTime.UtcNow;
-        
+
         public DateTime BanEnd { get; set; }
     }
 }

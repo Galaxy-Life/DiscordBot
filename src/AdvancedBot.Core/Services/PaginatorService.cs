@@ -1,12 +1,12 @@
+using AdvancedBot.Core.Entities;
+using Discord;
+using Discord.Interactions;
+using Discord.WebSocket;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Timers;
-using AdvancedBot.Core.Entities;
-using Discord;
-using Discord.Interactions;
-using Discord.WebSocket;
 
 namespace AdvancedBot.Core.Services
 {
@@ -20,7 +20,7 @@ namespace AdvancedBot.Core.Services
         {
             _activeMessages = new List<PaginatedMessage>();
             _activeTimers = new ConcurrentDictionary<ulong, Timer>();
-            
+
             _client = client;
             _client.InteractionCreated += OnInteraction;
         }
@@ -40,7 +40,7 @@ namespace AdvancedBot.Core.Services
             else paginatedMessage.DisplayFields = displayFields.ToArray();
 
             _activeMessages.Add(paginatedMessage);
-            
+
             if (paginatedMessage.TotalPages > 1)
             {
                 await context.Interaction.ModifyOriginalResponseAsync(msg => msg.Components = CreateMessageComponents());
@@ -62,12 +62,12 @@ namespace AdvancedBot.Core.Services
         private async void DisposeActivePaginatorMessage(object timerObj, ElapsedEventArgs e)
         {
             var timer = timerObj as Timer;
-            
+
             var messageId = _activeTimers.First(x => x.Value == timer).Key;
             timer.Enabled = false;
 
             var paginatorMessage = _activeMessages.First(x => x.DiscordMessageId == messageId);
-            
+
             var channel = await _client.GetChannelAsync(paginatorMessage.DiscordChannelId) as SocketTextChannel;
             if (await channel.GetMessageAsync(paginatorMessage.DiscordMessageId) is not SocketUserMessage message) return;
 
@@ -84,7 +84,7 @@ namespace AdvancedBot.Core.Services
 
             currentTimer.Stop();
             currentTimer.Start();
-            
+
             _activeTimers.TryAdd(messageId, currentTimer);
         }
 
@@ -129,9 +129,9 @@ namespace AdvancedBot.Core.Services
         }
 
         private static async Task HandleUpdateMessagePagesAsync(SocketInteraction interaction, PaginatedMessage msg)
-        { 
+        {
             var channel = interaction.Channel;
-            var message = await channel.GetMessageAsync(msg.DiscordMessageId);           
+            var message = await channel.GetMessageAsync(msg.DiscordMessageId);
 
             var originalEmbed = message.Embeds.First();
 
@@ -143,12 +143,12 @@ namespace AdvancedBot.Core.Services
                 .WithUrl(originalEmbed.Url);
 
             if (originalEmbed.Timestamp.HasValue) updatedEmbed.WithCurrentTimestamp();
-            
+
             if (msg.DisplayMessages != null)
             {
                 // get correct messages to display
                 var displayMessages = msg.DisplayMessages.Skip((msg.CurrentPage - 1) * 10).Take(10);
-                
+
                 updatedEmbed.Description = string.Join("\n", displayMessages);
             }
             else

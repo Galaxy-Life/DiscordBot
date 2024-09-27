@@ -1,6 +1,6 @@
+using AdvancedBot.Core.Entities;
 using System.Collections.Generic;
 using System.Linq;
-using AdvancedBot.Core.Entities;
 
 namespace AdvancedBot.Core.Services.DataStorage
 {

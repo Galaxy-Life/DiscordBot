@@ -1,14 +1,14 @@
-﻿using System.Linq;
-using Discord;
-using AdvancedBot.Core.Services.DataStorage;
+﻿using AdvancedBot.Core.Entities;
 using AdvancedBot.Core.Services;
-using System.Threading.Tasks;
-using System.Collections.Generic;
+using AdvancedBot.Core.Services.DataStorage;
+using Discord;
 using Discord.Interactions;
-using GL.NET.Entities;
 using GL.NET;
+using GL.NET.Entities;
 using System;
-using AdvancedBot.Core.Entities;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace AdvancedBot.Core.Commands
 {
@@ -19,8 +19,8 @@ namespace AdvancedBot.Core.Commands
         public PaginatorService Paginator { get; set; }
         public LogService LogService { get; set; }
 
-        public readonly List<ulong> PowerUsers = new() 
-        { 
+        public readonly List<ulong> PowerUsers = new()
+        {
             202095042372829184, // svr333
             942849642931032164, // lifecoder
             180676108088246272, // lodethebig
@@ -28,8 +28,8 @@ namespace AdvancedBot.Core.Commands
             275698828974489612, // magniolya
             424689465450037278  // bryan
         };
-        
-        public readonly List<ulong> SemiPowerUsers = new() {};
+
+        public readonly List<ulong> SemiPowerUsers = new() { };
 
         public override async Task BeforeExecuteAsync(ICommandInfo command)
         {
@@ -38,14 +38,14 @@ namespace AdvancedBot.Core.Commands
             await DeferAsync();
         }
 
-        public override Task AfterExecuteAsync(ICommandInfo command) 
+        public override Task AfterExecuteAsync(ICommandInfo command)
             => Task.CompletedTask;
 
 
         protected async Task SendPaginatedMessageAsync(IEnumerable<EmbedField> displayFields, IEnumerable<string> displayTexts, EmbedBuilder templateEmbed)
         {
             var displayItems = 0;
-            
+
             if (displayTexts != null)
             {
                 templateEmbed.WithDescription(string.Join("\n", displayTexts.Take(10)));
@@ -166,7 +166,7 @@ namespace AdvancedBot.Core.Commands
             if (string.IsNullOrEmpty(input)) input = Context.User.Username;
 
             var profile = await GLClient.Api.GetUserById(input);
-            
+
             profile ??= await GLClient.Api.GetUserByName(input);
 
             return profile;

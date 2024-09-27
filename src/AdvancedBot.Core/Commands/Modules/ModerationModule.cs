@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using AdvancedBot.Core.Commands.Preconditions;
 using AdvancedBot.Core.Entities.Enums;
 using AdvancedBot.Core.Services;
@@ -9,6 +5,10 @@ using Discord;
 using Discord.Interactions;
 using GL.NET.Entities;
 using Humanizer;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace AdvancedBot.Core.Commands.Modules
 {
@@ -92,7 +92,7 @@ namespace AdvancedBot.Core.Commands.Modules
                     await ModifyOriginalResponseAsync(msg => msg.Content = $"Could not rename **{allianceName}** to **{newAllianceName}**.");
                     return;
                 }
-                
+
                 await LogService.LogGameActionAsync(LogAction.RenameAlliance, Context.User.Id, 0, $"{alliance.Name}:{newAllianceName}");
 
                 var embed = new EmbedBuilder()
@@ -124,7 +124,7 @@ namespace AdvancedBot.Core.Commands.Modules
 
                 if (user == null || user.AllianceId != alliance.Id)
                 {
-                    await ModifyOriginalResponseAsync(msg => msg.Content = $"<:shrugR:945740284308893696> This user is not a member of this alliance.");                    return;
+                    await ModifyOriginalResponseAsync(msg => msg.Content = $"<:shrugR:945740284308893696> This user is not a member of this alliance."); return;
                 }
 
                 if (!await GLClient.Api.MakeUserOwnerInAllianceAsync(alliance.Id, userId.ToString()))
@@ -200,15 +200,15 @@ namespace AdvancedBot.Core.Commands.Modules
 
             var steamId = user.SteamId ?? "No account linked";
             var discordTag = string.IsNullOrEmpty(user.DiscordId) ? "No account linked" : $"<@{user.DiscordId}>";
-           
-            var description = 
+
+            var description =
                   user.Role == PhoenixRole.Banned ? $"**This user has been banned!!**\nBan Reason: **{user.BanReason}**\n\n"
                 : user.Role == PhoenixRole.Donator ? "This user is a Donator\n\n"
                 : user.Role == PhoenixRole.Staff ? "This user is a Staff Member\n\n"
                 : user.Role == PhoenixRole.Administrator ? "This user is an Admin\n\n"
                 : "";
 
-            var color = 
+            var color =
                   user.Role == PhoenixRole.Banned ? Color.Default
                 : user.Role == PhoenixRole.Donator ? new Color(15710778)
                 : user.Role == PhoenixRole.Staff ? new Color(2605694)
@@ -331,7 +331,7 @@ namespace AdvancedBot.Core.Commands.Modules
                 .WithCurrentTimestamp()
                 .Build();
 
-            await ModifyOriginalResponseAsync(msg => msg.Embeds = new Embed[] { embed });           
+            await ModifyOriginalResponseAsync(msg => msg.Embeds = new Embed[] { embed });
         }
 
         [SlashCommand("addbeta", "Adds GL Beta to a user")]
@@ -414,7 +414,7 @@ namespace AdvancedBot.Core.Commands.Modules
                 await ModifyOriginalResponseAsync(msg => msg.Content = $"Could not find any user with id **{userId}**.");
                 return;
             }
-            
+
             if (!await GLClient.Production.TryKickUserOfflineAsync(userId.ToString()))
             {
                 await ModifyOriginalResponseAsync(msg => msg.Content = $"Failed to force {user.UserName} ({user.UserId}) offline.");
@@ -433,7 +433,7 @@ namespace AdvancedBot.Core.Commands.Modules
                 .WithCurrentTimestamp()
                 .Build();
 
-            await ModifyOriginalResponseAsync(msg => msg.Embeds = new Embed[] { embed });  
+            await ModifyOriginalResponseAsync(msg => msg.Embeds = new Embed[] { embed });
         }
 
         [SlashCommand("reset", "Resets a user's progress")]
@@ -446,7 +446,7 @@ namespace AdvancedBot.Core.Commands.Modules
                 await ModifyOriginalResponseAsync(msg => msg.Content = $"Could not find any user with id **{userId}**.");
                 return;
             }
-            
+
             if (!await GLClient.Production.TryResetUserAsync(userId.ToString()))
             {
                 await ModifyOriginalResponseAsync(msg => msg.Content = $"Failed to reset {user.UserName} ({user.UserId}) progress.");
@@ -465,7 +465,7 @@ namespace AdvancedBot.Core.Commands.Modules
                 .WithCurrentTimestamp()
                 .Build();
 
-            await ModifyOriginalResponseAsync(msg => msg.Embeds = new Embed[] { embed });  
+            await ModifyOriginalResponseAsync(msg => msg.Embeds = new Embed[] { embed });
         }
 
         [SlashCommand("reloadrules", "Reloads the server rules")]
@@ -504,20 +504,20 @@ namespace AdvancedBot.Core.Commands.Modules
 
         [SlashCommand("lb", "Shows all the possible leaderboards")]
         public async Task GetLeaderboardAsync([
-            Choice("Experience", "xp"), 
-            Choice("Experience from attacks", "attackXp"), 
-            Choice("Rivals", "rivalsWon"), 
-            Choice("Chips", "chips"), 
-            Choice("Chips spent", "chipsSpent"), 
-            Choice("Friends helped", "friendsHelped"), 
-            Choice("Gifts received", "giftsReceived"), 
-            Choice("Gifts sent", "giftsSent"), 
-            Choice("Stars visited", "starsVisited"), 
-            Choice("Obstacles recycled", "obstaclesRecycled"), 
-            Choice("Utility Used", "utilityUsed"), 
+            Choice("Experience", "xp"),
+            Choice("Experience from attacks", "attackXp"),
+            Choice("Rivals", "rivalsWon"),
+            Choice("Chips", "chips"),
+            Choice("Chips spent", "chipsSpent"),
+            Choice("Friends helped", "friendsHelped"),
+            Choice("Gifts received", "giftsReceived"),
+            Choice("Gifts sent", "giftsSent"),
+            Choice("Stars visited", "starsVisited"),
+            Choice("Obstacles recycled", "obstaclesRecycled"),
+            Choice("Utility Used", "utilityUsed"),
             Choice("Item", "item"),
-            Choice("Warpoints", "warpoints"), 
-            Choice("Alliances", "alliancewarpoints"), 
+            Choice("Warpoints", "warpoints"),
+            Choice("Alliances", "alliancewarpoints"),
             Choice("Chips (advanced)", "advchips")] string type, string sku = "7000")
         {
             List<string> displayTexts = new() { "Failed to get information" };

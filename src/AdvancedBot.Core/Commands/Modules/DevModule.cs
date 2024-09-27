@@ -1,10 +1,10 @@
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using AdvancedBot.Core.Commands.Preconditions;
 using AdvancedBot.Core.Entities;
 using Discord;
 using Discord.Interactions;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace AdvancedBot.Core.Commands.Modules
 {
@@ -20,7 +20,7 @@ namespace AdvancedBot.Core.Commands.Modules
         }
 
         [SlashCommand("allstats", "Shows combined stats from all servers")]
-        public async Task ShowAllStatsAsync([Choice("All", "all"), Choice("Dms", "dms"), Choice("Guilds", "guilds")]string type)
+        public async Task ShowAllStatsAsync([Choice("All", "all"), Choice("Dms", "dms"), Choice("Guilds", "guilds")] string type)
         {
             Account[] accounts;
 
@@ -52,7 +52,7 @@ namespace AdvancedBot.Core.Commands.Modules
 
             var templateEmbed = new EmbedBuilder()
                 .WithTitle(title);
-            
+
             await SendPaginatedMessageAsync(fields, null, templateEmbed);
         }
 
@@ -61,7 +61,7 @@ namespace AdvancedBot.Core.Commands.Modules
         public async Task AddModerationModuleToGuildAsync(string guildId, string modulename)
         {
             var module = _interactions.Modules.First(module => module.Name.ToLower() == modulename.ToLower());
-            
+
             if (module == null)
             {
                 await ModifyOriginalResponseAsync(msg => msg.Content = $"Could not find any module named **{modulename}**.");

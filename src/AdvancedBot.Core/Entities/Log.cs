@@ -1,11 +1,11 @@
-using System;
 using AdvancedBot.Core.Entities.Enums;
+using System;
 
 namespace AdvancedBot.Core.Entities
 {
     public class Log
     {
-        public Log() {}
+        public Log() { }
         public Log(int id, LogAction type, ulong discordModId, uint victimGameId, string reason, DateTime? until = null)
         {
             Id = id;

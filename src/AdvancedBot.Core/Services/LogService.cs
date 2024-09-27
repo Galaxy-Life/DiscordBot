@@ -1,5 +1,3 @@
-using System;
-using System.Threading.Tasks;
 using AdvancedBot.Core.Commands;
 using AdvancedBot.Core.Entities;
 using AdvancedBot.Core.Entities.Enums;
@@ -9,6 +7,8 @@ using Discord.WebSocket;
 using GL.NET;
 using GL.NET.Entities;
 using Humanizer;
+using System;
+using System.Threading.Tasks;
 
 namespace AdvancedBot.Core.Services
 {
@@ -159,7 +159,7 @@ namespace AdvancedBot.Core.Services
         {
             return action switch
             {
-                LogAction.Ban or LogAction.Reset or LogAction.KickOffline or LogAction.RemoveBeta or 
+                LogAction.Ban or LogAction.Reset or LogAction.KickOffline or LogAction.RemoveBeta or
                 LogAction.RemoveUserFromAlliance or LogAction.EnableMaintenance or LogAction.ReloadRules
                     => Color.Red,
 

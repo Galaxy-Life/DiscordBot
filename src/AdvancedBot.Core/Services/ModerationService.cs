@@ -1,13 +1,13 @@
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using System.Timers;
 using AdvancedBot.Core.Entities;
 using AdvancedBot.Core.Entities.Enums;
 using AdvancedBot.Core.Services.DataStorage;
 using Discord;
 using GL.NET;
 using GL.NET.Entities;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using System.Timers;
 
 namespace AdvancedBot.Core.Services
 {
@@ -242,7 +242,7 @@ namespace AdvancedBot.Core.Services
             if (user.Role == newRole)
             {
                 return new ModResult(ModResultType.AlreadyDone, new ResponseMessage($"User is already {roleText}!"));
-            }    
+            }
 
             if (!await _gl.Phoenix.GiveRoleAsync(userId, newRole))
             {
@@ -278,8 +278,8 @@ namespace AdvancedBot.Core.Services
             var chipsBought = await _gl.Api.GetChipsBoughtAsync(userId.ToString());
             await _logs.LogGameActionAsync(LogAction.GetChipsBought, discordId, userId);
 
-            var description = chipsBought == 0 ? 
-                  $"This player hasn't bought any chips." 
+            var description = chipsBought == 0 ?
+                  $"This player hasn't bought any chips."
                 : $"This player has bought **{chipsBought}** chips.";
 
             var embed = new EmbedBuilder()
@@ -307,8 +307,8 @@ namespace AdvancedBot.Core.Services
             var chipsSpent = await _gl.Api.GetChipsSpentAsync(userId.ToString());
             await _logs.LogGameActionAsync(LogAction.GetChipsSpent, discordId, userId);
 
-            var description = chipsSpent == 0 ? 
-                  $"This player hasn't spent any chips." 
+            var description = chipsSpent == 0 ?
+                  $"This player hasn't spent any chips."
                 : $"This player has spent **{chipsSpent}** chips.";
 
             var embed = new EmbedBuilder()
@@ -332,7 +332,7 @@ namespace AdvancedBot.Core.Services
             {
                 return new ModResult(ModResultType.NotFound, new ResponseMessage($"Could not find any user with id **{userId}**."));
             }
-            
+
             var success = staging ? await _gl.Staging.TryAddChipsToUserAsync(userId.ToString(), amount) : await _gl.Production.TryAddChipsToUserAsync(userId.ToString(), amount);
 
             if (!success)
@@ -369,7 +369,7 @@ namespace AdvancedBot.Core.Services
             }
 
             var success = staging ? await _gl.Staging.TryAddItemToUserAsync(userId.ToString(), sku, amount) : await _gl.Production.TryAddItemToUserAsync(userId.ToString(), sku, amount);
-            
+
             if (!success)
             {
                 return new ModResult(ModResultType.BackendError, new ResponseMessage($"Failed to add item with sku {sku} to {user.Name} ({user.Id})"), null, user);
@@ -403,8 +403,8 @@ namespace AdvancedBot.Core.Services
             {
                 return new ModResult(ModResultType.NotFound, new ResponseMessage($"Could not find any user with id **{userId}**."));
             }
-            
-            var success = staging ? await _gl.Staging.TryAddXpToUserAsync(userId.ToString(), amount) : await _gl.Production.TryAddXpToUserAsync(userId.ToString(), amount);            
+
+            var success = staging ? await _gl.Staging.TryAddXpToUserAsync(userId.ToString(), amount) : await _gl.Production.TryAddXpToUserAsync(userId.ToString(), amount);
             if (!success)
             {
                 return new ModResult(ModResultType.BackendError, new ResponseMessage($"Failed to add xp to {user.Name} ({user.Id})"), null, user);
@@ -413,7 +413,7 @@ namespace AdvancedBot.Core.Services
             await _logs.LogGameActionAsync(LogAction.AddXp, discordId, userId, $"{amount}");
 
             var action = Math.Sign(amount) < 0 ? "removed" : "added";
-            
+
             var embed = new EmbedBuilder()
                 .WithTitle($"Experience {action} successfully")
                 .AddField("Player", $"{user.Name} (`{user.Id}`)", true)
@@ -477,7 +477,7 @@ namespace AdvancedBot.Core.Services
             var message = new ResponseMessage(embeds: new Embed[] { embed });
             return new ModResult(ModResultType.Success, message);
         }
-    
+
         public async Task<ModResult> RunStagingKickerAsync(ulong discordId)
         {
             var success = await _gl.Staging.RunKicker();

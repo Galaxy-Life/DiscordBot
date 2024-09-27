@@ -13,7 +13,7 @@ namespace AdvancedBot.Core.Entities
         public List<ChannelCounter> ChannelCounters { get; set; } = new List<ChannelCounter>();
 
         [Obsolete]
-        public Account() {}
+        public Account() { }
 
         public Account(ulong id, bool isGuild)
         {

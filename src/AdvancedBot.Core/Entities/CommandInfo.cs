@@ -5,7 +5,7 @@ namespace AdvancedBot.Core.Entities
     public class CommandStats
     {
         [Obsolete]
-        public CommandStats() {}
+        public CommandStats() { }
 
         public CommandStats(string name)
         {

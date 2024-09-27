@@ -1,6 +1,3 @@
-using System;
-using System.Linq;
-using System.Threading.Tasks;
 using AdvancedBot.Core.Entities;
 using AdvancedBot.Core.Entities.Enums;
 using Discord;
@@ -8,6 +5,9 @@ using GL.NET;
 using GL.NET.Entities;
 using Humanizer;
 using Humanizer.Localisation;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace AdvancedBot.Core.Services
 {
@@ -262,11 +262,11 @@ namespace AdvancedBot.Core.Services
             return number switch
             {
                 >= 1_000_000_000 => $"{Math.Round(number / 1_000_000_000, 2)}B",
-                >= 10_000_000    => $"{Math.Round(number / 1_000_000, 1)}M",
-                >= 1_000_000     => $"{Math.Round(number / 1_000_000, 2)}M", 
-                >= 100_000       => $"{Math.Round(number / 1_000, 1)}K",
-                >= 10_000        => $"{Math.Round(number / 1_000, 2)}K",
-                _                => number.ToString()
+                >= 10_000_000 => $"{Math.Round(number / 1_000_000, 1)}M",
+                >= 1_000_000 => $"{Math.Round(number / 1_000_000, 2)}M",
+                >= 100_000 => $"{Math.Round(number / 1_000, 1)}K",
+                >= 10_000 => $"{Math.Round(number / 1_000, 2)}K",
+                _ => number.ToString()
             };
         }
     }

@@ -1,11 +1,11 @@
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using AdvancedBot.Core.Commands.Preconditions;
 using AdvancedBot.Core.Entities;
 using AdvancedBot.Core.Services;
 using Discord;
 using Discord.Interactions;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace AdvancedBot.Core.Commands.Modules
 {
@@ -44,7 +44,7 @@ namespace AdvancedBot.Core.Commands.Modules
                 users[gift.FromUserId] = value + 1;
             }
 
-            var fields = users.OrderByDescending(x => x.Value).Select(x => new EmbedFieldBuilder() { Name = $"Id: {x.Key}", Value = $"Items sent: {x.Value}"}.Build());
+            var fields = users.OrderByDescending(x => x.Value).Select(x => new EmbedFieldBuilder() { Name = $"Id: {x.Key}", Value = $"Items sent: {x.Value}" }.Build());
 
             var templateEmbed = new EmbedBuilder()
                 .WithTitle($"Gifts Telemetry for {user.User.Name} ({userId})");
