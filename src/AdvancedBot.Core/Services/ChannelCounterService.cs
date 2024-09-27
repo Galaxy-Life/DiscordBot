@@ -14,7 +14,7 @@ namespace AdvancedBot.Core.Services
 {
     public class ChannelCounterService
     {
-        private readonly List<ChannelCounterInfo> activeCounters = new();
+        private readonly List<ChannelCounterInfo> activeCounters = [];
         private readonly DiscordSocketClient client;
         private readonly GLClient gl;
         private readonly AccountService guild;

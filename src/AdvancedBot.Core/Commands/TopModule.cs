@@ -19,17 +19,17 @@ namespace AdvancedBot.Core.Commands
         public PaginatorService Paginator { get; set; }
         public LogService LogService { get; set; }
 
-        public readonly List<ulong> PowerUsers = new()
-        {
+        public readonly List<ulong> PowerUsers =
+        [
             202095042372829184, // svr333
             942849642931032164, // lifecoder
             180676108088246272, // lodethebig
             356060824223350784, // andyvv.
             275698828974489612, // magniolya
             424689465450037278  // bryan
-        };
+        ];
 
-        public readonly List<ulong> SemiPowerUsers = new() { };
+        public readonly List<ulong> SemiPowerUsers = [];
 
         public override async Task BeforeExecuteAsync(ICommandInfo command)
         {
@@ -177,7 +177,7 @@ namespace AdvancedBot.Core.Commands
             if (string.IsNullOrEmpty(input)) input = Context.User.Username;
             PhoenixUser user = null;
 
-            string digitString = new string(input.Where(char.IsDigit).ToArray());
+            string digitString = new(input.Where(char.IsDigit).ToArray());
 
             // extra check to see if all characters were numbers
             if (digitString.Length == input.Length)

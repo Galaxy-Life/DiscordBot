@@ -18,7 +18,7 @@ namespace AdvancedBot.Core.Services
 
         public PaginatorService(DiscordSocketClient client)
         {
-            activeMessages = new List<PaginatedMessage>();
+            activeMessages = [];
             activeTimers = new ConcurrentDictionary<ulong, Timer>();
 
             this.client = client;

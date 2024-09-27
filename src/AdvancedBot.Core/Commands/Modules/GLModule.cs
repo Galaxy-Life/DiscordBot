@@ -104,7 +104,7 @@ namespace AdvancedBot.Core.Commands.Modules
             Choice("Alliances", "alliancewarpoints")
         ] string type)
         {
-            List<string> displayTexts = new() { "Failed to get information" };
+            List<string> displayTexts = ["Failed to get information"];
             string title = "Galaxy Life Leaderboard";
 
             string thumbnailUrl =

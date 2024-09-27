@@ -214,7 +214,7 @@ namespace AdvancedBot.Core.Services
         private async Task<User> getUserByInput(string input)
         {
             User profile = null;
-            string digitString = new string(input.Where(char.IsDigit).ToArray());
+            string digitString = new(input.Where(char.IsDigit).ToArray());
 
             if (digitString.Length == input.Length)
             {
@@ -230,7 +230,7 @@ namespace AdvancedBot.Core.Services
         {
             PhoenixUser user = null;
 
-            string digitString = new string(input.Where(char.IsDigit).ToArray());
+            string digitString = new(input.Where(char.IsDigit).ToArray());
 
             // extra check to see if all characters were numbers
             if (digitString.Length == input.Length)

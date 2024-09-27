@@ -520,7 +520,7 @@ namespace AdvancedBot.Core.Commands.Modules
             Choice("Alliances", "alliancewarpoints"),
             Choice("Chips (advanced)", "advchips")] string type, string sku = "7000")
         {
-            List<string> displayTexts = new() { "Failed to get information" };
+            List<string> displayTexts = ["Failed to get information"];
             string title = "Galaxy Life Leaderboard";
 
             string thumbnailUrl =
