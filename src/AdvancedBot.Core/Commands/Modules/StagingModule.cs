@@ -24,7 +24,7 @@ namespace AdvancedBot.Core.Commands.Modules
                 .WithColor(Color.Blue)
                 .Build();
 
-            await SendResponseMessage(new ResponseMessage(embeds: new Embed[] { embed }), false);
+            await SendResponseMessage(new ResponseMessage(embeds: [embed]), false);
 
             var components = new ComponentBuilder()
               .WithButton("Reload Rules", $"rules", ButtonStyle.Primary, Emote.Parse("<:letsgo:1225454893741899886>"))

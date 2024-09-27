@@ -71,7 +71,7 @@ namespace AdvancedBot.Core.Services
             await gl.Production.TryKickUserOfflineAsync(userId.ToString());
             await logs.LogGameActionAsync(LogAction.Ban, discordId, userId, reason, banDuration);
 
-            var message = new ResponseMessage(embeds: new Embed[] { embed });
+            var message = new ResponseMessage(embeds: [embed]);
             return new ModResult(ModResultType.Success, message, user);
         }
 
@@ -105,7 +105,7 @@ namespace AdvancedBot.Core.Services
                 .WithCurrentTimestamp()
                 .Build();
 
-            var message = new ResponseMessage(embeds: new Embed[] { embed });
+            var message = new ResponseMessage(embeds: [embed]);
             return new ModResult(ModResultType.Success, message, user);
         }
 
@@ -134,7 +134,7 @@ namespace AdvancedBot.Core.Services
                 .WithCurrentTimestamp()
                 .Build();
 
-            var message = new ResponseMessage(embeds: new Embed[] { embed });
+            var message = new ResponseMessage(embeds: [embed]);
             return new ModResult(ModResultType.Success, message, user);
         }
 
@@ -163,7 +163,7 @@ namespace AdvancedBot.Core.Services
                 .WithCurrentTimestamp()
                 .Build();
 
-            var message = new ResponseMessage(embeds: new Embed[] { embed });
+            var message = new ResponseMessage(embeds: [embed]);
             return new ModResult(ModResultType.Success, message, user);
         }
 
@@ -192,7 +192,7 @@ namespace AdvancedBot.Core.Services
                 .WithCurrentTimestamp()
                 .Build();
 
-            var message = new ResponseMessage(embeds: new Embed[] { embed });
+            var message = new ResponseMessage(embeds: [embed]);
             return new ModResult(ModResultType.Success, message, user);
         }
 
@@ -221,7 +221,7 @@ namespace AdvancedBot.Core.Services
                 .WithCurrentTimestamp()
                 .Build();
 
-            var message = new ResponseMessage(embeds: new Embed[] { embed });
+            var message = new ResponseMessage(embeds: [embed]);
             return new ModResult(ModResultType.Success, message, user);
         }
 
@@ -262,7 +262,7 @@ namespace AdvancedBot.Core.Services
                 .WithCurrentTimestamp()
                 .Build();
 
-            var message = new ResponseMessage(embeds: new Embed[] { embed });
+            var message = new ResponseMessage(embeds: [embed]);
             return new ModResult(ModResultType.Success, message, user);
         }
 
@@ -291,7 +291,7 @@ namespace AdvancedBot.Core.Services
                 .WithCurrentTimestamp()
                 .Build();
 
-            var message = new ResponseMessage(embeds: new Embed[] { embed });
+            var message = new ResponseMessage(embeds: [embed]);
             return new ModResult(ModResultType.Success, message, null, user) { IntValue = chipsBought };
         }
 
@@ -320,7 +320,7 @@ namespace AdvancedBot.Core.Services
                 .WithCurrentTimestamp()
                 .Build();
 
-            var message = new ResponseMessage(embeds: new Embed[] { embed });
+            var message = new ResponseMessage(embeds: [embed]);
             return new ModResult(ModResultType.Success, message, null, user) { IntValue = chipsSpent };
         }
 
@@ -355,7 +355,7 @@ namespace AdvancedBot.Core.Services
                 .WithCurrentTimestamp()
                 .Build();
 
-            var message = new ResponseMessage(embeds: new Embed[] { embed });
+            var message = new ResponseMessage(embeds: [embed]);
             return new ModResult(ModResultType.Success, message, null, user);
         }
 
@@ -391,7 +391,7 @@ namespace AdvancedBot.Core.Services
                 .WithCurrentTimestamp()
                 .Build();
 
-            var message = new ResponseMessage(embeds: new Embed[] { embed });
+            var message = new ResponseMessage(embeds: [embed]);
             return new ModResult(ModResultType.Success, message, null, user);
         }
 
@@ -425,7 +425,7 @@ namespace AdvancedBot.Core.Services
                 .WithCurrentTimestamp()
                 .Build();
 
-            var message = new ResponseMessage(embeds: new Embed[] { embed });
+            var message = new ResponseMessage(embeds: [embed]);
             return new ModResult(ModResultType.Success, message, null, user);
         }
 
@@ -449,7 +449,7 @@ namespace AdvancedBot.Core.Services
                 .WithCurrentTimestamp()
                 .Build();
 
-            var message = new ResponseMessage(embeds: new Embed[] { embed });
+            var message = new ResponseMessage(embeds: [embed]);
             return new ModResult(ModResultType.Success, message);
         }
 
@@ -474,7 +474,7 @@ namespace AdvancedBot.Core.Services
                 .WithCurrentTimestamp()
                 .Build();
 
-            var message = new ResponseMessage(embeds: new Embed[] { embed });
+            var message = new ResponseMessage(embeds: [embed]);
             return new ModResult(ModResultType.Success, message);
         }
 
@@ -498,7 +498,7 @@ namespace AdvancedBot.Core.Services
                 .WithCurrentTimestamp()
                 .Build();
 
-            var message = new ResponseMessage(embeds: new Embed[] { embed });
+            var message = new ResponseMessage(embeds: [embed]);
             return new ModResult(ModResultType.Success, message);
         }
 
@@ -523,7 +523,7 @@ namespace AdvancedBot.Core.Services
                 .WithCurrentTimestamp()
                 .Build();
 
-            var message = new ResponseMessage(embeds: new Embed[] { embed });
+            var message = new ResponseMessage(embeds: [embed]);
             return new ModResult(ModResultType.Success, message);
         }
 
@@ -550,7 +550,7 @@ namespace AdvancedBot.Core.Services
                 .WithCurrentTimestamp()
                 .Build();
 
-            var message = new ResponseMessage(embeds: new Embed[] { embed });
+            var message = new ResponseMessage(embeds: [embed]);
             return new ModResult(ModResultType.Success, message);
         }
 
@@ -577,7 +577,7 @@ namespace AdvancedBot.Core.Services
                 .WithCurrentTimestamp()
                 .Build();
 
-            var message = new ResponseMessage(embeds: new Embed[] { embed });
+            var message = new ResponseMessage(embeds: [embed]);
             return new ModResult(ModResultType.Success, message);
         }
 

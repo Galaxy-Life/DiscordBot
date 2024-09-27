@@ -92,7 +92,7 @@ namespace AdvancedBot.Core.Services
                 embed.WithUrl($"https://steamcommunity.com/profiles/{steamId.Replace("\"", "")}");
             }
 
-            var message = new ResponseMessage("", new Embed[] { embed.Build() });
+            var message = new ResponseMessage("", [embed.Build()]);
             return new ModResult(ModResultType.Success, message, phoenixUser, user);
         }
 
@@ -130,7 +130,7 @@ namespace AdvancedBot.Core.Services
                     .WithIconUrl(user.Avatar))
                 .Build();
 
-            var message = new ResponseMessage("", new Embed[] { embed });
+            var message = new ResponseMessage("", [embed]);
 
             return new ModResult(ModResultType.Success, message, null, user);
         }
@@ -172,7 +172,7 @@ namespace AdvancedBot.Core.Services
                 embed.AddField("At war against", alliance.OpponentAllianceId, true);
             }
 
-            var message = new ResponseMessage("", new Embed[] { embed.Build() });
+            var message = new ResponseMessage("", [embed.Build()]);
             return new ModResult(ModResultType.Success, message, null, null) { Alliance = alliance };
         }
 
@@ -207,7 +207,7 @@ namespace AdvancedBot.Core.Services
                 .WithCurrentTimestamp()
                 .Build();
 
-            var message = new ResponseMessage("", new Embed[] { embed });
+            var message = new ResponseMessage("", [embed]);
             return new ModResult(ModResultType.Success, message, null, null) { Alliance = alliance };
         }
 
