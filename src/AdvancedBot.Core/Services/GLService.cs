@@ -76,7 +76,7 @@ namespace AdvancedBot.Core.Services
             }
 
             var embed = new EmbedBuilder()
-                .WithTitle($"Profile | {roleText} {phoenixUser.UserName}")
+                .WithTitle($"{roleText} {phoenixUser.UserName} | Profile")
                 .WithThumbnailUrl(user.Avatar)
                 .WithDescription($"{displayAlliance}\n\u200b")
                 .AddField("Level", formatNumber(user.Level), true)

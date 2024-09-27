@@ -216,7 +216,7 @@ namespace AdvancedBot.Core.Commands.Modules
                 : Color.LightGrey;
 
             var embed = new EmbedBuilder()
-                .WithTitle($"Profile of {user.UserName}")
+                .WithTitle($"{user.UserName} | Profile")
                 .WithDescription(description)
                 .WithColor(color)
                 .AddField("ID", $"`{user.UserId}`", true)
