@@ -27,8 +27,8 @@ namespace AdvancedBot.Core.Commands.Modules
             await SendResponseMessage(new ResponseMessage(embeds: new Embed[] { embed }), false);
 
             var components = new ComponentBuilder()
-              .WithButton("Reload Rules", $"rules", ButtonStyle.Primary, Emote.Parse("<:Emoji_LETSGO:1081691478490894366>"))
-              .WithButton("Run Kicker", $"kicker", ButtonStyle.Primary, Emote.Parse("<:Emoji_Bonkself:1109938953475338340>"))
+              .WithButton("Reload Rules", $"rules", ButtonStyle.Primary, Emote.Parse("<:letsgo:1225454893741899886>"))
+              .WithButton("Run Kicker", $"kicker", ButtonStyle.Primary, Emote.Parse("<:bonkself:1224793972271091732>"))
               .WithButton("Reset helps", $"helps", ButtonStyle.Primary, Emote.Parse("<:Item_Helmet:1084821573975945267>"))
               .WithButton("Start War", $"startwar", ButtonStyle.Danger, new Emoji("⚔"), row: 1)
               .WithButton("End War", $"endwar", ButtonStyle.Danger, Emote.Parse("<:jijijijamikaze:948038940819075092>"), row: 1);
