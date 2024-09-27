@@ -1,0 +1,37 @@
+on: [push, pull_request]
+name: Continuous Integration
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    name: Code Quality
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8
+
+      - name: Format
+        working-directory: src
+        run: |
+          dotnet format --verify-no-changes --verbosity diagnostic
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8
+
+      - name: Compile
+        working-directory: src/AdvancedBot.Console
+        run: |
+          dotnet build -c Release -warnaserror
