@@ -12,180 +12,178 @@ using Discord.WebSocket;
 using GL.NET;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace AdvancedBot.Core
+namespace AdvancedBot.Core;
+
+public class BotClient
 {
-    public class BotClient
+    private readonly DiscordSocketClient client;
+    private readonly CustomCommandService commands;
+    private IServiceProvider services;
+    private readonly InteractionService interactions;
+    private AccountService accounts;
+    private readonly GLClient glClient;
+
+    public BotClient(CustomCommandService commands = null, DiscordSocketClient client = null)
     {
-        private readonly DiscordSocketClient client;
-        private readonly CustomCommandService commands;
-        private IServiceProvider services;
-        private readonly InteractionService interactions;
-        private AccountService accounts;
-        private readonly GLClient glClient;
-
-        public BotClient(CustomCommandService commands = null, DiscordSocketClient client = null)
+        this.client = client ?? new DiscordSocketClient(new DiscordSocketConfig
         {
-            this.client = client ?? new DiscordSocketClient(new DiscordSocketConfig
-            {
-                LogLevel = LogSeverity.Info,
-                AlwaysDownloadUsers = true,
-                MessageCacheSize = 1000
-            });
+            LogLevel = LogSeverity.Info,
+            AlwaysDownloadUsers = true,
+            MessageCacheSize = 1000
+        });
 
-            this.commands = commands ?? new CustomCommandService(new CustomCommandServiceConfig
-            {
-                CaseSensitiveCommands = false,
-                LogLevel = LogSeverity.Info,
-                BotInviteIsPrivate = false,
-                RepositoryUrl = "https://github.com/Galaxy-Life/DiscordBot",
+        this.commands = commands ?? new CustomCommandService(new CustomCommandServiceConfig
+        {
+            CaseSensitiveCommands = false,
+            LogLevel = LogSeverity.Info,
+            BotInviteIsPrivate = false,
+            RepositoryUrl = "https://github.com/Galaxy-Life/DiscordBot",
 #if DEBUG
-                LogChannelId = 697920194559082547
+            LogChannelId = 697920194559082547
 #else
-                LogChannelId = 1090274237572468796
+            LogChannelId = 1090274237572468796
 #endif
-            });
+        });
 
-            interactions = new InteractionService(this.client.Rest, new InteractionServiceConfig() { UseCompiledLambda = true });
+        interactions = new InteractionService(this.client.Rest, new InteractionServiceConfig() { UseCompiledLambda = true });
 
-            string envVar = Environment.GetEnvironmentVariable("PhoenixApiCred");
+        string envVar = Environment.GetEnvironmentVariable("PhoenixApiCred");
 
-            if (envVar == null)
-            {
-                logAsync(new LogMessage(LogSeverity.Warning, "BotClient", "Initializing GLClient without tokens!"));
-                glClient = new GLClient("", "", "");
-                return;
-            }
-
-            string[] creds = envVar.Split(';');
-            glClient = new GLClient(creds[0], creds[1], creds[2]);
+        if (envVar == null)
+        {
+            logAsync(new LogMessage(LogSeverity.Warning, "BotClient", "Initializing GLClient without tokens!"));
+            glClient = new GLClient("", "", "");
+            return;
         }
 
-        public async Task InitializeAsync()
-        {
-            Console.Title = $"Launching Discord Bot...";
-            services = configureServices();
-            accounts = services.GetRequiredService<AccountService>();
+        string[] creds = envVar.Split(';');
+        glClient = new GLClient(creds[0], creds[1], creds[2]);
+    }
 
-            client.Ready += onReadyAsync;
-            interactions.SlashCommandExecuted += onSlashCommandExecuted;
+    public async Task InitializeAsync()
+    {
+        Console.Title = $"Launching Discord Bot...";
+        services = configureServices();
+        accounts = services.GetRequiredService<AccountService>();
 
-            client.Log += logAsync;
-            commands.Log += logAsync;
+        client.Ready += onReadyAsync;
+        interactions.SlashCommandExecuted += onSlashCommandExecuted;
 
-            string token = Environment.GetEnvironmentVariable("Token");
+        client.Log += logAsync;
+        commands.Log += logAsync;
 
-            await Task.Delay(10).ContinueWith(t => client.LoginAsync(TokenType.Bot, token));
-            await client.StartAsync();
+        string token = Environment.GetEnvironmentVariable("Token");
 
-            await Task.Delay(-1);
-        }
+        await Task.Delay(10).ContinueWith(t => client.LoginAsync(TokenType.Bot, token));
+        await client.StartAsync();
 
-        private async Task onReadyAsync()
-        {
-            Console.Title = $"Running Discord Bot: {client.CurrentUser.Username}";
+        await Task.Delay(-1);
+    }
 
-            Game activity = new(
-              "Galaxy Life",
-              ActivityType.Watching,
-              ActivityProperties.Instance
-            );
+    private async Task onReadyAsync()
+    {
+        Console.Title = $"Running Discord Bot: {client.CurrentUser.Username}";
 
-            await client.SetActivityAsync(activity);
-            Console.WriteLine($"Guild count: {client.Guilds.Count}");
+        Game activity = new(
+          "Galaxy Life",
+          ActivityType.Watching,
+          ActivityProperties.Instance
+        );
 
-            await interactions.AddModulesAsync(Assembly.GetExecutingAssembly(), services);
-            Console.WriteLine($"Modules count: {interactions.Modules.Count}");
-            Console.WriteLine($"SlashCommands count: {interactions.SlashCommands.Count}");
+        await client.SetActivityAsync(activity);
+        Console.WriteLine($"Guild count: {client.Guilds.Count}");
+
+        await interactions.AddModulesAsync(Assembly.GetExecutingAssembly(), services);
+        Console.WriteLine($"Modules count: {interactions.Modules.Count}");
+        Console.WriteLine($"SlashCommands count: {interactions.SlashCommands.Count}");
 
 #if DEBUG
-            Console.WriteLine("Registered all commands to test server");
-            await interactions.RegisterCommandsToGuildAsync(696343127144923158, false);
-#else
-            Console.WriteLine("Registered all commands globally");
-            await interactions.RegisterCommandsGloballyAsync();
+        Console.WriteLine("Registered all commands to test server");
+        await interactions.RegisterCommandsToGuildAsync(696343127144923158, false);
+        Console.WriteLine("Registered all commands globally");
+        await interactions.RegisterCommandsGloballyAsync();
 #endif
 
-            client.InteractionCreated += async (x) =>
-            {
-                var context = new SocketInteractionContext(client, x);
-                await interactions.ExecuteCommandAsync(context, services);
-            };
-
-            glClient.ErrorThrown += onGLErrorThrown;
-        }
-
-        private async void onGLErrorThrown(object sender, ErrorEventArgs e)
+        client.InteractionCreated += async (x) =>
         {
-            var exception = e.GetException();
-            await logAsync(new LogMessage(LogSeverity.Critical, "GL.NET", exception.Message, exception));
-        }
+            var context = new SocketInteractionContext(client, x);
+            await interactions.ExecuteCommandAsync(context, services);
+        };
 
-        private Task logAsync(LogMessage msg)
+        glClient.ErrorThrown += onGLErrorThrown;
+    }
+
+    private async void onGLErrorThrown(object sender, ErrorEventArgs e)
+    {
+        var exception = e.GetException();
+        await logAsync(new LogMessage(LogSeverity.Critical, "GL.NET", exception.Message, exception));
+    }
+
+    private Task logAsync(LogMessage msg)
+    {
+        if (msg.Exception != null)
         {
-            if (msg.Exception != null)
-            {
-                Console.WriteLine($"{msg.Source}: {msg.Exception.Message}");
-            }
-            else
-            {
-                Console.WriteLine($"{msg.Source}: {msg.Message}");
-            }
-
-            return Task.CompletedTask;
+            Console.WriteLine($"{msg.Source}: {msg.Exception.Message}");
         }
-
-        private async Task onSlashCommandExecuted(SlashCommandInfo cmd, IInteractionContext context, IResult result)
+        else
         {
-            if (!result.IsSuccess)
-            {
-                try
-                {
-                    await context.Interaction.ModifyOriginalResponseAsync(x => x.Content = $"⛔ {result.ErrorReason}");
-                }
-                catch (Exception)
-                {
-                    // failed because took to long to respond
-                    await context.Channel.SendMessageAsync($"⛔ {result.ErrorReason}");
-                }
-            }
-
-            ulong id = context.Interaction.IsDMInteraction ? context.User.Id : context.Guild.Id;
-            var acc = accounts.GetOrCreateAccount(id, !context.Interaction.IsDMInteraction);
-
-            var cmdInfo = acc.CommandStats.Find(x => x.Name == cmd.Name);
-
-            if (cmdInfo == null)
-            {
-                acc.CommandStats.Add(new CommandStats(cmd.Name));
-                cmdInfo = acc.CommandStats.Find(x => x.Name == cmd.Name);
-            }
-
-            cmdInfo.TimesRun++;
-
-            if (!result.IsSuccess)
-            {
-                cmdInfo.TimesFailed++;
-            }
-
-            accounts.SaveAccount(acc);
+            Console.WriteLine($"{msg.Source}: {msg.Message}");
         }
 
-        private ServiceProvider configureServices()
+        return Task.CompletedTask;
+    }
+
+    private async Task onSlashCommandExecuted(SlashCommandInfo cmd, IInteractionContext context, IResult result)
+    {
+        if (!result.IsSuccess)
         {
-            return new ServiceCollection()
-                .AddSingleton(client)
-                .AddSingleton(commands)
-                .AddSingleton(interactions)
-                .AddSingleton(glClient)
-                .AddSingleton<LiteDBHandler>()
-                .AddSingleton<AccountService>()
-                .AddSingleton<PaginatorService>()
-                .AddSingleton<LogService>()
-                .AddSingleton<ChannelCounterService>()
-                .AddSingleton<ModerationService>()
-                .AddSingleton<GLService>()
-                .AddSingleton<BotStorage>()
-                .BuildServiceProvider();
+            try
+            {
+                await context.Interaction.ModifyOriginalResponseAsync(x => x.Content = $"⛔ {result.ErrorReason}");
+            }
+            catch (Exception)
+            {
+                // failed because took to long to respond
+                await context.Channel.SendMessageAsync($"⛔ {result.ErrorReason}");
+            }
         }
+
+        ulong id = context.Interaction.IsDMInteraction ? context.User.Id : context.Guild.Id;
+        var acc = accounts.GetOrCreateAccount(id, !context.Interaction.IsDMInteraction);
+
+        var cmdInfo = acc.CommandStats.Find(x => x.Name == cmd.Name);
+
+        if (cmdInfo == null)
+        {
+            acc.CommandStats.Add(new CommandStats(cmd.Name));
+            cmdInfo = acc.CommandStats.Find(x => x.Name == cmd.Name);
+        }
+
+        cmdInfo.TimesRun++;
+
+        if (!result.IsSuccess)
+        {
+            cmdInfo.TimesFailed++;
+        }
+
+        accounts.SaveAccount(acc);
+    }
+
+    private ServiceProvider configureServices()
+    {
+        return new ServiceCollection()
+            .AddSingleton(client)
+            .AddSingleton(commands)
+            .AddSingleton(interactions)
+            .AddSingleton(glClient)
+            .AddSingleton<LiteDBHandler>()
+            .AddSingleton<AccountService>()
+            .AddSingleton<PaginatorService>()
+            .AddSingleton<LogService>()
+            .AddSingleton<ChannelCounterService>()
+            .AddSingleton<ModerationService>()
+            .AddSingleton<GLService>()
+            .AddSingleton<BotStorage>()
+            .BuildServiceProvider();
     }
 }
