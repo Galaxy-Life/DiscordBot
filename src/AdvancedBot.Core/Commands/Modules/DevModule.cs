@@ -12,11 +12,11 @@ namespace AdvancedBot.Core.Commands.Modules;
 [RequirePrivateList]
 public class DevModule : TopModule
 {
-    private readonly InteractionService interactions;
+    private readonly InteractionService _interactions;
 
     public DevModule(InteractionService interactions)
     {
-        this.interactions = interactions;
+        _interactions = interactions;
     }
 
     [SlashCommand("allstats", "Shows combined stats from all servers")]
@@ -39,7 +39,7 @@ public class DevModule : TopModule
         var fields = new List<EmbedField>();
         var commands = allInfos.OrderByDescending(x => x.TimesRun).ToArray();
 
-        for (int i = 0; i < commands.Length; i++)
+        for (var i = 0; i < commands.Length; i++)
         {
             fields.Add(
               new EmbedFieldBuilder()
@@ -48,7 +48,7 @@ public class DevModule : TopModule
                   .Build());
         }
 
-        string title = Context.Interaction.IsDMInteraction ? $"Stats for {Context.User.Username}'s DMS" : $"Stats for {Context.Guild.Name}";
+        var title = Context.Interaction.IsDMInteraction ? $"Stats for {Context.User.Username}'s DMS" : $"Stats for {Context.Guild.Name}";
 
         var templateEmbed = new EmbedBuilder()
             .WithTitle(title);
@@ -60,7 +60,7 @@ public class DevModule : TopModule
     [CommandContextType(InteractionContextType.Guild, InteractionContextType.PrivateChannel)]
     public async Task AddModerationModuleToGuildAsync(string guildId, string modulename)
     {
-        var module = interactions.Modules.First(module => module.Name.Equals(modulename, System.StringComparison.CurrentCultureIgnoreCase));
+        var module = _interactions.Modules.First(module => module.Name.Equals(modulename, System.StringComparison.CurrentCultureIgnoreCase));
 
         if (module == null)
         {
@@ -68,7 +68,7 @@ public class DevModule : TopModule
             return;
         }
 
-        await interactions.AddModulesToGuildAsync(ulong.Parse(guildId), false, module);
+        await _interactions.AddModulesToGuildAsync(ulong.Parse(guildId), false, module);
 
         var embed = new EmbedBuilder()
             .WithTitle("Module successfully added")
@@ -88,9 +88,9 @@ public class DevModule : TopModule
     {
         var allInfos = new List<CommandStats>();
 
-        for (int i = 0; i < accounts.Length; i++)
+        for (var i = 0; i < accounts.Length; i++)
         {
-            for (int j = 0; j < accounts[i].CommandStats.Count; j++)
+            for (var j = 0; j < accounts[i].CommandStats.Count; j++)
             {
                 var cmdStats = accounts[i].CommandStats[j];
                 var foundCmd = allInfos.Find(x => x.Name == cmdStats.Name);

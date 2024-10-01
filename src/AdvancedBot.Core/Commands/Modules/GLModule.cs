@@ -18,7 +18,7 @@ public class GLModule : TopModule
     {
         var status = await GLClient.Api.GetServerStatus();
 
-        string thumbnailUrl =
+        var thumbnailUrl =
             Context.Channel is IGuildChannel
           ? Context.Guild.IconUrl
           : Context.Client.CurrentUser.GetDisplayAvatarUrl();
@@ -33,7 +33,7 @@ public class GLModule : TopModule
                 .WithIconUrl(Context.User.GetDisplayAvatarUrl()))
             .WithCurrentTimestamp();
 
-        for (int i = 0; i < status.Count; i++)
+        for (var i = 0; i < status.Count; i++)
         {
             embed.AddField($"{status[i].Name} ({status[i].Ping}ms)", status[i].IsOnline ? "✅ Operational" : "🛑 Offline", true);
         }
@@ -105,9 +105,9 @@ public class GLModule : TopModule
     ] string type)
     {
         List<string> displayTexts = ["Failed to get information"];
-        string title = "Galaxy Life Leaderboard";
+        var title = "Galaxy Life Leaderboard";
 
-        string thumbnailUrl =
+        var thumbnailUrl =
             Context.Channel is IGuildChannel
           ? Context.Guild.IconUrl
           : Context.Client.CurrentUser.GetDisplayAvatarUrl();
@@ -153,7 +153,7 @@ public class GLModule : TopModule
             return;
         }
 
-        for (int i = 0; i < displayTexts.Count; i++)
+        for (var i = 0; i < displayTexts.Count; i++)
         {
             displayTexts[i] = $"**#{i + 1}** | {displayTexts[i]}";
         }
@@ -197,7 +197,7 @@ public class GLModule : TopModule
             return;
         }
 
-        string thumbnailUrl =
+        var thumbnailUrl =
             Context.Channel is IGuildChannel
           ? Context.Guild.IconUrl
           : Context.Client.CurrentUser.GetDisplayAvatarUrl();
@@ -205,7 +205,7 @@ public class GLModule : TopModule
         var baseUserStats = await GLClient.Api.GetUserStats(baseUser.Id);
         var secondUserStats = await GLClient.Api.GetUserStats(secondUser.Id);
 
-        decimal expDifference = Math.Round((decimal)baseUser.Experience / secondUser.Experience, 2);
+        var expDifference = Math.Round((decimal)baseUser.Experience / secondUser.Experience, 2);
 
         var embed = new EmbedBuilder()
             .WithTitle($"{baseUser.Name} vs {secondUser.Name}")

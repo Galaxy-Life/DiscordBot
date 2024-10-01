@@ -233,7 +233,7 @@ public class ComponentResponsesModule : TopModule
             return;
         }
 
-        int days = 0;
+        var days = 0;
         if (!string.IsNullOrEmpty(modal.Duration) && int.TryParse(modal.Duration, out days))
         {
         }

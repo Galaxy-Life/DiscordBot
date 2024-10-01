@@ -13,30 +13,30 @@ public class CustomCommandService : CommandService
 {
     public PaginatorService Paginator { get; set; }
     public ulong LogChannelId;
-    private readonly string documentationUrl;
-    private readonly string sourceRepo;
-    private readonly string contributors;
-    private readonly bool botIsPrivate;
+    private readonly string _documentationUrl;
+    private readonly string _sourceRepo;
+    private readonly string _contributors;
+    private readonly bool _botIsPrivate;
 
     public CustomCommandService() : base() { }
 
     public CustomCommandService(CustomCommandServiceConfig config) : base(config)
     {
-        documentationUrl = config.DocumentationUrl;
-        sourceRepo = config.RepositoryUrl;
-        contributors = config.Contributors;
-        botIsPrivate = config.BotInviteIsPrivate;
+        _documentationUrl = config.DocumentationUrl;
+        _sourceRepo = config.RepositoryUrl;
+        _contributors = config.Contributors;
+        _botIsPrivate = config.BotInviteIsPrivate;
         LogChannelId = config.LogChannelId;
     }
 
     public async Task SendBotInfoAsync(IInteractionContext context)
     {
-        string botName = context.Client.CurrentUser.Username;
-        string botAvatar = context.Client.CurrentUser.GetDisplayAvatarUrl();
+        var botName = context.Client.CurrentUser.Username;
+        var botAvatar = context.Client.CurrentUser.GetDisplayAvatarUrl();
 
-        string repoLink = string.IsNullOrEmpty(sourceRepo) ? $"Unavailable" : $"[GitHub repository]({sourceRepo})";
-        string docsLink = string.IsNullOrEmpty(documentationUrl) ? $"Unavailable" : $"[Read the docs]({documentationUrl})";
-        string inviteLink = $"[Invite link](https://discordapp.com/api/oauth2/authorize?client_id={context.Client.CurrentUser.Id}&permissions=8&scope=bot)";
+        var repoLink = string.IsNullOrEmpty(_sourceRepo) ? $"Unavailable" : $"[GitHub repository]({_sourceRepo})";
+        var docsLink = string.IsNullOrEmpty(_documentationUrl) ? $"Unavailable" : $"[Read the docs]({_documentationUrl})";
+        var inviteLink = $"[Invite link](https://discordapp.com/api/oauth2/authorize?client_id={context.Client.CurrentUser.Id}&permissions=8&scope=bot)";
 
         var embed = new EmbedBuilder()
             .WithTitle($"About {botName}")
@@ -50,12 +50,12 @@ public class CustomCommandService : CommandService
                 .WithIconUrl(context.User.GetDisplayAvatarUrl()))
             .WithCurrentTimestamp();
 
-        if (!botIsPrivate)
+        if (!_botIsPrivate)
         {
             embed.AddField("Invitation", inviteLink, true);
         }
 
-        embed.AddField("Developed by", contributors);
+        embed.AddField("Developed by", _contributors);
 
         await context.Interaction.ModifyOriginalResponseAsync(msg => msg.Embeds = new Embed[] { embed.Build() });
     }
@@ -75,10 +75,10 @@ public class CustomCommandService : CommandService
     {
         StringBuilder parameters = new();
 
-        for (int i = 0; i < command.Parameters.Count; i++)
+        for (var i = 0; i < command.Parameters.Count; i++)
         {
-            string pref = command.Parameters[i].IsOptional ? "[" : "<";
-            string suff = command.Parameters[i].IsOptional ? "]" : ">";
+            var pref = command.Parameters[i].IsOptional ? "[" : "<";
+            var suff = command.Parameters[i].IsOptional ? "]" : ">";
 
             parameters.Append($"{pref}{command.Parameters[i].Name.Underscore().Dasherize()}{suff} ");
         }

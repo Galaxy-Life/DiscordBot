@@ -44,7 +44,7 @@ public class TopModule : InteractionModuleBase<SocketInteractionContext>
 
     protected async Task SendPaginatedMessageAsync(IEnumerable<EmbedField> displayFields, IEnumerable<string> displayTexts, EmbedBuilder templateEmbed)
     {
-        int displayItems = 0;
+        var displayItems = 0;
 
         if (displayTexts != null)
         {
@@ -56,7 +56,7 @@ public class TopModule : InteractionModuleBase<SocketInteractionContext>
             displayItems = displayFields.Count();
             var fields = displayFields.Take(10).ToArray();
 
-            for (int i = 0; i < fields.Length; i++)
+            for (var i = 0; i < fields.Length; i++)
             {
                 templateEmbed.AddField(fields[i].Name, fields[i].Value, fields[i].Inline);
             }

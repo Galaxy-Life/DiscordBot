@@ -6,25 +6,25 @@ namespace AdvancedBot.Core.Services.DataStorage;
 
 public class BotStorage
 {
-    private readonly LiteDBHandler storage;
+    private readonly LiteDBHandler _storage;
 
     public BotStorage(LiteDBHandler storage)
     {
-        this.storage = storage;
+        _storage = storage;
     }
 
     public void AddTempBan(Tempban ban)
     {
-        storage.Store(ban);
+        _storage.Store(ban);
     }
 
     public List<Tempban> GetTempbans()
     {
-        return storage.RestoreAll<Tempban>().ToList();
+        return _storage.RestoreAll<Tempban>().ToList();
     }
 
     public void RemoveTempban(Tempban tempban)
     {
-        storage.Remove<Tempban>(ban => ban.ModeratorId == tempban.ModeratorId && ban.UserId == tempban.UserId);
+        _storage.Remove<Tempban>(ban => ban.ModeratorId == tempban.ModeratorId && ban.UserId == tempban.UserId);
     }
 }

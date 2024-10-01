@@ -7,16 +7,16 @@ namespace AdvancedBot.Core.Services.DataStorage;
 
 public class AccountService
 {
-    private readonly LiteDBHandler storage;
+    private readonly LiteDBHandler _storage;
 
     public AccountService(LiteDBHandler storage)
     {
-        this.storage = storage;
+        _storage = storage;
     }
 
     public Account GetOrCreateAccount(ulong id, bool isGuild = false)
     {
-        if (!storage.Exists<Account>(x => x.Id == id))
+        if (!_storage.Exists<Account>(x => x.Id == id))
         {
             var account = new Account(id, isGuild);
 
@@ -24,28 +24,28 @@ public class AccountService
             return account;
         }
 
-        return storage.RestoreSingle<Account>(x => x.Id == id);
+        return _storage.RestoreSingle<Account>(x => x.Id == id);
     }
 
     public Account[] GetAllAccounts()
     {
-        return storage.RestoreAll<Account>().ToArray();
+        return _storage.RestoreAll<Account>().ToArray();
     }
 
     public Account[] GetManyAccounts(Expression<Func<Account, bool>> predicate)
     {
-        return storage.RestoreMany(predicate).ToArray();
+        return _storage.RestoreMany(predicate).ToArray();
     }
 
     public void SaveAccount(Account account)
     {
-        if (!storage.Exists<Account>(x => x.Id == account.Id))
+        if (!_storage.Exists<Account>(x => x.Id == account.Id))
         {
-            storage.Store(account);
+            _storage.Store(account);
         }
         else
         {
-            storage.Update(account);
+            _storage.Update(account);
         }
     }
 }

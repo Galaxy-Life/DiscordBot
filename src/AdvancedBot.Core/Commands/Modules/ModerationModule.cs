@@ -35,23 +35,23 @@ public class ModerationModule : TopModule
 
             var warlogs = await GLClient.Api.GetAllianceWarlogs(alliance.Id);
             var texts = new List<string>();
-            int wins = warlogs.Count(war => war.WinnerId == alliance.Id);
+            var wins = warlogs.Count(war => war.WinnerId == alliance.Id);
 
-            for (int i = 0; i < warlogs.Count; i++)
+            for (var i = 0; i < warlogs.Count; i++)
             {
                 var log = warlogs[i];
                 var endDate = new DateTime(1970, 1, 1).AddMilliseconds(log.WarEndTime);
                 var duration = TimeSpan.FromMilliseconds(log.WarEndTime - log.WarStartTime);
 
-                string statusText = warlogs[i].WinnerId == alliance.Id ? "**Won** against" : "**Lost** against";
-                string dateText = $"ended **{endDate:dd/MM/yyyy (HH:mm)}**";
-                string durationText = duration.Days == 3 ? $"" : $"(KO after {(TimeSpan.FromDays(3) - duration).Humanize(3)})";
+                var statusText = warlogs[i].WinnerId == alliance.Id ? "**Won** against" : "**Lost** against";
+                var dateText = $"ended **{endDate:dd/MM/yyyy (HH:mm)}**";
+                var durationText = duration.Days == 3 ? $"" : $"(KO after {(TimeSpan.FromDays(3) - duration).Humanize(3)})";
 
                 texts.Add($"{statusText} **{log.EnemyAllianceName}** {dateText}\n"
                 + $"**{log.SelfAllianceWarScore}**wp versus **{log.EnemyAllianceWarScore}**wp {durationText}\n");
             }
 
-            int winLossRatio = wins / (warlogs.Count - wins == 0 ? 1 : warlogs.Count - wins);
+            var winLossRatio = wins / (warlogs.Count - wins == 0 ? 1 : warlogs.Count - wins);
 
             await LogService.LogGameActionAsync(LogAction.GetWarlogs, Context.User.Id, 0, alliance.Id);
 
@@ -198,10 +198,10 @@ public class ModerationModule : TopModule
 
         await LogService.LogGameActionAsync(LogAction.GetFull, Context.User.Id, user.UserId);
 
-        string steamId = user.SteamId ?? "No account linked";
-        string discordTag = string.IsNullOrEmpty(user.DiscordId) ? "No account linked" : $"<@{user.DiscordId}>";
+        var steamId = user.SteamId ?? "No account linked";
+        var discordTag = string.IsNullOrEmpty(user.DiscordId) ? "No account linked" : $"<@{user.DiscordId}>";
 
-        string description =
+        var description =
               user.Role == PhoenixRole.Banned ? $"**This user has been banned!!**\nBan Reason: **{user.BanReason}**\n\n"
             : user.Role == PhoenixRole.Donator ? "This user is a Donator\n\n"
             : user.Role == PhoenixRole.Staff ? "This user is a Staff Member\n\n"
@@ -314,7 +314,7 @@ public class ModerationModule : TopModule
             return;
         }
 
-        bool backendSuccess = await GLClient.Api.UpdateNameFromPhoenixAsync(userId.ToString());
+        var backendSuccess = await GLClient.Api.UpdateNameFromPhoenixAsync(userId.ToString());
 
         await LogService.LogGameActionAsync(LogAction.UpdateName, Context.User.Id, userId, $"{user.UserName}:{newName}");
 
@@ -521,9 +521,9 @@ public class ModerationModule : TopModule
         Choice("Chips (advanced)", "advchips")] string type, string sku = "7000")
     {
         List<string> displayTexts = ["Failed to get information"];
-        string title = "Galaxy Life Leaderboard";
+        var title = "Galaxy Life Leaderboard";
 
-        string thumbnailUrl =
+        var thumbnailUrl =
             Context.Channel is IGuildChannel
           ? Context.Guild.IconUrl
           : Context.Client.CurrentUser.GetDisplayAvatarUrl();
@@ -629,7 +629,7 @@ public class ModerationModule : TopModule
             return;
         }
 
-        for (int i = 0; i < displayTexts.Count; i++)
+        for (var i = 0; i < displayTexts.Count; i++)
         {
             displayTexts[i] = $"**#{i + 1}** | {displayTexts[i]}";
         }

@@ -127,7 +127,7 @@ public class StagingModule : TopModule
     [SlashCommand("restart", "Restarts staging server")]
     public async Task RestartStagingAsync()
     {
-        bool result = await GLClient.Staging.RestartServer();
+        var result = await GLClient.Staging.RestartServer();
 
         if (!result)
         {

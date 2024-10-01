@@ -8,7 +8,7 @@ namespace AdvancedBot.Core.Commands.Preconditions;
 
 public class RequireStagingList : PreconditionAttribute
 {
-    private readonly List<ulong> userIds =
+    private readonly List<ulong> _userIds =
     [
         202095042372829184, // svr333
         942849642931032164, // lifecoder
@@ -21,7 +21,7 @@ public class RequireStagingList : PreconditionAttribute
 
     public override async Task<PreconditionResult> CheckRequirementsAsync(IInteractionContext context, ICommandInfo commandInfo, IServiceProvider services)
     {
-        if (!userIds.Contains(context.User.Id))
+        if (!_userIds.Contains(context.User.Id))
         {
             if (!context.Interaction.HasResponded)
             {

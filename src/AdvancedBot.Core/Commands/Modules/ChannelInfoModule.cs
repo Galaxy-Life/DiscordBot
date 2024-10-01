@@ -13,11 +13,11 @@ namespace AdvancedBot.Core.Commands.Modules;
 [RequireCustomPermission(GuildPermission.ManageChannels)]
 public class ChannelInfoModule : TopModule
 {
-    private readonly ChannelCounterService counter;
+    private readonly ChannelCounterService _counter;
 
     public ChannelInfoModule(ChannelCounterService counter)
     {
-        this.counter = counter;
+        _counter = counter;
     }
 
     [SlashCommand("setup", "Set up the channel counter")]
@@ -34,8 +34,8 @@ public class ChannelInfoModule : TopModule
         {
             var counter = new ChannelCounter(voiceChannel.Id, ChannelCounterType.FlashStatus);
 
-            this.counter.AddNewChannelCounter(Context.Guild.Id, counter);
-            await this.counter.UpdateChannelAsync(Accounts.GetOrCreateAccount(Context.Guild.Id), counter);
+            _counter.AddNewChannelCounter(Context.Guild.Id, counter);
+            await _counter.UpdateChannelAsync(Accounts.GetOrCreateAccount(Context.Guild.Id), counter);
 
             await ModifyOriginalResponseAsync(msg => msg.Content = $"Setup the Server Status Voice Channel {voiceChannel.Mention}");
         }

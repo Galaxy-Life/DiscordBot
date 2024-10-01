@@ -16,23 +16,23 @@ namespace AdvancedBot.Core;
 
 public class BotClient
 {
-    private readonly DiscordSocketClient client;
-    private readonly CustomCommandService commands;
-    private IServiceProvider services;
-    private readonly InteractionService interactions;
-    private AccountService accounts;
-    private readonly GLClient glClient;
+    private readonly DiscordSocketClient _client;
+    private readonly CustomCommandService _commands;
+    private IServiceProvider _services;
+    private readonly InteractionService _interactions;
+    private AccountService _accounts;
+    private readonly GLClient _glClient;
 
     public BotClient(CustomCommandService commands = null, DiscordSocketClient client = null)
     {
-        this.client = client ?? new DiscordSocketClient(new DiscordSocketConfig
+        _client = client ?? new DiscordSocketClient(new DiscordSocketConfig
         {
             LogLevel = LogSeverity.Info,
             AlwaysDownloadUsers = true,
             MessageCacheSize = 1000
         });
 
-        this.commands = commands ?? new CustomCommandService(new CustomCommandServiceConfig
+        _commands = commands ?? new CustomCommandService(new CustomCommandServiceConfig
         {
             CaseSensitiveCommands = false,
             LogLevel = LogSeverity.Info,
@@ -45,44 +45,44 @@ public class BotClient
 #endif
         });
 
-        interactions = new InteractionService(this.client.Rest, new InteractionServiceConfig() { UseCompiledLambda = true });
+        _interactions = new InteractionService(_client.Rest, new InteractionServiceConfig() { UseCompiledLambda = true });
 
-        string envVar = Environment.GetEnvironmentVariable("PhoenixApiCred");
+        var envVar = Environment.GetEnvironmentVariable("PhoenixApiCred");
 
         if (envVar == null)
         {
             logAsync(new LogMessage(LogSeverity.Warning, "BotClient", "Initializing GLClient without tokens!"));
-            glClient = new GLClient("", "", "");
+            _glClient = new GLClient("", "", "");
             return;
         }
 
-        string[] creds = envVar.Split(';');
-        glClient = new GLClient(creds[0], creds[1], creds[2]);
+        var creds = envVar.Split(';');
+        _glClient = new GLClient(creds[0], creds[1], creds[2]);
     }
 
     public async Task InitializeAsync()
     {
         Console.Title = $"Launching Discord Bot...";
-        services = configureServices();
-        accounts = services.GetRequiredService<AccountService>();
+        _services = configureServices();
+        _accounts = _services.GetRequiredService<AccountService>();
 
-        client.Ready += onReadyAsync;
-        interactions.SlashCommandExecuted += onSlashCommandExecuted;
+        _client.Ready += onReadyAsync;
+        _interactions.SlashCommandExecuted += onSlashCommandExecuted;
 
-        client.Log += logAsync;
-        commands.Log += logAsync;
+        _client.Log += logAsync;
+        _commands.Log += logAsync;
 
-        string token = Environment.GetEnvironmentVariable("Token");
+        var token = Environment.GetEnvironmentVariable("Token");
 
-        await Task.Delay(10).ContinueWith(t => client.LoginAsync(TokenType.Bot, token));
-        await client.StartAsync();
+        await Task.Delay(10).ContinueWith(t => _client.LoginAsync(TokenType.Bot, token));
+        await _client.StartAsync();
 
         await Task.Delay(-1);
     }
 
     private async Task onReadyAsync()
     {
-        Console.Title = $"Running Discord Bot: {client.CurrentUser.Username}";
+        Console.Title = $"Running Discord Bot: {_client.CurrentUser.Username}";
 
         Game activity = new(
           "Galaxy Life",
@@ -90,27 +90,27 @@ public class BotClient
           ActivityProperties.Instance
         );
 
-        await client.SetActivityAsync(activity);
-        Console.WriteLine($"Guild count: {client.Guilds.Count}");
+        await _client.SetActivityAsync(activity);
+        Console.WriteLine($"Guild count: {_client.Guilds.Count}");
 
-        await interactions.AddModulesAsync(Assembly.GetExecutingAssembly(), services);
-        Console.WriteLine($"Modules count: {interactions.Modules.Count}");
-        Console.WriteLine($"SlashCommands count: {interactions.SlashCommands.Count}");
+        await _interactions.AddModulesAsync(Assembly.GetExecutingAssembly(), _services);
+        Console.WriteLine($"Modules count: {_interactions.Modules.Count}");
+        Console.WriteLine($"SlashCommands count: {_interactions.SlashCommands.Count}");
 
 #if DEBUG
         Console.WriteLine("Registered all commands to test server");
-        await interactions.RegisterCommandsToGuildAsync(696343127144923158, false);
+        await _interactions.RegisterCommandsToGuildAsync(696343127144923158, false);
         Console.WriteLine("Registered all commands globally");
-        await interactions.RegisterCommandsGloballyAsync();
+        await _interactions.RegisterCommandsGloballyAsync();
 #endif
 
-        client.InteractionCreated += async (x) =>
+        _client.InteractionCreated += async (x) =>
         {
-            var context = new SocketInteractionContext(client, x);
-            await interactions.ExecuteCommandAsync(context, services);
+            var context = new SocketInteractionContext(_client, x);
+            await _interactions.ExecuteCommandAsync(context, _services);
         };
 
-        glClient.ErrorThrown += onGLErrorThrown;
+        _glClient.ErrorThrown += onGLErrorThrown;
     }
 
     private async void onGLErrorThrown(object sender, ErrorEventArgs e)
@@ -148,8 +148,8 @@ public class BotClient
             }
         }
 
-        ulong id = context.Interaction.IsDMInteraction ? context.User.Id : context.Guild.Id;
-        var acc = accounts.GetOrCreateAccount(id, !context.Interaction.IsDMInteraction);
+        var id = context.Interaction.IsDMInteraction ? context.User.Id : context.Guild.Id;
+        var acc = _accounts.GetOrCreateAccount(id, !context.Interaction.IsDMInteraction);
 
         var cmdInfo = acc.CommandStats.Find(x => x.Name == cmd.Name);
 
@@ -166,16 +166,16 @@ public class BotClient
             cmdInfo.TimesFailed++;
         }
 
-        accounts.SaveAccount(acc);
+        _accounts.SaveAccount(acc);
     }
 
     private ServiceProvider configureServices()
     {
         return new ServiceCollection()
-            .AddSingleton(client)
-            .AddSingleton(commands)
-            .AddSingleton(interactions)
-            .AddSingleton(glClient)
+            .AddSingleton(_client)
+            .AddSingleton(_commands)
+            .AddSingleton(_interactions)
+            .AddSingleton(_glClient)
             .AddSingleton<LiteDBHandler>()
             .AddSingleton<AccountService>()
             .AddSingleton<PaginatorService>()

@@ -14,31 +14,31 @@ namespace AdvancedBot.Core.Services;
 
 public class LogService
 {
-    private int id = 0;
-    private readonly LiteDBHandler storage;
-    private readonly CustomCommandService commands;
-    private readonly DiscordSocketClient client;
-    private readonly GLClient gl;
+    private int _id = 0;
+    private readonly LiteDBHandler _storage;
+    private readonly CustomCommandService _commands;
+    private readonly DiscordSocketClient _client;
+    private readonly GLClient _gl;
 
     public LogService(LiteDBHandler storage, CustomCommandService commands, DiscordSocketClient client, GLClient gl)
     {
-        this.storage = storage;
-        this.commands = commands;
-        this.client = client;
-        this.gl = gl;
+        _storage = storage;
+        _commands = commands;
+        _client = client;
+        _gl = gl;
 
-        id = this.storage.RestoreCount<Log>();
+        _id = _storage.RestoreCount<Log>();
     }
 
     public async Task LogGameActionAsync(LogAction action, ulong discordModId, uint victimGameId, string reason = "", DateTime? until = null)
     {
-        id++;
-        var log = new Log(id, action, discordModId, victimGameId, reason, until);
+        _id++;
+        var log = new Log(_id, action, discordModId, victimGameId, reason, until);
 
-        storage.Store(log);
+        _storage.Store(log);
 
-        var channel = await client.GetChannelAsync(commands.LogChannelId) as ISocketMessageChannel;
-        var user = await gl.Api.GetUserById(victimGameId.ToString());
+        var channel = await _client.GetChannelAsync(_commands.LogChannelId) as ISocketMessageChannel;
+        var user = await _gl.Api.GetUserById(victimGameId.ToString());
 
         await channel.SendMessageAsync(embed: GetEmbedForLog(log, user));
     }
@@ -79,7 +79,7 @@ public class LogService
             case LogAction.UpdateEmail:
             case LogAction.UpdateName:
             case LogAction.RenameAlliance:
-                string[] splits = log.Reason.Split(':');
+                var splits = log.Reason.Split(':');
                 embed.AddField("Previous", splits[0]);
                 embed.AddField("Updated", splits[1], true);
                 break;
@@ -89,7 +89,7 @@ public class LogService
                 break;
 
             case LogAction.AddItem:
-                string[] itemSplit = log.Reason.Split(':');
+                var itemSplit = log.Reason.Split(':');
                 embed.AddField("Item SKU", itemSplit[0]);
                 embed.AddField("Quantity", itemSplit[1]);
                 break;
@@ -117,14 +117,14 @@ public class LogService
 
             case LogAction.ForceWar:
             case LogAction.ForceStopWar:
-                string[] warSplit = log.Reason.Split(':');
+                var warSplit = log.Reason.Split(':');
                 embed.AddField("Server", warSplit[0], true);
                 embed.AddField("Alliance A", warSplit[1]);
                 embed.AddField("Alliance B", warSplit[2]);
                 break;
 
             case LogAction.Compensate:
-                string[] compensateSplit = log.Reason.Split(':');
+                var compensateSplit = log.Reason.Split(':');
                 embed.AddField("Type", compensateSplit[0]);
 
                 if (compensateSplit.Length > 2)

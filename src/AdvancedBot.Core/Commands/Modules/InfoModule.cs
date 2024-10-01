@@ -8,29 +8,29 @@ namespace AdvancedBot.Core.Commands.Modules;
 
 public class InfoModule : TopModule
 {
-    private readonly CustomCommandService commands;
+    private readonly CustomCommandService _commands;
 
     public InfoModule(CustomCommandService commands)
     {
-        this.commands = commands;
+        _commands = commands;
     }
 
     [SlashCommand("help", "View basic help and information about the Galaxy Life bot.")]
     public async Task DisplayBotInfoAsync()
     {
-        await commands.SendBotInfoAsync(Context);
+        await _commands.SendBotInfoAsync(Context);
     }
 
     [SlashCommand("serverstats", "Shows guild stats related to the bot")]
     public async Task DisplayGuildOrDmStatsAsync()
     {
-        ulong id = Context.Interaction.IsDMInteraction ? Context.User.Id : Context.Guild.Id;
+        var id = Context.Interaction.IsDMInteraction ? Context.User.Id : Context.Guild.Id;
         var guild = Accounts.GetOrCreateAccount(id, !Context.Interaction.IsDMInteraction);
 
         var fields = new List<EmbedField>();
         var commands = guild.CommandStats.OrderByDescending(x => x.TimesRun).ToArray();
 
-        for (int i = 0; i < commands.Length; i++)
+        for (var i = 0; i < commands.Length; i++)
         {
             fields.Add(
               new EmbedFieldBuilder()
@@ -39,8 +39,8 @@ public class InfoModule : TopModule
                   .Build());
         }
 
-        string title = Context.Interaction.IsDMInteraction ? $"Stats for {Context.User.Username}'s DMS" : $"Stats for {Context.Guild.Name}";
-        string thumbnailUrl = Context.Interaction.IsDMInteraction ? Context.User.GetDisplayAvatarUrl() : Context.Guild.IconUrl;
+        var title = Context.Interaction.IsDMInteraction ? $"Stats for {Context.User.Username}'s DMS" : $"Stats for {Context.Guild.Name}";
+        var thumbnailUrl = Context.Interaction.IsDMInteraction ? Context.User.GetDisplayAvatarUrl() : Context.Guild.IconUrl;
 
         var templateEmbed = new EmbedBuilder()
             .WithTitle(title)

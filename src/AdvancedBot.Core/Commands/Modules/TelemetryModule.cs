@@ -32,11 +32,11 @@ public class TelemetryModule : TopModule
 
         var users = new Dictionary<string, int>();
 
-        for (int i = 0; i < result.Output.Count; i++)
+        for (var i = 0; i < result.Output.Count; i++)
         {
             var gift = result.Output[i];
 
-            if (!users.TryGetValue(gift.FromUserId, out int value))
+            if (!users.TryGetValue(gift.FromUserId, out var value))
             {
                 users.Add(gift.FromUserId, 0);
             }
@@ -73,9 +73,9 @@ public class TelemetryModule : TopModule
 
         var fields = new List<EmbedField>();
 
-        for (int i = 0; i < result.Output.Count; i++)
+        for (var i = 0; i < result.Output.Count; i++)
         {
-            string trackerKey = result.Output.ElementAt(i).Key;
+            var trackerKey = result.Output.ElementAt(i).Key;
             var trackerResult = result.Output.ElementAt(i).Value;
 
             var a = trackerResult.First().Value;
