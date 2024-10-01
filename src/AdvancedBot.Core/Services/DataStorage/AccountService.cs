@@ -1,52 +1,51 @@
-using AdvancedBot.Core.Entities;
+using System;
 using System.Linq;
 using System.Linq.Expressions;
-using System;
+using AdvancedBot.Core.Entities;
 
-namespace AdvancedBot.Core.Services.DataStorage
+namespace AdvancedBot.Core.Services.DataStorage;
+
+public class AccountService
 {
-    public class AccountService
+    private readonly LiteDBHandler storage;
+
+    public AccountService(LiteDBHandler storage)
     {
-        private LiteDBHandler _storage;
+        this.storage = storage;
+    }
 
-        public AccountService(LiteDBHandler storage)
+    public Account GetOrCreateAccount(ulong id, bool isGuild = false)
+    {
+        if (!storage.Exists<Account>(x => x.Id == id))
         {
-            _storage = storage;
+            var account = new Account(id, isGuild);
+
+            SaveAccount(account);
+            return account;
         }
 
-        public Account GetOrCreateAccount(ulong id, bool isGuild = false)
-        {
-            if (!_storage.Exists<Account>(x => x.Id == id))
-            {
-                var account = new Account(id, isGuild);
+        return storage.RestoreSingle<Account>(x => x.Id == id);
+    }
 
-                SaveAccount(account);
-                return account;
-            }
-            
-            return _storage.RestoreSingle<Account>(x => x.Id == id);
+    public Account[] GetAllAccounts()
+    {
+        return storage.RestoreAll<Account>().ToArray();
+    }
+
+    public Account[] GetManyAccounts(Expression<Func<Account, bool>> predicate)
+    {
+        return storage.RestoreMany(predicate).ToArray();
+    }
+
+    public void SaveAccount(Account account)
+    {
+        if (!storage.Exists<Account>(x => x.Id == account.Id))
+        {
+            storage.Store(account);
         }
-
-        public Account[] GetAllAccounts()
+        else
         {
-            return _storage.RestoreAll<Account>().ToArray();
-        }
-
-        public Account[] GetManyAccounts(Expression<Func<Account, bool>> predicate)
-        {
-            return _storage.RestoreMany(predicate).ToArray();
-        }
-
-        public void SaveAccount(Account account)
-        {
-            if (!_storage.Exists<Account>(x => x.Id == account.Id))
-            {
-                _storage.Store(account);
-            }
-            else
-            {
-                _storage.Update(account);
-            }
+            storage.Update(account);
         }
     }
 }

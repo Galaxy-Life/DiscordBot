@@ -1,19 +1,13 @@
-using System;
+namespace AdvancedBot.Core.Entities;
 
-namespace AdvancedBot.Core.Entities
+public class CommandStats
 {
-    public class CommandStats
+    public CommandStats(string name)
     {
-        [Obsolete]
-        public CommandStats() {}
-
-        public CommandStats(string name)
-        {
-            Name = name;
-        }
-
-        public string Name { get; set; }
-        public ulong TimesRun { get; set; }
-        public ulong TimesFailed { get; set; }
+        Name = name;
     }
+
+    public string Name { get; set; }
+    public ulong TimesRun { get; set; }
+    public ulong TimesFailed { get; set; }
 }

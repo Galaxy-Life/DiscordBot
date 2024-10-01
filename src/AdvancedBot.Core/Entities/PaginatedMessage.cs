@@ -1,36 +1,35 @@
 using System;
 using Discord;
 
-namespace AdvancedBot.Core.Entities
-{
-    public class PaginatedMessage
-    {
-        private int _currentPage = 1;
+namespace AdvancedBot.Core.Entities;
 
-        public ulong DiscordMessageId { get; set; }
-        public ulong DiscordChannelId { get; set; }
-        public ulong DiscordUserId { get; set; }
-        public string[] DisplayMessages { get; set; }
-        public EmbedField[] DisplayFields { get; set; }
-        public int CurrentPage 
+public class PaginatedMessage
+{
+    private int currentPage = 1;
+
+    public ulong DiscordMessageId { get; set; }
+    public ulong DiscordChannelId { get; set; }
+    public ulong DiscordUserId { get; set; }
+    public string[] DisplayMessages { get; set; }
+    public EmbedField[] DisplayFields { get; set; }
+    public int CurrentPage
+    {
+        get => currentPage;
+        set
         {
-            get => _currentPage;
-            set
-            {
-                if (value > TotalPages) _currentPage = TotalPages;
-                else if (value < 1) _currentPage = 1;
-                else _currentPage = value;
-            }
+            if (value > TotalPages) currentPage = TotalPages;
+            else if (value < 1) currentPage = 1;
+            else currentPage = value;
         }
-        public int TotalPages
+    }
+    public int TotalPages
+    {
+        get
         {
-            get
-            {
-                var totalPages = DisplayMessages == null ? DisplayFields.Length : DisplayMessages.Length;
-                var decimalValue = (double) totalPages / 10;
-                var roundedUpValue = Math.Ceiling(decimalValue);
-                return int.Parse(roundedUpValue.ToString());
-            }
+            int totalPages = DisplayMessages == null ? DisplayFields.Length : DisplayMessages.Length;
+            double decimalValue = (double)totalPages / 10;
+            double roundedUpValue = Math.Ceiling(decimalValue);
+            return int.Parse(roundedUpValue.ToString());
         }
     }
 }

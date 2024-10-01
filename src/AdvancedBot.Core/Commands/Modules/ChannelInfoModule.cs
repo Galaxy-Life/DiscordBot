@@ -7,50 +7,48 @@ using AdvancedBot.Core.Services;
 using Discord;
 using Discord.Interactions;
 
-namespace AdvancedBot.Core.Commands.Modules
+namespace AdvancedBot.Core.Commands.Modules;
+
+[Group("channels", "All commands regarding channel counters")]
+[RequireCustomPermission(GuildPermission.ManageChannels)]
+public class ChannelInfoModule : TopModule
 {
-    [Group("channels", "All commands regarding channel counters")]
-    [RequireCustomPermission(GuildPermission.ManageChannels)]
-    public class ChannelInfoModule : TopModule
+    private readonly ChannelCounterService counter;
+
+    public ChannelInfoModule(ChannelCounterService counter)
     {
-        private ChannelCounterService _counter;
+        this.counter = counter;
+    }
 
-        public ChannelInfoModule(ChannelCounterService counter)
+    [SlashCommand("setup", "Set up the channel counter")]
+    [RequireBotPermission(GuildPermission.ManageChannels)]
+    [RequireBotPermission(GuildPermission.ManageRoles)]
+    [CommandContextType(InteractionContextType.Guild, InteractionContextType.PrivateChannel)]
+    public async Task SetupChannelCountersAsync()
+    {
+        var voiceChannel = await Context.Guild.CreateVoiceChannelAsync($"Server Status");
+        await voiceChannel.AddPermissionOverwriteAsync(Context.Client.CurrentUser, new OverwritePermissions(connect: PermValue.Allow));
+        await voiceChannel.AddPermissionOverwriteAsync(Context.Guild.EveryoneRole, new OverwritePermissions(connect: PermValue.Deny));
+
+        try
         {
-            _counter = counter;
+            var counter = new ChannelCounter(voiceChannel.Id, ChannelCounterType.FlashStatus);
+
+            this.counter.AddNewChannelCounter(Context.Guild.Id, counter);
+            await this.counter.UpdateChannelAsync(Accounts.GetOrCreateAccount(Context.Guild.Id), counter);
+
+            await ModifyOriginalResponseAsync(msg => msg.Content = $"Setup the Server Status Voice Channel {voiceChannel.Mention}");
         }
-
-        [SlashCommand("setup", "Set up the channel counter")]
-        [RequireBotPermission(GuildPermission.ManageChannels)]
-        [RequireBotPermission(GuildPermission.ManageRoles)]
-        [EnabledInDm(false)]
-        public async Task SetupChannelCountersAsync()
+        catch (Exception e)
         {
-            var voiceChannel = await Context.Guild.CreateVoiceChannelAsync($"Server Status");
-            await voiceChannel.AddPermissionOverwriteAsync(Context.Client.CurrentUser, new OverwritePermissions(connect: PermValue.Allow));
-            await voiceChannel.AddPermissionOverwriteAsync(Context.Guild.EveryoneRole, new OverwritePermissions(connect: PermValue.Deny));
+            await voiceChannel.DeleteAsync();
 
-            try
-            {
-                var counter = new ChannelCounter(voiceChannel.Id, ChannelCounterType.FlashStatus);
+            var embed = new EmbedBuilder()
+                .WithTitle("Failed to setup!")
+                .WithDescription(e.Message)
+                .Build();
 
-                _counter.AddNewChannelCounter(Context.Guild.Id, counter);
-                await _counter.UpdateChannelAsync(Accounts.GetOrCreateAccount(Context.Guild.Id), counter);
-
-                await ModifyOriginalResponseAsync(x => x.Content = $"Setup the Server Status Voice Channel {voiceChannel.Mention}");
-            }
-            catch (Exception e)
-            {
-                await voiceChannel.DeleteAsync();
-
-                var embed = new EmbedBuilder()
-                {
-                    Title = "Failed to setup!",
-                    Description = e.Message
-                };
-
-                await ModifyOriginalResponseAsync(x => x.Embed = embed.Build());
-            }
+            await ModifyOriginalResponseAsync(msg => msg.Embeds = new Embed[] { embed });
         }
     }
 }

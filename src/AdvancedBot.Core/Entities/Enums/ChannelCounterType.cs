@@ -1,8 +1,7 @@
-namespace AdvancedBot.Core.Entities.Enums
+namespace AdvancedBot.Core.Entities.Enums;
+
+public enum ChannelCounterType
 {
-    public enum ChannelCounterType
-    {
-        None = 0,
-        FlashStatus = 1
-    }
+    None = 0,
+    FlashStatus = 1
 }

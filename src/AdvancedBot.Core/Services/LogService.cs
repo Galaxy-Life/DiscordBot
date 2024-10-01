@@ -10,170 +10,170 @@ using GL.NET;
 using GL.NET.Entities;
 using Humanizer;
 
-namespace AdvancedBot.Core.Services
+namespace AdvancedBot.Core.Services;
+
+public class LogService
 {
-    public class LogService
+    private int id = 0;
+    private readonly LiteDBHandler storage;
+    private readonly CustomCommandService commands;
+    private readonly DiscordSocketClient client;
+    private readonly GLClient gl;
+
+    public LogService(LiteDBHandler storage, CustomCommandService commands, DiscordSocketClient client, GLClient gl)
     {
-        private int _id = 0;
-        private LiteDBHandler _storage;
-        private CustomCommandService _commands;
-        private DiscordSocketClient _client;
-        private GLClient _gl;
+        this.storage = storage;
+        this.commands = commands;
+        this.client = client;
+        this.gl = gl;
 
-        public LogService(LiteDBHandler storage, CustomCommandService commands, DiscordSocketClient client, GLClient gl)
+        id = this.storage.RestoreCount<Log>();
+    }
+
+    public async Task LogGameActionAsync(LogAction action, ulong discordModId, uint victimGameId, string reason = "", DateTime? until = null)
+    {
+        id++;
+        var log = new Log(id, action, discordModId, victimGameId, reason, until);
+
+        storage.Store(log);
+
+        var channel = await client.GetChannelAsync(commands.LogChannelId) as ISocketMessageChannel;
+        var user = await gl.Api.GetUserById(victimGameId.ToString());
+
+        await channel.SendMessageAsync(embed: GetEmbedForLog(log, user));
+    }
+
+    public static Embed GetEmbedForLog(Log log, User target)
+    {
+        var embed = new EmbedBuilder()
+            .WithTitle($"Overview | {log.Type.Humanize()}")
+            .WithColor(getColorBasedOnAction(log.Type))
+            .AddField("Moderator", $"<@{log.DiscordModId}>", true)
+            .WithFooter(footer => footer
+                .WithText($"Case #{log.Id} • Requested by moderator with id {log.DiscordModId}"))
+            .WithCurrentTimestamp();
+
+        if (target != null)
         {
-            _storage = storage;
-            _commands = commands;
-            _client = client;
-            _gl = gl;
-
-            _id = _storage.RestoreCount<Log>();
+            embed.AddField("Target", $"{target.Name} (`{target.Id}`)", true);
         }
 
-        public async Task LogGameActionAsync(LogAction action, ulong discordModId, uint victimGameId, string reason = "", DateTime? until = null)
+        switch (log.Type)
         {
-            _id++;
-            var log = new Log(_id, action, discordModId, victimGameId, reason, until);
+            case LogAction.Unban:
+                if (!string.IsNullOrEmpty(log.Reason))
+                {
+                    embed.AddField("Reason", log.Reason, true);
+                }
+                break;
 
-            _storage.Store(log);
+            case LogAction.Ban:
+                embed.AddField("Reason", log.Reason);
+                embed.AddField("Expires on", log.Until == null ? "Never" : log.Until.Value.ToShortDateString());
+                break;
 
-            var channel = await _client.GetChannelAsync(_commands.LogChannelId) as ISocketMessageChannel;
-            var user = await _gl.Api.GetUserById(victimGameId.ToString());
+            case LogAction.GiveRole:
+                embed.AddField("Role", log.Reason, true);
+                break;
 
-            await channel.SendMessageAsync(embed: GetEmbedForLog(log, user));
+            case LogAction.UpdateEmail:
+            case LogAction.UpdateName:
+            case LogAction.RenameAlliance:
+                string[] splits = log.Reason.Split(':');
+                embed.AddField("Previous", splits[0]);
+                embed.AddField("Updated", splits[1], true);
+                break;
+
+            case LogAction.AddChips:
+                embed.AddField("Chips added", log.Reason);
+                break;
+
+            case LogAction.AddItem:
+                string[] itemSplit = log.Reason.Split(':');
+                embed.AddField("Item SKU", itemSplit[0]);
+                embed.AddField("Quantity", itemSplit[1]);
+                break;
+
+            case LogAction.AddXp:
+                embed.AddField("Experience added", log.Reason);
+                break;
+
+            case LogAction.RemoveUserFromAlliance:
+            case LogAction.MakeUserAllianceOwner:
+            case LogAction.GetWarlogs:
+                embed.AddField("Alliance", log.Reason, true);
+                break;
+
+            case LogAction.ReloadRules:
+            case LogAction.GetTelemetry:
+                embed.AddField("Server", log.Reason, true);
+                break;
+
+            case LogAction.RunKicker:
+            case LogAction.ResetHelps:
+            case LogAction.Reset:
+                embed.AddField("Server", log.Reason, true);
+                break;
+
+            case LogAction.ForceWar:
+            case LogAction.ForceStopWar:
+                string[] warSplit = log.Reason.Split(':');
+                embed.AddField("Server", warSplit[0], true);
+                embed.AddField("Alliance A", warSplit[1]);
+                embed.AddField("Alliance B", warSplit[2]);
+                break;
+
+            case LogAction.Compensate:
+                string[] compensateSplit = log.Reason.Split(':');
+                embed.AddField("Type", compensateSplit[0]);
+
+                if (compensateSplit.Length > 2)
+                {
+                    embed.AddField("Item SKU", compensateSplit[1]);
+                    embed.AddField("Quantity", compensateSplit[2]);
+                }
+                else
+                {
+                    embed.AddField("Quantity", compensateSplit[1]);
+                }
+                break;
+
+            case LogAction.KickOffline:
+            case LogAction.AddBeta:
+            case LogAction.RemoveBeta:
+            case LogAction.GetChipsBought:
+            case LogAction.GetChipsSpent:
+            case LogAction.GetFull:
+            case LogAction.EnableMaintenance:
+            case LogAction.AddEmulate:
+            case LogAction.RemoveEmulate:
+            case LogAction.GetAccounts:
+            default:
+                break;
         }
 
-        public Embed GetEmbedForLog(Log log, User victim)
+        return embed.Build();
+    }
+
+    private static Color getColorBasedOnAction(LogAction action)
+    {
+        return action switch
         {
-            var embed = new EmbedBuilder()
-            {
-                Title = $"Case {log.Id} ({log.Type.Humanize()})",
-                Color = GetColorBasedOnAction(log.Type)
-            }
-            .AddField("Moderator", $"<@{log.DiscordModId}>", true);
+            LogAction.Ban or LogAction.Reset or LogAction.KickOffline or LogAction.RemoveBeta or
+            LogAction.RemoveUserFromAlliance or LogAction.EnableMaintenance or LogAction.ReloadRules
+                => Color.Red,
 
-            // if alliance action this can be null
-            if (victim != null)
-            {
-                embed.AddField("Victim", $"{victim.Name} ({victim.Id})", true);
-            }
+            LogAction.Unban or LogAction.AddBeta or LogAction.GiveRole
+                => Color.Green,
 
-            switch (log.Type)
-            {
-                case LogAction.Unban:
-                    if (!string.IsNullOrEmpty(log.Reason))
-                    {
-                        embed.AddField("Reason", log.Reason, true);
-                    }
+            LogAction.UpdateEmail or LogAction.UpdateName or LogAction.GetFull or LogAction.GetChipsBought or
+            LogAction.MakeUserAllianceOwner or LogAction.GetWarlogs
+                => new Color(15710778),
 
-                    break;
-                case LogAction.KickOffline:
-                case LogAction.AddBeta:
-                case LogAction.RemoveBeta:
-                case LogAction.GetChipsBought:
-                case LogAction.GetChipsSpent:
-                case LogAction.GetFull:
-                case LogAction.EnableMaintenance:
-                case LogAction.AddEmulate:
-                case LogAction.RemoveEmulate:
-                case LogAction.GetAccounts:
-                default:
-                    break;
-                case LogAction.Ban:
-                    embed.AddField("Ban Reason", log.Reason, true);
-                    embed.AddField("Ends", log.Until == null ? "Never" : log.Until.Value.ToShortDateString());
-                    break;                
-                case LogAction.GiveRole:
-                    embed.AddField("Role", log.Reason, true);
-                    break;
-                case LogAction.UpdateEmail:
-                case LogAction.UpdateName:
-                case LogAction.RenameAlliance:
-                    var splits = log.Reason.Split(':');
-                    embed.AddField("From", splits[0]);
-                    embed.AddField("To", splits[1], true);
-                    break;
-                case LogAction.AddChips:
-                    embed.AddField("Chips added", log.Reason);
-                    break;
-                case LogAction.AddItem:
-                    var splitties = log.Reason.Split(':');
-                    embed.AddField("Item added", $"{splitties[1]}x item {splitties[0]}");
-                    break;
-                case LogAction.AddXp:
-                    embed.AddField("Xp added", log.Reason);
-                    break;
-                case LogAction.RemoveUserFromAlliance:
-                case LogAction.MakeUserAllianceOwner:
-                case LogAction.GetWarlogs:
-                    embed.AddField("Alliance", log.Reason, true);
-                    break;
-                case LogAction.ReloadRules:
-                    embed.AddField("Server", log.Reason, true);
-                    break;
-                case LogAction.GetTelemetry:
-                    embed.AddField("Type", log.Reason, true);
-                    break;
-                case LogAction.RunKicker:
-                case LogAction.ResetHelps:
-                case LogAction.Reset:
-                    embed.AddField("Server", log.Reason, true);
-                    break;
-                case LogAction.ForceWar:
-                case LogAction.ForceStopWar:
-                    var split = log.Reason.Split(':');
-                    embed.AddField("Server", split[0], true);
-                    embed.AddField("Alliance A", split[1]);
-                    embed.AddField("Alliance B", split[2]);
-                    break;
-                case LogAction.Compensate:
-                    var splitters = log.Reason.Split(':');
-                    embed.AddField("Type", splitters[0]);
+            LogAction.AddChips or LogAction.AddItem or LogAction.RenameAlliance
+                => Color.Blue,
 
-                    if (splitters.Length > 2)
-                    {
-                        embed.AddField("Sku", splitters[1]);
-                        embed.AddField("Amount", splitters[2]);
-                    }
-                    else 
-                    {
-                        embed.AddField("Amount", splitters[1]);
-                    }
-                    break;
-            }
-
-            return embed.Build();
-        }
-
-        private Color GetColorBasedOnAction(LogAction action)
-        {
-            switch (action)
-            {
-                case LogAction.Ban:
-                case LogAction.Reset:
-                case LogAction.KickOffline:
-                case LogAction.RemoveBeta:
-                case LogAction.RemoveUserFromAlliance:
-                case LogAction.EnableMaintenance:
-                case LogAction.ReloadRules:
-                    return Color.Red;
-                case LogAction.Unban:
-                case LogAction.AddBeta:
-                case LogAction.GiveRole:
-                    return Color.Green;
-                case LogAction.UpdateEmail:
-                case LogAction.UpdateName:
-                case LogAction.GetFull:
-                case LogAction.GetChipsBought:
-                case LogAction.MakeUserAllianceOwner:
-                case LogAction.GetWarlogs:
-                    return new Color(15710778);
-                case LogAction.AddChips:
-                case LogAction.AddItem:
-                case LogAction.RenameAlliance:
-                default:
-                    return Color.Blue;
-            }
-        }
+            _ => Color.Blue
+        };
     }
 }

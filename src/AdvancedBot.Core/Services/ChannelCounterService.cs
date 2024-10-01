@@ -10,175 +10,164 @@ using Discord;
 using Discord.WebSocket;
 using GL.NET;
 
-namespace AdvancedBot.Core.Services
+namespace AdvancedBot.Core.Services;
+
+public class ChannelCounterService
 {
-    public class ChannelCounterService
+    private readonly List<ChannelCounterInfo> activeCounters = [];
+    private readonly DiscordSocketClient client;
+    private readonly GLClient gl;
+    private readonly AccountService guild;
+    private readonly Timer timer = new(6 * 60 * 1000);
+    private string serverStatus = "Offline";
+
+    public ChannelCounterService(DiscordSocketClient client, GLClient gl, AccountService guild)
     {
-        private List<ChannelCounterInfo> _activeCounters = new List<ChannelCounterInfo>();
-        private DiscordSocketClient _client;
-        private GLClient _gl;
-        private AccountService _guild;
-        private Timer _timer = new Timer(6 * 60 * 1000);
-        private string _serverStatus = "Offline";
+        this.client = client;
+        this.gl = gl;
+        this.guild = guild;
 
-        public ChannelCounterService(DiscordSocketClient client, GLClient gl, AccountService guild)
+        timer.Start();
+        timer.Elapsed += onTimerElapsed;
+
+        onTimerElapsed(null, null);
+        InitializeCounters();
+    }
+
+    private async void onTimerElapsed(object timerObj, ElapsedEventArgs e)
+    {
+        timer.Stop();
+
+        try
         {
-            _client = client;
-            _gl = gl;
-            _guild = guild;
-
-            _timer.Start();
-            _timer.Elapsed += OnTimerElapsed;
-
-            OnTimerElapsed(null, null);
-            InitializeCounters();
+            await handleActiveChannelCounters();
+        }
+        catch (Exception err)
+        {
+            Console.WriteLine(err);
         }
 
-        private async void OnTimerElapsed(object timerObj, ElapsedEventArgs e)
-        {
-            _timer.Stop();
+        timer.Start();
+    }
 
-            try
+    public void InitializeCounters()
+    {
+        var enumValues = Enum.GetValues(typeof(ChannelCounterType)) as ChannelCounterType[];
+
+        for (int i = 0; i < enumValues.Length; i++)
+        {
+            activeCounters.Add(new ChannelCounterInfo(enumValues[i]));
+        }
+    }
+
+    public ChannelCounterInfo[] GetAllChannelCounters()
+        => activeCounters.ToArray();
+
+    public void AddNewChannelCounter(ulong guildId, ChannelCounter counter)
+    {
+        var guild = this.guild.GetOrCreateAccount(guildId, true);
+        var fCounter = guild.ChannelCounters.Find(x => x.Type == counter.Type);
+        var cCounter = guild.ChannelCounters.Find(x => x.ChannelId == counter.ChannelId);
+
+        if (fCounter != null)
+            throw new Exception($"A counter of this type already exists. (channel id: {fCounter.ChannelId})");
+        else if (cCounter != null)
+            throw new Exception($"This channel already has the '{cCounter.Type}' active.");
+
+        guild.ChannelCounters.Add(counter);
+        this.guild.SaveAccount(guild);
+    }
+
+    public void RemoveChannelCounterByType(ulong guildId, ChannelCounterType counterType)
+    {
+        var guild = this.guild.GetOrCreateAccount(guildId);
+
+        var counter = guild.ChannelCounters.Find(x => x.Type == counterType) ?? throw new Exception($"There is no counter active of type '{counterType}'.");
+        guild.ChannelCounters.Remove(counter);
+
+        this.guild.SaveAccount(guild);
+    }
+
+    public void RemoveChannelCounterByChannel(ulong guildId, ulong channelId)
+    {
+        var guild = this.guild.GetOrCreateAccount(guildId);
+
+        var counter = guild.ChannelCounters.Find(x => x.ChannelId == channelId) ?? throw new Exception($"This channel has no active counter.");
+        guild.ChannelCounters.Remove(counter);
+
+        this.guild.SaveAccount(guild);
+    }
+
+    public async Task UpdateChannelAsync(Account account, ChannelCounter counter)
+    {
+        /* Channel got removed */
+        if (await client.GetChannelAsync(counter.ChannelId) is not IVoiceChannel channel)
+        {
+            account.ChannelCounters.Remove(counter);
+            guild.SaveAccount(account);
+            return;
+        }
+
+        switch (counter.Type)
+        {
+            case ChannelCounterType.FlashStatus:
+                string newName = $"Server Status: {serverStatus}";
+                if (channel.Name != newName)
+                    await channel.ModifyAsync(x => x.Name = newName);
+                break;
+            default:
+                break;
+        }
+    }
+
+    private async Task handleActiveChannelCounters()
+    {
+        Console.WriteLine($"Started handling all counters");
+        var start = DateTime.UtcNow;
+
+        var guilds = guild.GetManyAccounts(x => x.IsGuild);
+        await updateServerInfo();
+
+        for (int i = 0; i < guilds.Length; i++)
+        {
+            if (guilds[i].ChannelCounters.Count == 0)
+                continue;
+
+            for (int j = 0; j < guilds[i].ChannelCounters.Count; j++)
             {
-                await HandleActiveChannelCounters();
+                await UpdateChannelAsync(guilds[i], guilds[i].ChannelCounters[j]);
             }
-            catch (Exception err)
+        }
+
+        Console.WriteLine($"Finished updating all counters ({(DateTime.UtcNow - start).TotalSeconds}s)");
+    }
+
+    private async Task updateServerInfo()
+    {
+        try
+        {
+            var status = await gl.Api.GetServerStatus();
+            var authStatus = status.Find(x => x.Name == "Auth Server");
+
+            if (authStatus == null || !authStatus.IsOnline)
             {
-                Console.WriteLine(err);
-            }
-
-            _timer.Start();
-        }
-
-        public void InitializeCounters()
-        {
-            var enumValues = Enum.GetValues(typeof(ChannelCounterType)) as ChannelCounterType[];
-
-            for (int i = 0; i < enumValues.Length; i++)
-            {
-                _activeCounters.Add(new ChannelCounterInfo(enumValues[i]));
-            }
-        }
-
-        public ChannelCounterInfo[] GetAllChannelCounters()
-            => _activeCounters.ToArray();
-
-        public void AddNewChannelCounter(ulong guildId, ChannelCounter counter)
-        {
-            var guild = _guild.GetOrCreateAccount(guildId, true);
-            var fCounter = guild.ChannelCounters.Find(x => x.Type == counter.Type);
-            var cCounter = guild.ChannelCounters.Find(x => x.ChannelId == counter.ChannelId);
-
-            if (fCounter != null)
-                throw new Exception($"A counter of this type already exists. (channel id: {fCounter.ChannelId})");
-            else if (cCounter != null)
-                throw new Exception($"This channel already has the '{cCounter.Type}' active.");
-
-            guild.ChannelCounters.Add(counter);
-            _guild.SaveAccount(guild);
-        }
-
-        public void RemoveChannelCounterByType(ulong guildId, ChannelCounterType counterType)
-        {
-            var guild = _guild.GetOrCreateAccount(guildId);
-
-            var counter = guild.ChannelCounters.Find(x => x.Type == counterType);
-
-            if (counter is null)
-                throw new Exception($"There is no counter active of type '{counterType}'.");
-            
-            guild.ChannelCounters.Remove(counter);
-
-            _guild.SaveAccount(guild);
-        }
-
-        public void RemoveChannelCounterByChannel(ulong guildId, ulong channelId)
-        {
-            var guild = _guild.GetOrCreateAccount(guildId);
-
-            var counter = guild.ChannelCounters.Find(x => x.ChannelId == channelId);
-
-            if (counter is null)
-                throw new Exception($"This channel has no active counter.");
-            
-            guild.ChannelCounters.Remove(counter);
-
-            _guild.SaveAccount(guild);
-        }
-
-        public async Task UpdateChannelAsync(Account account, ChannelCounter counter)
-        {
-            var channel = await _client.GetChannelAsync(counter.ChannelId) as IVoiceChannel;
-
-            /* Channel got removed */
-            if (channel == null)
-            {
-                account.ChannelCounters.Remove(counter);
-                _guild.SaveAccount(account);
+                serverStatus = "Auth server down";
                 return;
             }
 
-            switch (counter.Type)
+            int onlineBackends = status.Count(x => x.Name.Contains("Backend") && x.IsOnline);
+
+            if (onlineBackends >= 3)
             {
-                case ChannelCounterType.FlashStatus:
-                    string newName = $"Server Status: {_serverStatus}";
-                    if (channel.Name != newName)
-                        await channel.ModifyAsync(x => x.Name = newName);
-                    break;
-                default:
-                    break;
+                serverStatus = "Online";
+                return;
             }
+
+            serverStatus = "Offline";
         }
-
-        private async Task HandleActiveChannelCounters()
+        catch (Exception)
         {
-            Console.WriteLine($"Started handling all counters");
-            var start = DateTime.UtcNow;
-
-            var guilds = _guild.GetManyAccounts(x => x.IsGuild);
-            await UpdateServerInfo();
-
-            for (int i = 0; i < guilds.Length; i++)
-            {
-                if (!guilds[i].ChannelCounters.Any())
-                    continue;
-
-                for (int j = 0; j < guilds[i].ChannelCounters.Count; j++)
-                {
-                    await UpdateChannelAsync(guilds[i], guilds[i].ChannelCounters[j]);
-                }
-            }
-            
-            Console.WriteLine($"Finished updating all counters ({(DateTime.UtcNow - start).TotalSeconds}s)");
-        }
-
-        private async Task UpdateServerInfo()
-        {
-            try
-            {
-                var status = await _gl.Api.GetServerStatus();
-                var authStatus = status.Find(x => x.Name == "Auth Server");
-
-                if (authStatus == null || !authStatus.IsOnline)
-                {
-                    _serverStatus = "Auth server down";
-                    return;
-                }
-
-                var onlineBackends = status.Count(x => x.Name.Contains("Backend") && x.IsOnline);
-
-                if (onlineBackends >= 3)
-                {
-                    _serverStatus = "Online";
-                    return;
-                }
-
-                _serverStatus = "Offline";
-            }
-            catch (Exception e)
-            {
-                _serverStatus = "Offline";
-            }
+            serverStatus = "Offline";
         }
     }
 }
