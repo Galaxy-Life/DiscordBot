@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -8,8 +8,8 @@ namespace AdvancedBot.Core.Services.DataStorage;
 
 public class LiteDBHandler
 {
-    private const string db_file_name = "Data.db";
-    private readonly LiteDatabase _db = new(db_file_name);
+    private const string DBFileName = "Data.db";
+    private readonly LiteDatabase _db = new(DBFileName);
 
     public void Store<T>(T item)
     {

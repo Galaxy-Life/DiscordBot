@@ -1,4 +1,4 @@
-using Discord;
+﻿using Discord;
 using Discord.Interactions;
 
 namespace AdvancedBot.Core.Commands.Modules;

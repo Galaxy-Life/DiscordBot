@@ -1,4 +1,4 @@
-namespace AdvancedBot.Core.Entities.Enums;
+﻿namespace AdvancedBot.Core.Entities.Enums;
 
 public enum ChannelCounterType
 {

@@ -1,4 +1,4 @@
-namespace AdvancedBot.Core.Entities;
+﻿namespace AdvancedBot.Core.Entities;
 
 public class CommandStats
 {

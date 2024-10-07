@@ -1,4 +1,4 @@
-using AdvancedBot.Core.Entities.Enums;
+﻿using AdvancedBot.Core.Entities.Enums;
 
 namespace AdvancedBot.Core.Entities;
 

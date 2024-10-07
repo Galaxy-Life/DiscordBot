@@ -1,4 +1,4 @@
-using AdvancedBot.Core.Entities.Enums;
+﻿using AdvancedBot.Core.Entities.Enums;
 using Humanizer;
 
 namespace AdvancedBot.Core.Entities;
