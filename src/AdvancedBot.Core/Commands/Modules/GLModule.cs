@@ -174,26 +174,26 @@ public class GLModule : TopModule
     }
 
     [SlashCommand("compare", "Compare two players on base statistics", false, RunMode.Async)]
-    public async Task CompareUsersAsync(string firstPlayer, string secondPlayer)
+    public async Task CompareUsersAsync(string input1, string input2)
     {
-        if (firstPlayer.Equals(secondPlayer, StringComparison.CurrentCultureIgnoreCase))
+        if (input1.Equals(input2, StringComparison.CurrentCultureIgnoreCase))
         {
             await ModifyOriginalResponseAsync(msg => msg.Content = $"You must compare two differents players!");
             return;
         }
 
-        var baseUser = await GetUserByInput(firstPlayer);
-        var secondUser = await GetUserByInput(secondPlayer);
+        var baseUser = await GetUserByInput(input1);
+        var secondUser = await GetUserByInput(input2);
 
         if (baseUser == null)
         {
-            await ModifyOriginalResponseAsync(msg => msg.Content = $"<:shrugR:945740284308893696> Could not find any player named **{firstPlayer}**");
+            await ModifyOriginalResponseAsync(msg => msg.Content = $"<:shrugR:945740284308893696> Could not find any player named **{input1}**");
             return;
         }
 
         if (secondUser == null)
         {
-            await ModifyOriginalResponseAsync(msg => msg.Content = $"<:shrugR:945740284308893696> Could not find any player named **{secondPlayer}**");
+            await ModifyOriginalResponseAsync(msg => msg.Content = $"<:shrugR:945740284308893696> Could not find any player named **{input2}**");
             return;
         }
 
