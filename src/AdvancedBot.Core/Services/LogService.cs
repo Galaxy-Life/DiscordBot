@@ -148,6 +148,7 @@ public class LogService
             case LogAction.AddEmulate:
             case LogAction.RemoveEmulate:
             case LogAction.GetAccounts:
+            case LogAction.AvatarDeleted:
             default:
                 break;
         }

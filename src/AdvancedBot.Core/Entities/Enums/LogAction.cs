@@ -32,4 +32,5 @@ public enum LogAction
     GetAccounts = 27,
     GetChipsSpent = 28,
     Compensate = 29,
+    AvatarDeleted = 30,
 }

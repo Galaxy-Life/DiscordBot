@@ -646,4 +646,11 @@ public class ModerationModule : TopModule
         await SendPaginatedMessageAsync(null, displayTexts, embed);
 
     }
+
+    [SlashCommand("deleteavatar", "Deletes the targeted user's avatar")]
+    public async Task DeleteAvatarAsync(uint userId)
+    {
+        var result = await ModService.DeleteAvatarAsync(Context.User.Id, userId);
+        await SendResponseMessage(result.Message, false);
+    }
 }
