@@ -647,7 +647,7 @@ public class ModerationModule : TopModule
 
     }
 
-    [SlashCommand("deleteAvatar", "Deletes the targeted user's avatar")]
+    [SlashCommand("deleteavatar", "Deletes the targeted user's avatar")]
     public async Task DeleteAvatarAsync(uint userId)
     {
         var result = await ModService.DeleteAvatarAsync(Context.User.Id, userId);
