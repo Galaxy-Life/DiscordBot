@@ -277,7 +277,7 @@ public class ModerationService
 
         if (!await _gl.Phoenix.DeleteAvatarAsync(userId))
         {
-            return new ModResult(ModResultType.BackendError, new ResponseMessage($"Failed to remove ${user.UserName}'s avatar."));
+            return new ModResult(ModResultType.BackendError, new ResponseMessage($"Failed to remove {user.UserName}'s avatar."));
         }
 
         await _logs.LogGameActionAsync(LogAction.AvatarDeleted, discordId, userId);
