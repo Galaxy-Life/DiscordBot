@@ -266,6 +266,35 @@ public class ModerationService
         return new ModResult(ModResultType.Success, message, user);
     }
 
+    public async Task<ModResult> DeleteAvatarAsync(ulong discordId, uint userId)
+    {
+        var user = await _gl.Phoenix.GetPhoenixUserAsync(userId);
+
+        if (user == null)
+        {
+            return new ModResult(ModResultType.NotFound, new ResponseMessage($"Could not find any user with id **{userId}**."));
+        }
+
+        if (!await _gl.Phoenix.DeleteAvatarAsync(userId))
+        {
+            return new ModResult(ModResultType.BackendError, new ResponseMessage($"Failed to remove ${user.UserName}'s avatar."));
+        }
+
+        await _logs.LogGameActionAsync(LogAction.AvatarDeleted, discordId, userId);
+
+        var embed = new EmbedBuilder()
+            .WithTitle($"Avatar successfully removed")
+            .WithDescription($"**{user.UserName}** ({user.UserId})'s avatar has been removed.")
+            .WithColor(Color.Green)
+            .WithFooter(footer => footer
+                .WithText($"Avatar removed by moderator with id {discordId}"))
+            .WithCurrentTimestamp()
+            .Build();
+
+        var message = new ResponseMessage(embeds: [embed]);
+        return new ModResult(ModResultType.Success, message);
+    }
+
     public async Task<ModResult> GetChipsBoughtAsync(ulong discordId, uint userId)
     {
         var user = await _gl.Api.GetUserById(userId.ToString());
