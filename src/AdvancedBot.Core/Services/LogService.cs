@@ -7,7 +7,6 @@ using AdvancedBot.Core.Services.DataStorage;
 using Discord;
 using Discord.WebSocket;
 using GL.NET;
-using GL.NET.Entities;
 using Humanizer;
 
 namespace AdvancedBot.Core.Services;
@@ -38,12 +37,15 @@ public class LogService
         _storage.Store(log);
 
         var channel = await _client.GetChannelAsync(_commands.LogChannelId) as ISocketMessageChannel;
+        // Retry a few times cause api do be unstable
         var user = await _gl.Api.GetUserById(victimGameId.ToString());
+        user ??= await _gl.Api.GetUserById(victimGameId.ToString());
+        user ??= await _gl.Api.GetUserById(victimGameId.ToString());
 
-        await channel.SendMessageAsync(embed: GetEmbedForLog(log, user));
+        await channel.SendMessageAsync(embed: GetEmbedForLog(log, user.Name, victimGameId));
     }
 
-    public static Embed GetEmbedForLog(Log log, User target)
+    public static Embed GetEmbedForLog(Log log, string victimName, uint victimId)
     {
         var embed = new EmbedBuilder()
             .WithTitle($"Overview | {log.Type.Humanize()}")
@@ -53,9 +55,16 @@ public class LogService
                 .WithText($"Case #{log.Id} • Requested by moderator with id {log.DiscordModId}"))
             .WithCurrentTimestamp();
 
-        if (target != null)
+        if (victimId != 0)
         {
-            embed.AddField("Target", $"{target.Name} (`{target.Id}`)", true);
+            if (victimName == null)
+            {
+                embed.AddField("Target", $"{victimName} (`{victimId}`)", true);
+            }
+            else
+            {
+                embed.AddField("Target", $"{victimId}", true);
+            }
         }
 
         switch (log.Type)
