@@ -42,10 +42,10 @@ public class LogService
         user ??= await _gl.Api.GetUserById(victimGameId.ToString());
         user ??= await _gl.Api.GetUserById(victimGameId.ToString());
 
-        await channel.SendMessageAsync(embed: GetEmbedForLog(log, user.Name, victimGameId));
+        await channel.SendMessageAsync(embed: GetEmbedForLog(log, user?.Name, victimGameId));
     }
 
-    public static Embed GetEmbedForLog(Log log, string victimName, uint victimId)
+    public static Embed GetEmbedForLog(Log log, string? victimName, uint victimId)
     {
         var embed = new EmbedBuilder()
             .WithTitle($"Overview | {log.Type.Humanize()}")
