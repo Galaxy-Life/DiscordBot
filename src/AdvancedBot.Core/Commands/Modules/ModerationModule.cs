@@ -314,7 +314,7 @@ public class ModerationModule : TopModule
             return;
         }
 
-        var backendSuccess = await GLClient.Api.UpdateNameFromPhoenixAsync(userId.ToString());
+        var backendSuccess = await GLClient.Production.UpdateNameFromPhoenixAsync(userId.ToString());
 
         await LogService.LogGameActionAsync(LogAction.UpdateName, Context.User.Id, userId, $"{user.UserName}:{newName}");
 
