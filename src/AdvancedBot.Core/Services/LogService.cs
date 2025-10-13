@@ -57,7 +57,7 @@ public class LogService
 
         if (victimId != 0)
         {
-            if (victimName == null)
+            if (victimName is not null)
             {
                 embed.AddField("Target", $"{victimName} (`{victimId}`)", true);
             }
