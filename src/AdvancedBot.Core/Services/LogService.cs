@@ -45,7 +45,7 @@ public class LogService
         await channel.SendMessageAsync(embed: GetEmbedForLog(log, user?.Name, victimGameId));
     }
 
-    public static Embed GetEmbedForLog(Log log, string? victimName, uint victimId)
+    public static Embed GetEmbedForLog(Log log, string victimName, uint victimId)
     {
         var embed = new EmbedBuilder()
             .WithTitle($"Overview | {log.Type.Humanize()}")
@@ -57,7 +57,7 @@ public class LogService
 
         if (victimId != 0)
         {
-            if (victimName == null)
+            if (victimName is not null)
             {
                 embed.AddField("Target", $"{victimName} (`{victimId}`)", true);
             }
