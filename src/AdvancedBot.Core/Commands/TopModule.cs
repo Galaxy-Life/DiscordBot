@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 using AdvancedBot.Core.Entities;
 using AdvancedBot.Core.Services;
@@ -9,15 +10,28 @@ using Discord;
 using Discord.Interactions;
 using GL.NET;
 using GL.NET.Entities;
+using Phoenix.Api.Models;
+using Phoenix.ApiWrapper;
+using Phoenix.ApiWrapper.Entities;
+
+using ApiClient = Phoenix.Api.ApiClient;
 
 namespace AdvancedBot.Core.Commands;
 
 public class TopModule : InteractionModuleBase<SocketInteractionContext>
 {
     public AccountService Accounts { get; set; }
+
     public GLClient GLClient { get; set; }
+
+    public Dictionary<ulong, ApiClient> PhoenixClients { get; set; }
+
     public PaginatorService Paginator { get; set; }
+
     public LogService LogService { get; set; }
+
+    public PhoenixCredentials Credentials { get; set; }
+
 
     public readonly List<ulong> PowerUsers =
     [
@@ -36,6 +50,30 @@ public class TopModule : InteractionModuleBase<SocketInteractionContext>
         if (command.SupportsWildCards || command.Name.Contains(':') || command.Name.Contains(',')) return;
 
         await DeferAsync();
+
+        // Create a PhoenixApi Instance for every poweruser
+        // Needs to be done since SubjectId needs to be the user id
+        if (PowerUsers.Contains(Context.User.Id))
+        {
+            var existingClient = PhoenixClients[Context.User.Id];
+
+            if (existingClient == null)
+            {
+                var phoenix = new PhoenixClients(
+                    new HttpClient() { Timeout = TimeSpan.FromSeconds(10) },
+                    new PhoenixApiClientOptions
+                    {
+                        TokenEndpoint = new Uri("https://accounts.phoenixnetwork.net/oauth/token"),
+                        ClientId = Credentials.ClientId,
+                        ClientSecret = Credentials.ClientSecret,
+                        Scopes = [],
+                        SubjectId = Context.User.Id.ToString(),
+                        SubjectProvider = "discord"
+                    }, null);
+
+                PhoenixClients.Add(Context.User.Id, phoenix.PhoenixClient);
+            }
+        }
     }
 
     public override Task AfterExecuteAsync(ICommandInfo command)
@@ -172,35 +210,34 @@ public class TopModule : InteractionModuleBase<SocketInteractionContext>
         return profile;
     }
 
-    protected async Task<PhoenixUser> GetPhoenixUserByInput(string input, bool full = false)
+    protected async Task<UserDto?> GetFullPhoenixUser(string input)
     {
-        if (string.IsNullOrEmpty(input)) input = Context.User.Username;
-        PhoenixUser user = null;
+        if (string.IsNullOrEmpty(input))
+        {
+            input = Context.User.Username;
+        }
 
-        string digitString = new(input.Where(char.IsDigit).ToArray());
+        UserDto? detailedUser = null;
 
         // extra check to see if all characters were numbers
-        if (digitString.Length == input.Length)
+        if (long.TryParse(input, out var userId))
         {
-            if (full)
+            detailedUser = await PhoenixClients[Context.User.Id].V1.Users[userId].Details.GetAsync();
+        }
+
+        // Not found, try fetching by name
+        if (detailedUser == null)
+        {
+            // Get regular user to know its id
+            var user = await PhoenixClients[Context.User.Id].V1.Users.ByUsername[input].GetAsync();
+
+            // Get user by id after getting it by name
+            if (user != null)
             {
-                user = await GLClient.Phoenix.GetFullPhoenixUserAsync(input);
-            }
-            else
-            {
-                user = await GLClient.Phoenix.GetPhoenixUserAsync(input);
+                detailedUser = await PhoenixClients[Context.User.Id].V1.Users[detailedUser.Id ?? 0].Details.GetAsync();
             }
         }
 
-        // try to get user by name
-        user ??= await GLClient.Phoenix.GetPhoenixUserByNameAsync(input);
-
-        // get user by id after getting it by name
-        if (user != null && full)
-        {
-            user = await GLClient.Phoenix.GetFullPhoenixUserAsync(user.UserId);
-        }
-
-        return user;
+        return detailedUser;
     }
 }

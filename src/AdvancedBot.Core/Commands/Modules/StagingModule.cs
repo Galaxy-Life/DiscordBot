@@ -74,7 +74,7 @@ public class StagingModule : TopModule
     [SlashCommand("reset", "Resets a user on staging")]
     public async Task ResetStagingUser(uint userId)
     {
-        var user = await GLClient.Phoenix.GetPhoenixUserAsync(userId);
+        var user = await PhoenixClients[Context.User.Id].V1.Users[userId].GetAsync();
 
         if (user == null)
         {

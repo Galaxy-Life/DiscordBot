@@ -9,6 +9,7 @@ using Discord;
 using Discord.Interactions;
 using GL.NET.Entities;
 using Humanizer;
+using Phoenix.Api.Models;
 
 namespace AdvancedBot.Core.Commands.Modules;
 
@@ -190,13 +191,15 @@ public class ModerationModule : TopModule
     [SlashCommand("getfull", "Retrieves the complete profile of a user.")]
     public async Task GetFullUserAsync(string input)
     {
-        if (await GetPhoenixUserByInput(input, true) is not FullPhoenixUser user)
+        /*var user = await GetFullPhoenixUser(input);
+
+        if (user == null)
         {
             await ModifyOriginalResponseAsync(msg => msg.Content = $"<:shrugR:945740284308893696> Could not find any user for **{input}**.");
             return;
         }
 
-        await LogService.LogGameActionAsync(LogAction.GetFull, Context.User.Id, user.UserId);
+        await LogService.LogGameActionAsync(LogAction.GetFull, Context.User.Id, user.Id);
 
         var steamId = user.SteamId ?? "No account linked";
         var discordTag = string.IsNullOrEmpty(user.DiscordId) ? "No account linked" : $"<@{user.DiscordId}>";
@@ -234,7 +237,7 @@ public class ModerationModule : TopModule
             embed.WithUrl($"https://steamcommunity.com/profiles/{steamId.Replace("\"", "")}");
         }
 
-        await ModifyOriginalResponseAsync(msg => msg.Embeds = new Embed[] { embed.Build() });
+        await ModifyOriginalResponseAsync(msg => msg.Embeds = new Embed[] { embed.Build() });*/
     }
 
     [SlashCommand("ban", "Bans a given user")]
@@ -254,7 +257,7 @@ public class ModerationModule : TopModule
     [SlashCommand("updateemail", "Updates a given user's email address")]
     public async Task TryUpdateEmailAsync(uint userId, string newEmail)
     {
-        var user = await GLClient.Phoenix.GetFullPhoenixUserAsync(userId);
+        var user = await PhoenixClients[Context.User.Id].V1.Users[userId].GetAsync();
 
         if (user == null)
         {
@@ -264,21 +267,17 @@ public class ModerationModule : TopModule
 
         if (user.Email == newEmail)
         {
-            await ModifyOriginalResponseAsync(msg => msg.Content = $"{user.UserName} ({user.UserId}) already has `{user.Email}` as their email!");
+            await ModifyOriginalResponseAsync(msg => msg.Content = $"{user.Username} ({user.Id}) already has `{user.Email}` as their email!");
             return;
         }
 
-        if (!await GLClient.Phoenix.TryUpdateEmail(userId, newEmail))
-        {
-            await ModifyOriginalResponseAsync(msg => msg.Content = $"Could not update email for {user.UserName} ({user.UserId})");
-            return;
-        }
+        await PhoenixClients[Context.User.Id].V1.Users[userId].Email.PatchAsync(new ChangeUserEmailRequest() { Email = newEmail });
 
         await LogService.LogGameActionAsync(LogAction.UpdateEmail, Context.User.Id, userId, $"{user.Email}:{newEmail}");
 
         var embed = new EmbedBuilder()
             .WithTitle("Email successfully updated")
-            .WithDescription($"**{user.UserName}** email has been updated.")
+            .WithDescription($"**{user.Username}** email has been updated.")
             .AddField("Previous", $"**{user.Email}**", true)
             .AddField("Updated", $"**{newEmail}**", true)
             .WithColor(Color.Green)
@@ -294,7 +293,7 @@ public class ModerationModule : TopModule
     [SlashCommand("updatename", "Updates a given user's username")]
     public async Task TryUpdateNameAsync(uint userId, string newName)
     {
-        var user = await GLClient.Phoenix.GetFullPhoenixUserAsync(userId);
+        var user = await GetFullPhoenixUser(userId.ToString());
 
         if (user == null)
         {
@@ -302,29 +301,22 @@ public class ModerationModule : TopModule
             return;
         }
 
-        if (user.UserName == newName)
+        if (user.Username == newName)
         {
-            await ModifyOriginalResponseAsync(msg => msg.Content = $"{user.UserName} ({userId}) is already named `{newName}`.");
+            await ModifyOriginalResponseAsync(msg => msg.Content = $"{user.Username} ({userId}) is already named `{newName}`.");
             return;
         }
 
-        if (!await GLClient.Phoenix.TryUpdateUsername(userId, newName))
-        {
-            await ModifyOriginalResponseAsync(msg => msg.Content = $"Could not update username for {user.UserName} ({user.UserId})");
-            return;
-        }
+        await PhoenixClients[Context.User.Id].V1.Users[userId].Username.PatchAsync(new ChangeUserNameRequest() { Username = newName });
 
-        var backendSuccess = await GLClient.Production.UpdateNameFromPhoenixAsync(userId.ToString());
-
-        await LogService.LogGameActionAsync(LogAction.UpdateName, Context.User.Id, userId, $"{user.UserName}:{newName}");
+        await LogService.LogGameActionAsync(LogAction.UpdateName, Context.User.Id, userId, $"{user.Username}:{newName}");
 
         var embed = new EmbedBuilder()
             .WithTitle("Username successfully updated")
-            .WithDescription($"User with id **{user.UserId}** username has been updated.")
-            .AddField("Previous", $"**{user.UserName}**", true)
+            .WithDescription($"User with id **{user.Id}** username has been updated.")
+            .AddField("Previous", $"**{user.Username}**", true)
             .AddField("Updated", $"**{newName}**", true)
-            .AddField("Backend update status", backendSuccess ? "Success" : "Failed")
-            .WithColor(backendSuccess ? Color.Green : Color.Orange)
+            .WithColor(Color.Green)
             .WithFooter(footer => footer
                 .WithText($"Username change requested by {Context.User.Username}#{Context.User.Discriminator}")
                 .WithIconUrl(Context.User.GetDisplayAvatarUrl()))
@@ -407,7 +399,7 @@ public class ModerationModule : TopModule
     [SlashCommand("kick", "Forces kick a user offline")]
     public async Task KickUserOfflineAsync(uint userId)
     {
-        var user = await GLClient.Phoenix.GetPhoenixUserAsync(userId);
+        var user = await PhoenixClients[Context.User.Id].V1.Users[userId].GetAsync();
 
         if (user == null)
         {
@@ -439,7 +431,7 @@ public class ModerationModule : TopModule
     [SlashCommand("reset", "Resets a user's progress")]
     public async Task ResetUserAsync(uint userId)
     {
-        var user = await GLClient.Phoenix.GetPhoenixUserAsync(userId);
+        var user = await PhoenixClients[Context.User.Id].V1.Users[userId].GetAsync();
 
         if (user == null)
         {

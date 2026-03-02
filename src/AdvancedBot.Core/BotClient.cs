@@ -9,7 +9,6 @@ using AdvancedBot.Core.Services.DataStorage;
 using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
-using GL.NET;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace AdvancedBot.Core;
@@ -21,7 +20,7 @@ public class BotClient
     private IServiceProvider _services;
     private readonly InteractionService _interactions;
     private AccountService _accounts;
-    private readonly GLClient _glClient;
+    private PhoenixCredentials _credentials;
 
     public BotClient(CustomCommandService commands = null, DiscordSocketClient client = null)
     {
@@ -51,13 +50,14 @@ public class BotClient
 
         if (envVar == null)
         {
-            logAsync(new LogMessage(LogSeverity.Warning, "BotClient", "Initializing GLClient without tokens!"));
-            _glClient = new GLClient("", "", "");
+            logAsync(new LogMessage(LogSeverity.Warning, "BotClient", "Initializing PhoenixApiWrappers without any credentials, no moderation commands will work!"));
+
             return;
         }
 
         var creds = envVar.Split(';');
-        _glClient = new GLClient(creds[0], creds[1], creds[2]);
+
+        _credentials = new PhoenixCredentials(creds[0], creds[1], creds[2]);
     }
 
     public async Task InitializeAsync()
@@ -109,14 +109,6 @@ public class BotClient
             var context = new SocketInteractionContext(_client, x);
             await _interactions.ExecuteCommandAsync(context, _services);
         };
-
-        _glClient.ErrorThrown += onGLErrorThrown;
-    }
-
-    private async void onGLErrorThrown(object sender, ErrorEventArgs e)
-    {
-        var exception = e.GetException();
-        await logAsync(new LogMessage(LogSeverity.Critical, "GL.NET", exception.Message, exception));
     }
 
     private Task logAsync(LogMessage msg)
@@ -175,7 +167,7 @@ public class BotClient
             .AddSingleton(_client)
             .AddSingleton(_commands)
             .AddSingleton(_interactions)
-            .AddSingleton(_glClient)
+            .AddSingleton(_credentials)
             .AddSingleton<LiteDBHandler>()
             .AddSingleton<AccountService>()
             .AddSingleton<PaginatorService>()

@@ -8,6 +8,7 @@ using GL.NET;
 using GL.NET.Entities;
 using Humanizer;
 using Humanizer.Localisation;
+using Phoenix.Api.Models;
 
 namespace AdvancedBot.Core.Services;
 
@@ -226,23 +227,23 @@ public class GLService
         return profile;
     }
 
-    private async Task<PhoenixUser> getPhoenixUserByInput(string input, bool full = false)
+    private async Task<UserDto> getPhoenixUserByInput(string input)
     {
-        PhoenixUser user = null;
+        UserDto user = null;
+
+        if (long.TryParse(input, out var userId))
+        {
+            user = await PhoenixClients[Context.User.Id].V1.Users[userId].GetAsync();
+
+            var user = await PhoenixClients[Context.User.Id].V1.Users.ByUsername[input].GetAsync();
+        }
 
         string digitString = new(input.Where(char.IsDigit).ToArray());
 
         // extra check to see if all characters were numbers
         if (digitString.Length == input.Length)
         {
-            if (full)
-            {
-                user = await _client.Phoenix.GetFullPhoenixUserAsync(input);
-            }
-            else
-            {
-                user = await _client.Phoenix.GetPhoenixUserAsync(input);
-            }
+            user = await _client.Phoenix.GetPhoenixUserAsync(input);
         }
 
         // try to get user by name
@@ -253,6 +254,8 @@ public class GLService
         {
             user = await _client.Phoenix.GetFullPhoenixUserAsync(user.UserId);
         }
+
+        
 
         return user;
     }

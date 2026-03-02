@@ -238,5 +238,4 @@ public class GLModule : TopModule
             _ => number.ToString()
         };
     }
-
 }
