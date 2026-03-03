@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using System.Timers;
+﻿using System.Timers;
 using AdvancedBot.Core.Entities;
 using AdvancedBot.Core.Entities.Enums;
 using AdvancedBot.Core.Services.DataStorage;
@@ -9,6 +6,8 @@ using Discord;
 using GL.NET;
 using GL.NET.Entities;
 using Phoenix.Api.Models;
+
+using Timer = System.Timers.Timer;
 
 namespace AdvancedBot.Core.Services;
 
