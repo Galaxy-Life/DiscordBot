@@ -37,10 +37,7 @@ public class LogService
         _storage.Store(log);
 
         var channel = await _client.GetChannelAsync(_commands.LogChannelId) as ISocketMessageChannel;
-        // Retry a few times cause api do be unstable
         var user = await _gl.Api.GetUserById(victimGameId.ToString());
-        user ??= await _gl.Api.GetUserById(victimGameId.ToString());
-        user ??= await _gl.Api.GetUserById(victimGameId.ToString());
 
         await channel.SendMessageAsync(embed: GetEmbedForLog(log, user?.Name, victimGameId));
     }
