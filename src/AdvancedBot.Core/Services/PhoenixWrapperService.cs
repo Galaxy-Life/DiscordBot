@@ -33,6 +33,7 @@ public class PhoenixWrapperService
                 ClientId = _credentials.ClientId,
                 ClientSecret = _credentials.ClientSecret,
                 Scopes = [],
+                EnableTokenExchange = true,
                 SubjectId = discordId.ToString(),
                 SubjectProvider = "discord"
             });
