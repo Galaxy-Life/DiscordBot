@@ -2,7 +2,7 @@
 using Discord;
 using Discord.Interactions;
 
-namespace AdvancedBot.Core.Commands.Modules;
+namespace AdvancedBot.Core.Commands.Modals;
 
 public class BanModal : IModal
 {
