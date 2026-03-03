@@ -224,10 +224,10 @@ public class TopModule : InteractionModuleBase<SocketInteractionContext>
             // Get regular user to know its id
             var user = await PhoenixWrapper.GetClient(Context.User.Id).V1.Users.ByUsername[input].GetAsync();
 
-            // Get user by id after getting it by name
+            // Get user details by id after getting it by name
             if (user != null)
             {
-                detailedUser = await PhoenixWrapper.GetClient(Context.User.Id).V1.Users[detailedUser.Id ?? 0].Details.GetAsync();
+                detailedUser = await PhoenixWrapper.GetClient(Context.User.Id).V1.Users[user.Id.Value].Details.GetAsync();
             }
         }
 
