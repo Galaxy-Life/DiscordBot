@@ -191,53 +191,62 @@ public class ModerationModule : TopModule
     [SlashCommand("getfull", "Retrieves the complete profile of a user.")]
     public async Task GetFullUserAsync(string input)
     {
-        /*var user = await GetFullPhoenixUser(input);
-
-        if (user == null)
+        var user = await GetFullPhoenixUser(input);
+        if (user is null)
         {
             await ModifyOriginalResponseAsync(msg => msg.Content = $"<:shrugR:945740284308893696> Could not find any user for **{input}**.");
             return;
         }
 
-        await LogService.LogGameActionAsync(LogAction.GetFull, Context.User.Id, user.Id);
+        await LogService.LogGameActionAsync(LogAction.GetFull, Context.User.Id, user.Id.Value);
 
-        var steamId = user.SteamId ?? "No account linked";
-        var discordTag = string.IsNullOrEmpty(user.DiscordId) ? "No account linked" : $"<@{user.DiscordId}>";
+        // TODO: add these once available on the UserDetailsDTO.
+        // var steamId = null;
+        // var discordTag = <@{discordId}>;
 
-        var description =
-              user.Role == PhoenixRole.Banned ? $"**This user has been banned!!**\nBan Reason: **{user.BanReason}**\n\n"
-            : user.Role == PhoenixRole.Donator ? "This user is a Donator\n\n"
-            : user.Role == PhoenixRole.Staff ? "This user is a Staff Member\n\n"
-            : user.Role == PhoenixRole.Administrator ? "This user is an Admin\n\n"
-            : "";
+        var priorityRoles = new[] { "Admin", "Staff" };
+        var role = priorityRoles.FirstOrDefault(r => user.Roles.Contains(r)) ?? user.Roles.FirstOrDefault();
 
-        var color =
-              user.Role == PhoenixRole.Banned ? Color.Default
-            : user.Role == PhoenixRole.Donator ? new Color(15710778)
-            : user.Role == PhoenixRole.Staff ? new Color(2605694)
-            : user.Role == PhoenixRole.Administrator ? Color.DarkRed
-            : Color.LightGrey;
+        var description = false // TODO: replace with ban check, not available on user details dto atm (sorry)
+            ? "This user is currently **banned**.\nReason: Unkown.\nNotes: None.\n\n" // TODO: replace with ban reason type and moderator notes.
+            : role switch
+            {
+                "Admin" => "This user is an Admininstrator.\n\n",
+                "Staff" => "This user is a Staff member.\n\n",
+                _ => ""
+            };
+
+        var color = false // TODO: replace with ban check, not available on user details dto atm (sorry)
+            ? Color.Default
+            : role switch
+            {
+                "Admin" => Color.DarkRed,
+                "Staff" => new Color(2605694),
+                _ => Color.LightGrey
+            };
 
         var embed = new EmbedBuilder()
-            .WithTitle($"{user.UserName} | Profile")
+            .WithTitle($"{user.Username} | Profile")
             .WithDescription(description)
             .WithColor(color)
-            .AddField("ID", $"`{user.UserId}`", true)
-            .AddField("Steam ID", $"`{steamId.Replace("\"", "")}`", true)
-            .AddField("Discord", $"{discordTag}", true)
+            .AddField("ID", $"`{user.Id}`", true)
+            // .AddField("Steam ID", $"`{steamId}`", true)
+            // .AddField("Discord", $"{discordTag}", true)
             .AddField("Email", $"{user.Email}")
-            .AddField("Account creation date", $"{user.Created.GetValueOrDefault():dd MMMM yyyy a\\t HH:mm}", true)
+            .AddField("Account creation date", $"{user.RegisteredOn.GetValueOrDefault():dd MMMM yyyy a\\t HH:mm}", true)
             .WithFooter(footer => footer
                 .WithText($"Full profile requested by {Context.User.Username}#{Context.User.Discriminator}")
                 .WithIconUrl(Context.User.GetDisplayAvatarUrl()))
             .WithCurrentTimestamp();
 
-        if (user.SteamId != null)
-        {
-            embed.WithUrl($"https://steamcommunity.com/profiles/{steamId.Replace("\"", "")}");
-        }
+        // 
 
-        await ModifyOriginalResponseAsync(msg => msg.Embeds = new Embed[] { embed.Build() });*/
+        // if (steamId is not null)
+        // {
+        //     embed.WithUrl($"https://steamcommunity.com/profiles/{steamId}");
+        // }
+
+        await ModifyOriginalResponseAsync(msg => msg.Embeds = new Embed[] { embed.Build() });
     }
 
     [SlashCommand("ban", "Bans a given user")]

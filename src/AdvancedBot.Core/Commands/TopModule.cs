@@ -237,48 +237,40 @@ public class TopModule : InteractionModuleBase<SocketInteractionContext>
     public async Task<ModResult> GetUserProfileAsync(string input)
     {
         var phoenixUser = await GetPhoenixUser(input);
-
-        if (phoenixUser == null)
+        if (phoenixUser is null)
         {
             return new ModResult(ModResultType.NotFound, message: new ResponseMessage($"<:shrugR:945740284308893696> Could not find any user for **{input}**."));
         }
 
         var user = await GetUserByInput(input);
-
-        // TODO: Check if user is banned
-        /*if (user == null)
+        if (user is null)
         {
-            if (phoenixUser.Role != PhoenixRole.Banned)
-            {
-                return new ModResult(ModResultType.Success, new ResponseMessage($"The person **{phoenixUser.UserName} ({phoenixUser.UserId})** exists, but has no progress in Galaxy Life!"), phoenixUser, null);
-            }
-            else
-            {
-                return new ModResult(ModResultType.Success, new ResponseMessage($"**{phoenixUser.UserName} ({phoenixUser.UserId})** is banned and reset!"), phoenixUser, null);
-            }
-        }*/
+            return phoenixUser.IsBanned.GetValueOrDefault()
+                ? new ModResult(ModResultType.Success, new ResponseMessage($"**{phoenixUser.Username} ({phoenixUser.Id})** is currently banned and has no progress on Galaxy Life."), phoenixUser, null)
+                : new ModResult(ModResultType.Success, new ResponseMessage($"**{phoenixUser.Username} ({phoenixUser.Id})** exists but has no progress on Galaxy Life."), phoenixUser, null);
+        }
 
         var stats = await GLClient.Api.GetUserStats(user.Id);
 
-        // TODO: Get role and steamId
-        /*var steamId = phoenixUser.SteamId ?? "No steam linked";
-        var roleText = phoenixUser.Role == PhoenixRole.Banned ? "[BANNED]"
-            : phoenixUser.Role == PhoenixRole.Donator ? "[Donator]"
-            : phoenixUser.Role == PhoenixRole.Staff ? "[Staff]"
-            : phoenixUser.Role == PhoenixRole.Administrator ? "[Admin]"
-            : "";
+        var priorityRoles = new[] { "Admin", "Staff" };
+        var role = priorityRoles.FirstOrDefault(r => phoenixUser.Roles.Contains(r)) ?? phoenixUser.Roles.FirstOrDefault();
 
-        var color = phoenixUser.Role == PhoenixRole.Banned ? Color.Default
-            : phoenixUser.Role == PhoenixRole.Donator ? new Color(15710778)
-            : phoenixUser.Role == PhoenixRole.Staff ? new Color(2605694)
-            : phoenixUser.Role == PhoenixRole.Administrator ? Color.DarkRed
-            : Color.LightGrey;*/
+        var roleText = phoenixUser.IsBanned.GetValueOrDefault()
+            ? "[BANNED]"
+            : role is not null
+                ? $"[{role}]"
+                : "";
 
-        var color = Color.Default;
-        var roleText = "Unknown role";
+        var color = phoenixUser.IsBanned.GetValueOrDefault()
+            ? Color.Default
+            : role switch
+            {
+                "Admin" => Color.DarkRed,
+                "Staff" => new Color(2605694),
+                _ => Color.LightGrey
+            };
 
         var displayAlliance = "This user is not a member of any alliance.";
-
         if (!string.IsNullOrEmpty(user.AllianceId))
         {
             var alliance = await GLClient.Api.GetAlliance(user.AllianceId);

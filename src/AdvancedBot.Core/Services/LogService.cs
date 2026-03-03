@@ -29,7 +29,7 @@ public class LogService
         _id = _storage.RestoreCount<Log>();
     }
 
-    public async Task LogGameActionAsync(LogAction action, ulong discordModId, uint victimGameId, string reason = "", DateTime? until = null)
+    public async Task LogGameActionAsync(LogAction action, ulong discordModId, long victimGameId, string reason = "", DateTime? until = null)
     {
         _id++;
         var log = new Log(_id, action, discordModId, victimGameId, reason, until);
@@ -42,7 +42,7 @@ public class LogService
         await channel.SendMessageAsync(embed: GetEmbedForLog(log, user?.Name, victimGameId));
     }
 
-    public static Embed GetEmbedForLog(Log log, string victimName, uint victimId)
+    public static Embed GetEmbedForLog(Log log, string victimName, long victimId)
     {
         var embed = new EmbedBuilder()
             .WithTitle($"Overview | {log.Type.Humanize()}")
