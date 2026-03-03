@@ -239,7 +239,7 @@ public class TopModule : InteractionModuleBase<SocketInteractionContext>
         var phoenixUser = await GetPhoenixUser(input);
         if (phoenixUser is null)
         {
-            return new ModResult(ModResultType.NotFound, message: new ResponseMessage($"<:shrugR:945740284308893696> Could not find any user for **{input}**."));
+            return new ModResult(ModResultType.NotFound, message: new ResponseMessage($"Could not find any user for **{input}**."));
         }
 
         var user = await GetUserByInput(input);

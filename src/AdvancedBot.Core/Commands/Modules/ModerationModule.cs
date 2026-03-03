@@ -30,7 +30,7 @@ public class ModerationModule : TopModule
 
             if (alliance == null)
             {
-                await ModifyOriginalResponseAsync(msg => msg.Content = $"<:shrugR:945740284308893696> Could not find any alliance named **{allianceName}**");
+                await ModifyOriginalResponseAsync(msg => msg.Content = $"Could not find any alliance named **{allianceName}**");
                 return;
             }
 
@@ -76,7 +76,7 @@ public class ModerationModule : TopModule
 
             if (alliance == null)
             {
-                await ModifyOriginalResponseAsync(msg => msg.Content = $"<:shrugR:945740284308893696> Could not find any alliance named **{allianceName}**.");
+                await ModifyOriginalResponseAsync(msg => msg.Content = $"Could not find any alliance named **{allianceName}**.");
                 return;
             }
 
@@ -84,7 +84,7 @@ public class ModerationModule : TopModule
 
             if (checkAlliance != null)
             {
-                await ModifyOriginalResponseAsync(msg => msg.Content = $"<:shrugR:945740284308893696> This alliance name is not available!");
+                await ModifyOriginalResponseAsync(msg => msg.Content = $"This alliance name is not available!");
                 return;
             }
 
@@ -117,7 +117,7 @@ public class ModerationModule : TopModule
 
             if (alliance == null)
             {
-                await ModifyOriginalResponseAsync(msg => msg.Content = $"<:shrugR:945740284308893696> Could not find any alliance named **{allianceName}**.");
+                await ModifyOriginalResponseAsync(msg => msg.Content = $"Could not find any alliance named **{allianceName}**.");
                 return;
             }
 
@@ -125,7 +125,7 @@ public class ModerationModule : TopModule
 
             if (user == null || user.AllianceId != alliance.Id)
             {
-                await ModifyOriginalResponseAsync(msg => msg.Content = $"<:shrugR:945740284308893696> This user is not a member of this alliance."); return;
+                await ModifyOriginalResponseAsync(msg => msg.Content = $"This user is not a member of this alliance."); return;
             }
 
             if (!await GLClient.Api.MakeUserOwnerInAllianceAsync(alliance.Id, userId.ToString()))
@@ -155,14 +155,14 @@ public class ModerationModule : TopModule
 
             if (alliance == null)
             {
-                await ModifyOriginalResponseAsync(msg => msg.Content = $"<:shrugR:945740284308893696> Could not find any alliance named **{allianceName}**.");
+                await ModifyOriginalResponseAsync(msg => msg.Content = $"Could not find any alliance named **{allianceName}**.");
                 return;
             }
 
             var user = await GLClient.Api.GetUserById(userId.ToString());
             if (user == null || user.AllianceId != alliance.Id)
             {
-                await ModifyOriginalResponseAsync(msg => msg.Content = $"<:shrugR:945740284308893696> This user is not a member of this alliance.");
+                await ModifyOriginalResponseAsync(msg => msg.Content = $"This user is not a member of this alliance.");
                 return;
             }
 
@@ -194,7 +194,7 @@ public class ModerationModule : TopModule
         var user = await GetFullPhoenixUser(input);
         if (user is null)
         {
-            await ModifyOriginalResponseAsync(msg => msg.Content = $"<:shrugR:945740284308893696> Could not find any user for **{input}**.");
+            await ModifyOriginalResponseAsync(msg => msg.Content = $"Could not find any user for **{input}**.");
             return;
         }
 

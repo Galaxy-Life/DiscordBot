@@ -187,13 +187,13 @@ public class GLModule : TopModule
 
         if (baseUser == null)
         {
-            await ModifyOriginalResponseAsync(msg => msg.Content = $"<:shrugR:945740284308893696> Could not find any player named **{input1}**");
+            await ModifyOriginalResponseAsync(msg => msg.Content = $"Could not find any player named **{input1}**");
             return;
         }
 
         if (secondUser == null)
         {
-            await ModifyOriginalResponseAsync(msg => msg.Content = $"<:shrugR:945740284308893696> Could not find any player named **{input2}**");
+            await ModifyOriginalResponseAsync(msg => msg.Content = $"Could not find any player named **{input2}**");
             return;
         }
 

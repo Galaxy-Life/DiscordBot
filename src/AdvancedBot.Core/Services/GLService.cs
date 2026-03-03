@@ -27,7 +27,7 @@ public class GLService
 
         if (user == null)
         {
-            return new ModResult(ModResultType.NotFound, message: new ResponseMessage($"<:shrugR:945740284308893696> Could not find any user for **{input}**."));
+            return new ModResult(ModResultType.NotFound, message: new ResponseMessage($"Could not find any user for **{input}**."));
         }
 
         var stats = await _client.Api.GetUserStats(user.Id);
@@ -66,7 +66,7 @@ public class GLService
 
         if (alliance == null)
         {
-            return new ModResult(ModResultType.NotFound, message: new ResponseMessage($"<:shrugR:945740284308893696> Could not find any alliance for **{input}**."));
+            return new ModResult(ModResultType.NotFound, message: new ResponseMessage($"Could not find any alliance for **{input}**."));
         }
 
         var emblemUrl = $"https://cdn.galaxylifegame.net/content/img/alliance_flag/AllianceLogos/flag_{(int)alliance.Emblem.Shape}_{(int)alliance.Emblem.Pattern}_{(int)alliance.Emblem.Icon}.png";
@@ -107,7 +107,7 @@ public class GLService
 
         if (alliance == null)
         {
-            return new ModResult(ModResultType.NotFound, message: new ResponseMessage($"<:shrugR:945740284308893696> No alliance found for **{input}**"));
+            return new ModResult(ModResultType.NotFound, message: new ResponseMessage($"No alliance found for **{input}**"));
         }
 
         var owner = alliance.Members.FirstOrDefault(x => x.AllianceRole == AllianceRole.LEADER);
