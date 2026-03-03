@@ -137,7 +137,7 @@ public class ModerationModule : TopModule
 
             var embed = new EmbedBuilder()
                 .WithTitle("Ownership successfully given")
-                .WithDescription($"Player **{user.Name}** is now the owner of **${allianceName}**.")
+                .WithDescription($"Player **{user.Name}** is now the owner of **{allianceName}**.")
                 .WithColor(Color.Green)
                 .WithFooter(footer => footer
                     .WithText($"Ownership transfer requested by {Context.User.Username}#{Context.User.Discriminator}")
