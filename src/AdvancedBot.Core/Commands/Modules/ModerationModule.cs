@@ -200,12 +200,12 @@ public class ModerationModule : TopModule
 
         await LogService.LogGameActionAsync(LogAction.GetFull, Context.User.Id, user.Id.Value);
 
-        var steamId = user.LinkedAccounts.FirstOrDefault(a => a.Provider == "steam")?.ProviderKey;
-        var discordId = user.LinkedAccounts.FirstOrDefault(a => a.Provider == "discord")?.ProviderKey;
+        var steamId = user.LinkedAccounts?.FirstOrDefault(a => a.Provider == "steam")?.ProviderKey;
+        var discordId = user.LinkedAccounts?.FirstOrDefault(a => a.Provider == "discord")?.ProviderKey;
         var discordTag = discordId is null ? $"<@{discordId}>" : "None";
 
         var priorityRoles = new[] { "admin", "developer", "staff" };
-        var role = priorityRoles.FirstOrDefault(r => user.Roles.Contains(r)) ?? user.Roles.FirstOrDefault();
+        var role = priorityRoles.FirstOrDefault(r => user.Roles?.Contains(r) ?? false) ?? user.Roles?.FirstOrDefault();
 
         var isBanned = user.ActiveBan is not null;
 
@@ -214,8 +214,8 @@ public class ModerationModule : TopModule
             : role switch
             {
                 "admin" => "This user is an Admininstrator.\n\n",
-                "developer" => "This user is an developer.\n\n",
-                "staff" => "This user is part of the Staff.\n\n",
+                "developer" => "This user is a developer.\n\n",
+                "staff" => "This user is a Staff member.\n\n",
                 _ => ""
             };
 
@@ -256,9 +256,9 @@ public class ModerationModule : TopModule
     }
 
     [SlashCommand("ban", "Bans a given user")]
-    public async Task TryBanUserAsync(uint userId, string reason, uint days = 0)
+    public async Task TryBanUserAsync(uint userId, BanReasonType type, string reason, uint days = 0)
     {
-        var result = await ModService.BanUserAsync(Context.User.Id, userId, reason, days);
+        var result = await ModService.BanUserAsync(Context.User.Id, userId, type, reason, days);
         await SendResponseMessage(result.Message, false);
     }
 

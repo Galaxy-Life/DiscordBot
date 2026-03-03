@@ -33,7 +33,7 @@ public class ModerationService
         onBanTimer(null, null);
     }
 
-    public async Task<ModResult> BanUserAsync(ulong discordId, uint userId, string reason, uint days = 0)
+    public async Task<ModResult> BanUserAsync(ulong discordId, uint userId, BanReasonType type, string reason, uint days = 0)
     {
         var user = await _phoenixWrapper.GetClient(discordId).V1.Users[userId].GetAsync();
         if (user is null)
@@ -51,8 +51,7 @@ public class ModerationService
                 user);
         }
 
-        // TODO: Set proper ban type
-        var banRequest = new BanUserRequest() { Type = 0, Duration = days, Reason = reason };
+        var banRequest = new BanUserRequest() { Type = (int)type, Duration = days, Reason = reason };
         await _phoenixWrapper.GetClient(discordId).V1.Users[userId].Ban.PostAsync(banRequest);
 
         var embed = new EmbedBuilder()

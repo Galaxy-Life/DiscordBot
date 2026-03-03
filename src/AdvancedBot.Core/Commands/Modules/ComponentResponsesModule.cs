@@ -240,7 +240,7 @@ public class ComponentResponsesModule : TopModule
 
         await DeferAsync();
 
-        var result = await ModService.BanUserAsync(Context.User.Id, uint.Parse(userId), modal.BanReason, (uint)days);
+        var result = await ModService.BanUserAsync(Context.User.Id, uint.Parse(userId), modal.BanType, modal.BanReason, (uint)days);
         await SendResponseMessage(result.Message, true);
     }
 
