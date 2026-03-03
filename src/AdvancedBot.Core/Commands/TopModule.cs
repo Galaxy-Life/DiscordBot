@@ -143,7 +143,7 @@ public class TopModule : InteractionModuleBase<SocketInteractionContext>
 
         if (isBanned)
         {
-            components.WithButton("Unban", $"unban:{username},{userId}", ButtonStyle.Success, Emote.Parse("<:Starling_Happy:946859412763578419>"), row: 1);
+            components.WithButton("Unban", $"unban:{userId}", ButtonStyle.Success, Emote.Parse("<:Starling_Happy:946859412763578419>"), row: 1);
         }
         else
         {

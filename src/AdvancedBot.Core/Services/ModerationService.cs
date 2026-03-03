@@ -98,14 +98,7 @@ public class ModerationService
             );
         }
 
-        var hasSucceeded = await _gl.Phoenix.TryUnbanUser(userId);
-        if (!hasSucceeded)
-        {
-            return new ModResult(
-                ModResultType.BackendError,
-                new ResponseMessage($"Failed to unban {user.Username} ({user.Id})"),
-                user);
-        }
+        await _phoenixWrapper.GetClient(discordId).V1.Users[userId].Unban.PostAsync(new UnbanUserRequest());
 
         var extra = auto ? "Auto Unban" : "";
         await _logs.LogGameActionAsync(LogAction.Unban, discordId, userId, extra);
@@ -132,14 +125,7 @@ public class ModerationService
                 new ResponseMessage($"Could not find any user with id **{userId}**."));
         }
 
-        var hasSucceeded = await _gl.Phoenix.AddGlBeta(userId);
-        if (!hasSucceeded)
-        {
-            return new ModResult(
-                ModResultType.BackendError,
-                new ResponseMessage($"Failed to add beta access to {user.Username} ({user.Id})"));
-        }
-
+        await _phoenixWrapper.GetClient(discordId).V1.Users[userId].Entitlements.PostAsync(new AddEntitlementRequest() { Type = "feature", Value = "galaxylife-beta" });
         await _logs.LogGameActionAsync(LogAction.AddBeta, discordId, userId);
 
         var embed = new EmbedBuilder()
@@ -165,13 +151,7 @@ public class ModerationService
                 new ResponseMessage($"Could not find any user with id **{userId}**."));
         }
 
-        var hasSucceeded = await _gl.Phoenix.RemoveGlBeta(userId);
-        if (!hasSucceeded)
-        {
-            return new ModResult(
-                ModResultType.BackendError,
-                new ResponseMessage($"Failed to remove beta access from {user.Username} ({user.Id})"));
-        }
+        await _phoenixWrapper.GetClient(discordId).V1.Users[userId].Entitlements.DeleteAsync(new RemoveEntitlementRequest() { Entitlement = "galaxylife-beta" });
 
         await _logs.LogGameActionAsync(LogAction.RemoveBeta, discordId, userId);
 
@@ -198,13 +178,7 @@ public class ModerationService
                 new ResponseMessage($"Could not find any user with id **{userId}**."));
         }
 
-        var hasSucceeded = await _gl.Phoenix.AddEmulate(userId);
-        if (!hasSucceeded)
-        {
-            return new ModResult(
-                ModResultType.BackendError,
-                new ResponseMessage($"Failed to add emulate access to {user.Username} ({user.Id})"));
-        }
+        await _phoenixWrapper.GetClient(discordId).V1.Users[userId].Entitlements.PostAsync(new AddEntitlementRequest() { Type = "feature", Value = "galaxylife-emulate" });
 
         await _logs.LogGameActionAsync(LogAction.AddEmulate, discordId, userId);
 
@@ -231,13 +205,7 @@ public class ModerationService
                 new ResponseMessage($"Could not find any user with id **{userId}**."));
         }
 
-        var hasSucceeded = await _gl.Phoenix.RemoveGlBeta(userId);
-        if (!hasSucceeded)
-        {
-            return new ModResult(
-                ModResultType.BackendError,
-                new ResponseMessage($"Failed to remove emulate access from {user.Username} ({user.Id})"));
-        }
+        await _phoenixWrapper.GetClient(discordId).V1.Users[userId].Entitlements.DeleteAsync(new RemoveEntitlementRequest() { Entitlement = "galaxylife-beta" });
 
         await _logs.LogGameActionAsync(LogAction.RemoveEmulate, discordId, userId);
 
@@ -264,13 +232,7 @@ public class ModerationService
                 new ResponseMessage($"Could not find any user with id **{userId}**."));
         }
 
-        var hasSucceeded = await _gl.Phoenix.DeleteAvatarAsync(userId);
-        if (!hasSucceeded)
-        {
-            return new ModResult(
-                ModResultType.BackendError,
-                new ResponseMessage($"Failed to remove {user.Username}'s avatar."));
-        }
+        await _phoenixWrapper.GetClient(discordId).V1.Users[userId].Avatar.DeleteAsync(new DeleteAvatarRequest());
 
         await _logs.LogGameActionAsync(LogAction.AvatarDeleted, discordId, userId);
 

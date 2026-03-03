@@ -68,6 +68,7 @@ public class BotClient
 
         _client.Ready += OnReadyAsync;
         _interactions.SlashCommandExecuted += OnSlashCommandExecuted;
+        _interactions.ComponentCommandExecuted += OnComponentCommandExecuted;
 
         _client.Log += LogAsync;
         _commands.Log += LogAsync;
@@ -133,7 +134,7 @@ public class BotClient
             {
 #if DEBUG
                 var exceptionResult = (ExecuteResult)result;
-                await context.Interaction.ModifyOriginalResponseAsync(x => x.Content = $"⛔ {result.ErrorReason}\n{exceptionResult.Exception.Message}\nInner exception message:{exceptionResult.Exception.InnerException?.Message}");
+                await context.Interaction.ModifyOriginalResponseAsync(x => x.Content = $"⛔ {result.ErrorReason}\nInner exception message: {exceptionResult.Exception.InnerException?.Message}");
 #else
                 await context.Interaction.ModifyOriginalResponseAsync(x => x.Content = $"⛔ {result.ErrorReason}");
 #endif
@@ -164,6 +165,27 @@ public class BotClient
         }
 
         _accounts.SaveAccount(acc);
+    }
+
+    private async Task OnComponentCommandExecuted(ComponentCommandInfo info, IInteractionContext context, IResult result)
+    {
+        if (!result.IsSuccess)
+        {
+            try
+            {
+#if DEBUG
+                var exceptionResult = (ExecuteResult)result;
+                await context.Channel.SendMessageAsync($"⛔ {result.ErrorReason}\nInner exception message: {exceptionResult.Exception.InnerException?.Message}");
+#else
+                await context.Channel.SendMessageAsync($"⛔ {result.ErrorReason}");
+#endif
+            }
+            catch (Exception e)
+            {
+                // failed because took to long to respond
+                await context.Channel.SendMessageAsync($"⛔ {result.ErrorReason}");
+            }
+        }
     }
 
     private ServiceProvider ConfigureServices()

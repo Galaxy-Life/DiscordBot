@@ -203,7 +203,7 @@ public class ModerationModule : TopModule
 
         var steamId = user.LinkedAccounts?.FirstOrDefault(a => a.Provider == "steam")?.ProviderKey;
         var discordId = user.LinkedAccounts?.FirstOrDefault(a => a.Provider?.ToLower() == "discord")?.ProviderKey;
-        var discordTag = discordId is null ? $"<@{discordId}>" : null;
+        var discordTag = discordId is not null ? $"<@{discordId}>" : null;
 
         var priorityRoles = new[] { "admin", "developer", "staff" };
         var role = priorityRoles.FirstOrDefault(r => user.Roles?.Contains(r) ?? false) ?? user.Roles?.FirstOrDefault();
