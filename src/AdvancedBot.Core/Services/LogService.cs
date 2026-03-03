@@ -1,6 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-using AdvancedBot.Core.Commands;
+﻿using AdvancedBot.Core.Commands;
 using AdvancedBot.Core.Entities;
 using AdvancedBot.Core.Entities.Enums;
 using AdvancedBot.Core.Services.DataStorage;

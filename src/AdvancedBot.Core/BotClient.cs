@@ -1,7 +1,4 @@
-﻿using System;
-using System.IO;
-using System.Reflection;
-using System.Threading.Tasks;
+﻿using System.Reflection;
 using AdvancedBot.Core.Commands;
 using AdvancedBot.Core.Entities;
 using AdvancedBot.Core.Services;
@@ -52,7 +49,7 @@ public class BotClient
 
         if (envVar == null)
         {
-            logAsync(new LogMessage(LogSeverity.Warning, "BotClient", "Initializing PhoenixApiWrappers without any credentials, no moderation commands will work!"));
+            LogAsync(new LogMessage(LogSeverity.Warning, "BotClient", "Initializing PhoenixApiWrappers without any credentials, no moderation commands will work!"));
 
             return;
         }
@@ -66,14 +63,14 @@ public class BotClient
     public async Task InitializeAsync()
     {
         Console.Title = $"Launching Discord Bot...";
-        _services = configureServices();
+        _services = ConfigureServices();
         _accounts = _services.GetRequiredService<AccountService>();
 
-        _client.Ready += onReadyAsync;
-        _interactions.SlashCommandExecuted += onSlashCommandExecuted;
+        _client.Ready += OnReadyAsync;
+        _interactions.SlashCommandExecuted += OnSlashCommandExecuted;
 
-        _client.Log += logAsync;
-        _commands.Log += logAsync;
+        _client.Log += LogAsync;
+        _commands.Log += LogAsync;
 
         var token = Environment.GetEnvironmentVariable("Token");
 
@@ -83,7 +80,7 @@ public class BotClient
         await Task.Delay(-1);
     }
 
-    private async Task onReadyAsync()
+    private async Task OnReadyAsync()
     {
         Console.Title = $"Running Discord Bot: {_client.CurrentUser.Username}";
 
@@ -114,7 +111,7 @@ public class BotClient
         };
     }
 
-    private Task logAsync(LogMessage msg)
+    private Task LogAsync(LogMessage msg)
     {
         if (msg.Exception != null)
         {
@@ -128,13 +125,18 @@ public class BotClient
         return Task.CompletedTask;
     }
 
-    private async Task onSlashCommandExecuted(SlashCommandInfo cmd, IInteractionContext context, IResult result)
+    private async Task OnSlashCommandExecuted(SlashCommandInfo cmd, IInteractionContext context, IResult result)
     {
         if (!result.IsSuccess)
         {
             try
             {
+#if DEBUG
+                var exceptionResult = (ExecuteResult)result;
+                await context.Interaction.ModifyOriginalResponseAsync(x => x.Content = $"⛔ {result.ErrorReason}\n{exceptionResult.Exception.Message}\nInner exception message:{exceptionResult.Exception.InnerException?.Message}");
+#else
                 await context.Interaction.ModifyOriginalResponseAsync(x => x.Content = $"⛔ {result.ErrorReason}");
+#endif
             }
             catch (Exception)
             {
@@ -164,7 +166,7 @@ public class BotClient
         _accounts.SaveAccount(acc);
     }
 
-    private ServiceProvider configureServices()
+    private ServiceProvider ConfigureServices()
     {
         return new ServiceCollection()
             .AddSingleton(_client)
