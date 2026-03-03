@@ -200,20 +200,17 @@ public class ModerationModule : TopModule
 
         await LogService.LogGameActionAsync(LogAction.GetFull, Context.User.Id, user.Id.Value);
 
-        // TODO: should work once you update api wrapper with latest api changes
-        // var steamId = user.LinkedAccounts.FirstOrDefault(a => a.Provider == "steam")?.ProviderKey;
-        // var discordId = user.LinkedAccounts.FirstOrDefault(a => a.Provider == "discord")?.ProviderKey;
-        // var discordTag = discordId is null ? <@{discordId}> : "None";
+        var steamId = user.LinkedAccounts.FirstOrDefault(a => a.Provider == "steam")?.ProviderKey;
+        var discordId = user.LinkedAccounts.FirstOrDefault(a => a.Provider == "discord")?.ProviderKey;
+        var discordTag = discordId is null ? $"<@{discordId}>" : "None";
 
         var priorityRoles = new[] { "admin", "developer", "staff" };
         var role = priorityRoles.FirstOrDefault(r => user.Roles.Contains(r)) ?? user.Roles.FirstOrDefault();
 
-        // var isBanned = user.ActiveBan is not null; // TODO: uncomment when api wrapper is updated
-        var isBanned = false;
+        var isBanned = user.ActiveBan is not null;
 
         var description = isBanned
-            ? "This user is currently **banned**.\nReason: Unkown.\nNotes: None.\n\n" // TODO: replace with below once api wrapper is updated
-            // ? $"This user is currently **banned**.\nReason: {user.ActiveBan!.Reason}\nNotes: {user.ActiveBan.ModeratorNotes ?? "None"}\n\n"
+            ? $"This user is currently **banned**.\nReason: {user.ActiveBan!.Reason}\nNotes: {user.ActiveBan.ModeratorNotes ?? "None"}\n\n"
             : role switch
             {
                 "admin" => "This user is an Admininstrator.\n\n",
@@ -237,19 +234,23 @@ public class ModerationModule : TopModule
             .WithDescription(description)
             .WithColor(color)
             .AddField("ID", $"`{user.Id}`", true)
-            // .AddField("Steam ID", $"`{steamId}`", true)
-            // .AddField("Discord", $"{discordTag}", true)
-            .AddField("Email", $"{user.Email}")
+            .AddField("Email", $"{user.Email}", true)
             .AddField("Account creation date", $"{user.RegisteredOn.GetValueOrDefault():dd MMMM yyyy a\\t HH:mm}", true)
             .WithFooter(footer => footer
                 .WithText($"Full profile requested by {Context.User.Username}#{Context.User.Discriminator}")
                 .WithIconUrl(Context.User.GetDisplayAvatarUrl()))
             .WithCurrentTimestamp();
 
-        // if (steamId is not null)
-        // {
-        //     embed.WithUrl($"https://steamcommunity.com/profiles/{steamId}");
-        // }
+        if (steamId is not null)
+        {
+            embed.AddField("Steam ID", $"`{steamId}`", true);
+            embed.WithUrl($"https://steamcommunity.com/profiles/{steamId}");
+        }
+
+        if (discordId is not null)
+        {
+            embed.AddField("Discord", $"{discordTag}", true);
+        }
 
         await ModifyOriginalResponseAsync(msg => msg.Embeds = new Embed[] { embed.Build() });
     }
