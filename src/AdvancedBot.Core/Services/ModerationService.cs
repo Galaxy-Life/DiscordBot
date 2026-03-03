@@ -42,11 +42,13 @@ public class ModerationService
             return new ModResult(ModResultType.NotFound, new ResponseMessage($"Could not find any user with id **{userId}**."));
         }
 
-        // TODO: Check if already banned
-        /*if (user.Role == PhoenixRole.Banned)
+        if (user.IsBanned.GetValueOrDefault())
         {
-            return new ModResult(ModResultType.AlreadyDone, new ResponseMessage($"{user.UserName} ({user.UserId}) is already banned."), user);
-        }*/
+            return new ModResult(
+                ModResultType.AlreadyDone,
+                new ResponseMessage($"{user.Username} ({user.Id}) is already banned."),
+                user);
+        }
 
         // TODO: Set proper ban type
         await _phoenixWrapper.GetClient(discordId).V1.Users[userId].Ban.PostAsync(new BanUserRequest() { Type = 0, Duration = days, Reason = reason });
@@ -86,11 +88,14 @@ public class ModerationService
             return new ModResult(ModResultType.NotFound, new ResponseMessage($"Could not find any user with id **{userId}**."));
         }
 
-        // TODO: Check if already unbanned
-        /*if (user.Role != PhoenixRole.Banned)
+        if (!user.IsBanned.GetValueOrDefault())
         {
-            return new ModResult(ModResultType.AlreadyDone, new ResponseMessage($"{user.Username} ({user.Id}) is not banned."), user);
-        }*/
+            return new ModResult(
+                ModResultType.AlreadyDone,
+                new ResponseMessage($"{user.Username} ({user.Id}) is not banned."),
+                user
+            );
+        }
 
         if (!await _gl.Phoenix.TryUnbanUser(userId))
         {
