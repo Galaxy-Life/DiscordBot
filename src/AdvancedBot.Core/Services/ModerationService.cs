@@ -8,20 +8,23 @@ using AdvancedBot.Core.Services.DataStorage;
 using Discord;
 using GL.NET;
 using GL.NET.Entities;
+using Phoenix.Api.Models;
 
 namespace AdvancedBot.Core.Services;
 
 public class ModerationService
 {
     private readonly GLClient _gl;
+    private readonly PhoenixWrapperService _phoenixWrapper;
     private readonly LogService _logs;
     private readonly BotStorage _storage;
 
     private readonly Timer _banTimer = new(1000 * 60 * 30);
 
-    public ModerationService(GLClient gl, LogService logs, BotStorage storage)
+    public ModerationService(GLClient gl, PhoenixWrapperService phoenixWrapper, LogService logs, BotStorage storage)
     {
         _gl = gl;
+        _phoenixWrapper = phoenixWrapper;
         _logs = logs;
         _storage = storage;
 
@@ -32,28 +35,27 @@ public class ModerationService
 
     public async Task<ModResult> BanUserAsync(ulong discordId, uint userId, string reason, uint days = 0)
     {
-        var user = await _gl.Phoenix.GetPhoenixUserAsync(userId);
+        var user = await _phoenixWrapper.GetClient(discordId).V1.Users[userId].GetAsync();
 
         if (user == null)
         {
             return new ModResult(ModResultType.NotFound, new ResponseMessage($"Could not find any user with id **{userId}**."));
         }
 
-        if (user.Role == PhoenixRole.Banned)
+        // TODO: Check if already banned
+        /*if (user.Role == PhoenixRole.Banned)
         {
             return new ModResult(ModResultType.AlreadyDone, new ResponseMessage($"{user.UserName} ({user.UserId}) is already banned."), user);
-        }
+        }*/
 
-        if (!await _gl.Phoenix.TryBanUser(userId, reason))
-        {
-            return new ModResult(ModResultType.BackendError, new ResponseMessage($"Failed to ban {user.UserName} ({user.UserId})"), user);
-        }
+        // TODO: Set proper ban type
+        await _phoenixWrapper.GetClient(discordId).V1.Users[userId].Ban.PostAsync(new BanUserRequest() { Type = 0, Duration = days, Reason = reason });
 
         var embed = new EmbedBuilder()
             .WithTitle("Account successfully banned")
-            .WithDescription($"**{user.UserName}** ({user.UserId}) has been banned!")
+            .WithDescription($"**{user.Username}** ({user.Id}) has been banned!")
             .WithColor(Color.Red)
-            .AddField("Player", $"{user.UserName} (`{user.UserId}`)", true)
+            .AddField("Player", $"{user.Username} (`{user.Id}`)", true)
             .AddField("Ban duration", days > 0 ? $"{days} days" : $"Permanent", true)
             .WithFooter(footer => footer
                 .WithText($"Ban requested by moderator with id {discordId}"))
@@ -77,28 +79,29 @@ public class ModerationService
 
     public async Task<ModResult> UnbanUserAsync(ulong discordId, uint userId, bool auto = false)
     {
-        var user = await _gl.Phoenix.GetPhoenixUserAsync(userId);
+        var user = await _phoenixWrapper.GetClient(discordId).V1.Users[userId].GetAsync();
 
         if (user == null)
         {
             return new ModResult(ModResultType.NotFound, new ResponseMessage($"Could not find any user with id **{userId}**."));
         }
 
-        if (user.Role != PhoenixRole.Banned)
+        // TODO: Check if already unbanned
+        /*if (user.Role != PhoenixRole.Banned)
         {
-            return new ModResult(ModResultType.AlreadyDone, new ResponseMessage($"{user.UserName} ({user.UserId}) is not banned."), user);
-        }
+            return new ModResult(ModResultType.AlreadyDone, new ResponseMessage($"{user.Username} ({user.Id}) is not banned."), user);
+        }*/
 
         if (!await _gl.Phoenix.TryUnbanUser(userId))
         {
-            return new ModResult(ModResultType.BackendError, new ResponseMessage($"Failed to unban {user.UserName} ({user.UserId})"), user);
+            return new ModResult(ModResultType.BackendError, new ResponseMessage($"Failed to unban {user.Username} ({user.Id})"), user);
         }
 
         var extra = auto ? "Auto Unban" : "";
         await _logs.LogGameActionAsync(LogAction.Unban, discordId, userId, extra);
 
         var embed = new EmbedBuilder()
-            .WithTitle($"{user.UserName} ({user.UserId}) is no longer banned in-game!")
+            .WithTitle($"{user.Username} ({user.Id}) is no longer banned in-game!")
             .WithColor(Color.Green)
             .WithFooter(footer => footer
                 .WithText($"Unban requested by moderator with id {discordId}"))
@@ -111,7 +114,7 @@ public class ModerationService
 
     public async Task<ModResult> AddBetaToUserAsync(ulong discordId, uint userId)
     {
-        var user = await _gl.Phoenix.GetPhoenixUserAsync(userId);
+        var user = await _phoenixWrapper.GetClient(discordId).V1.Users[userId].GetAsync();
 
         if (user == null)
         {
@@ -120,14 +123,14 @@ public class ModerationService
 
         if (!await _gl.Phoenix.AddGlBeta(userId))
         {
-            return new ModResult(ModResultType.BackendError, new ResponseMessage($"Failed to add beta access to {user.UserName} ({user.UserId})"));
+            return new ModResult(ModResultType.BackendError, new ResponseMessage($"Failed to add beta access to {user.Username} ({user.Id})"));
         }
 
         await _logs.LogGameActionAsync(LogAction.AddBeta, discordId, userId);
 
         var embed = new EmbedBuilder()
             .WithTitle($"Entitlement successfully added")
-            .WithDescription($"**{user.UserName}** ({user.UserId}) has been given 'beta' access.")
+            .WithDescription($"**{user.Username}** ({user.Id}) has been given 'beta' access.")
             .WithColor(Color.Green)
             .WithFooter(footer => footer
                 .WithText($"Entitlement added by moderator with id {discordId}"))
@@ -140,7 +143,7 @@ public class ModerationService
 
     public async Task<ModResult> RemoveBetaFromUserAsync(ulong discordId, uint userId)
     {
-        var user = await _gl.Phoenix.GetPhoenixUserAsync(userId);
+        var user = await _phoenixWrapper.GetClient(discordId).V1.Users[userId].GetAsync();
 
         if (user == null)
         {
@@ -149,14 +152,14 @@ public class ModerationService
 
         if (!await _gl.Phoenix.RemoveGlBeta(userId))
         {
-            return new ModResult(ModResultType.BackendError, new ResponseMessage($"Failed to remove beta access from {user.UserName} ({user.UserId})"));
+            return new ModResult(ModResultType.BackendError, new ResponseMessage($"Failed to remove beta access from {user.Username} ({user.Id})"));
         }
 
         await _logs.LogGameActionAsync(LogAction.RemoveBeta, discordId, userId);
 
         var embed = new EmbedBuilder()
             .WithTitle($"Entitlement successfully removed")
-            .WithDescription($"**{user.UserName}** ({user.UserId}) has been revoked 'beta' access.")
+            .WithDescription($"**{user.Username}** ({user.Id}) has been revoked 'beta' access.")
             .WithColor(Color.Red)
             .WithFooter(footer => footer
                 .WithText($"Entitlement removed by moderator with id {discordId}"))
@@ -169,7 +172,7 @@ public class ModerationService
 
     public async Task<ModResult> AddEmulateToUserAsync(ulong discordId, uint userId)
     {
-        var user = await _gl.Phoenix.GetPhoenixUserAsync(userId);
+        var user = await _phoenixWrapper.GetClient(discordId).V1.Users[userId].GetAsync();
 
         if (user == null)
         {
@@ -178,14 +181,14 @@ public class ModerationService
 
         if (!await _gl.Phoenix.AddEmulate(userId))
         {
-            return new ModResult(ModResultType.BackendError, new ResponseMessage($"Failed to add emulate access to {user.UserName} ({user.UserId})"));
+            return new ModResult(ModResultType.BackendError, new ResponseMessage($"Failed to add emulate access to {user.Username} ({user.Id})"));
         }
 
         await _logs.LogGameActionAsync(LogAction.AddEmulate, discordId, userId);
 
         var embed = new EmbedBuilder()
             .WithTitle($"Entitlement successfully added")
-            .WithDescription($"**{user.UserName}** ({user.UserId}) has been given 'emulate' access.")
+            .WithDescription($"**{user.Username}** ({user.Id}) has been given 'emulate' access.")
             .WithColor(Color.Green)
             .WithFooter(footer => footer
                 .WithText($"Entitlement added by moderator with id {discordId}"))
@@ -198,7 +201,7 @@ public class ModerationService
 
     public async Task<ModResult> RemoveEmulateFromUserAsync(ulong discordId, uint userId)
     {
-        var user = await _gl.Phoenix.GetPhoenixUserAsync(userId);
+        var user = await _phoenixWrapper.GetClient(discordId).V1.Users[userId].GetAsync();
 
         if (user == null)
         {
@@ -207,14 +210,14 @@ public class ModerationService
 
         if (!await _gl.Phoenix.RemoveGlBeta(userId))
         {
-            return new ModResult(ModResultType.BackendError, new ResponseMessage($"Failed to remove emulate access from {user.UserName} ({user.UserId})"));
+            return new ModResult(ModResultType.BackendError, new ResponseMessage($"Failed to remove emulate access from {user.Username} ({user.Id})"));
         }
 
         await _logs.LogGameActionAsync(LogAction.RemoveEmulate, discordId, userId);
 
         var embed = new EmbedBuilder()
             .WithTitle($"Entitlement successfully removed")
-            .WithDescription($"**{user.UserName}** ({user.UserId}) has been revoked 'emulate' access.")
+            .WithDescription($"**{user.Username}** ({user.Id}) has been revoked 'emulate' access.")
             .WithColor(Color.Green)
             .WithFooter(footer => footer
                 .WithText($"Entitlement removed by moderator with id {discordId}"))
@@ -225,50 +228,9 @@ public class ModerationService
         return new ModResult(ModResultType.Success, message, user);
     }
 
-    public async Task<ModResult> GiveRoleAsync(ulong discordId, uint userId, PhoenixRole newRole)
-    {
-        var user = await _gl.Phoenix.GetPhoenixUserAsync(userId);
-
-        if (user == null)
-        {
-            return new ModResult(ModResultType.NotFound, new ResponseMessage($"Could not find any user with id **{userId}**."));
-        }
-
-        var roleText = newRole == PhoenixRole.Donator ? "a Donator"
-            : newRole == PhoenixRole.Staff ? "a Staff Member"
-            : newRole == PhoenixRole.Administrator ? "an Admin"
-            : newRole.ToString();
-
-        if (user.Role == newRole)
-        {
-            return new ModResult(ModResultType.AlreadyDone, new ResponseMessage($"User is already {roleText}!"));
-        }
-
-        if (!await _gl.Phoenix.GiveRoleAsync(userId, newRole))
-        {
-            return new ModResult(ModResultType.BackendError, new ResponseMessage($"Failed to give {newRole} to {user.UserName} ({user.UserId})"), user);
-        }
-
-        await _logs.LogGameActionAsync(LogAction.GiveRole, discordId, userId, newRole.ToString());
-
-        var embed = new EmbedBuilder()
-            .WithTitle($"User role successfully updated")
-            .WithDescription($"**{user.UserName}** ({user.UserId}) role has been updated.")
-            .AddField("Previous", $"{user.Role}", true)
-            .AddField("Updated", $"{newRole}", true)
-            .WithColor(Color.Green)
-            .WithFooter(footer => footer
-                .WithText($"Role given by moderator with id {discordId}"))
-            .WithCurrentTimestamp()
-            .Build();
-
-        var message = new ResponseMessage(embeds: [embed]);
-        return new ModResult(ModResultType.Success, message, user);
-    }
-
     public async Task<ModResult> DeleteAvatarAsync(ulong discordId, uint userId)
     {
-        var user = await _gl.Phoenix.GetPhoenixUserAsync(userId);
+        var user = await _phoenixWrapper.GetClient(discordId).V1.Users[userId].GetAsync();
 
         if (user == null)
         {
@@ -277,14 +239,14 @@ public class ModerationService
 
         if (!await _gl.Phoenix.DeleteAvatarAsync(userId))
         {
-            return new ModResult(ModResultType.BackendError, new ResponseMessage($"Failed to remove {user.UserName}'s avatar."));
+            return new ModResult(ModResultType.BackendError, new ResponseMessage($"Failed to remove {user.Username}'s avatar."));
         }
 
         await _logs.LogGameActionAsync(LogAction.AvatarDeleted, discordId, userId);
 
         var embed = new EmbedBuilder()
             .WithTitle($"Avatar successfully removed")
-            .WithDescription($"**{user.UserName}** ({user.UserId})'s avatar has been removed.")
+            .WithDescription($"**{user.Username}** ({user.Id})'s avatar has been removed.")
             .WithColor(Color.Green)
             .WithFooter(footer => footer
                 .WithText($"Avatar removed by moderator with id {discordId}"))

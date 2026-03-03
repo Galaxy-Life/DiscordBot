@@ -13,7 +13,7 @@ public class ComponentResponsesModule : TopModule
     public async Task OnProfileComponent(string username, string userId)
     {
         await DeferAsync();
-        var response = await GLService.GetUserProfileAsync(userId);
+        var response = await GetUserProfileAsync(userId);
 
         await SendResponseMessage(response.Message, false);
     }

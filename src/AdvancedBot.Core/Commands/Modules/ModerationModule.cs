@@ -257,7 +257,7 @@ public class ModerationModule : TopModule
     [SlashCommand("updateemail", "Updates a given user's email address")]
     public async Task TryUpdateEmailAsync(uint userId, string newEmail)
     {
-        var user = await PhoenixClients[Context.User.Id].V1.Users[userId].GetAsync();
+        var user = await GetFullPhoenixUser(userId.ToString());
 
         if (user == null)
         {
@@ -271,7 +271,7 @@ public class ModerationModule : TopModule
             return;
         }
 
-        await PhoenixClients[Context.User.Id].V1.Users[userId].Email.PatchAsync(new ChangeUserEmailRequest() { Email = newEmail });
+        await PhoenixWrapper.GetClient(Context.User.Id).V1.Users[userId].Email.PatchAsync(new ChangeUserEmailRequest() { Email = newEmail });
 
         await LogService.LogGameActionAsync(LogAction.UpdateEmail, Context.User.Id, userId, $"{user.Email}:{newEmail}");
 
@@ -307,7 +307,7 @@ public class ModerationModule : TopModule
             return;
         }
 
-        await PhoenixClients[Context.User.Id].V1.Users[userId].Username.PatchAsync(new ChangeUserNameRequest() { Username = newName });
+        await PhoenixWrapper.GetClient(Context.User.Id).V1.Users[userId].Username.PatchAsync(new ChangeUserNameRequest() { Username = newName });
 
         await LogService.LogGameActionAsync(LogAction.UpdateName, Context.User.Id, userId, $"{user.Username}:{newName}");
 
@@ -354,13 +354,6 @@ public class ModerationModule : TopModule
         await SendResponseMessage(result.Message, false);
     }
 
-    [SlashCommand("giverole", "Gives a certain user a role")]
-    public async Task GiveRoleAsync(uint userId, PhoenixRole role)
-    {
-        var result = await ModService.GiveRoleAsync(Context.User.Id, userId, role);
-        await SendResponseMessage(result.Message, false);
-    }
-
     [SlashCommand("chipsbought", "Gets chips bought from a user")]
     public async Task GetChipsBoughtAsync(uint userId)
     {
@@ -399,7 +392,7 @@ public class ModerationModule : TopModule
     [SlashCommand("kick", "Forces kick a user offline")]
     public async Task KickUserOfflineAsync(uint userId)
     {
-        var user = await PhoenixClients[Context.User.Id].V1.Users[userId].GetAsync();
+        var user = await PhoenixWrapper.GetClient(Context.User.Id).V1.Users[userId].GetAsync();
 
         if (user == null)
         {
@@ -409,7 +402,7 @@ public class ModerationModule : TopModule
 
         if (!await GLClient.Production.TryKickUserOfflineAsync(userId.ToString()))
         {
-            await ModifyOriginalResponseAsync(msg => msg.Content = $"Failed to force {user.UserName} ({user.UserId}) offline.");
+            await ModifyOriginalResponseAsync(msg => msg.Content = $"Failed to force {user.Username} ({user.Id}) offline.");
             return;
         }
 
@@ -417,7 +410,7 @@ public class ModerationModule : TopModule
 
         var embed = new EmbedBuilder()
             .WithTitle("User was successfully kicked")
-            .WithDescription($"User with id **{user.UserId}** is now offline.")
+            .WithDescription($"User with id **{user.Id}** is now offline.")
             .WithColor(Color.Green)
             .WithFooter(footer => footer
                 .WithText($"Offline kick requested by {Context.User.Username}#{Context.User.Discriminator}")
@@ -431,7 +424,7 @@ public class ModerationModule : TopModule
     [SlashCommand("reset", "Resets a user's progress")]
     public async Task ResetUserAsync(uint userId)
     {
-        var user = await PhoenixClients[Context.User.Id].V1.Users[userId].GetAsync();
+        var user = await PhoenixWrapper.GetClient(Context.User.Id).V1.Users[userId].GetAsync();
 
         if (user == null)
         {
@@ -441,7 +434,7 @@ public class ModerationModule : TopModule
 
         if (!await GLClient.Production.TryResetUserAsync(userId.ToString()))
         {
-            await ModifyOriginalResponseAsync(msg => msg.Content = $"Failed to reset {user.UserName} ({user.UserId}) progress.");
+            await ModifyOriginalResponseAsync(msg => msg.Content = $"Failed to reset {user.Username} ({user.Id}) progress.");
             return;
         }
 
@@ -449,7 +442,7 @@ public class ModerationModule : TopModule
 
         var embed = new EmbedBuilder()
             .WithTitle("Account progress successfully reset")
-            .WithDescription($"Account with **{user.UserId}**'s progress has been reset.")
+            .WithDescription($"Account with **{user.Id}**'s progress has been reset.")
             .WithColor(Color.Green)
             .WithFooter(footer => footer
                 .WithText($"Progress reset requested by {Context.User.Username}#{Context.User.Discriminator}")

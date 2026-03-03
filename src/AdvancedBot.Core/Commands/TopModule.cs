@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http;
 using System.Threading.Tasks;
 using AdvancedBot.Core.Entities;
+using AdvancedBot.Core.Entities.Enums;
 using AdvancedBot.Core.Services;
 using AdvancedBot.Core.Services.DataStorage;
 using Discord;
@@ -11,10 +11,6 @@ using Discord.Interactions;
 using GL.NET;
 using GL.NET.Entities;
 using Phoenix.Api.Models;
-using Phoenix.ApiWrapper;
-using Phoenix.ApiWrapper.Entities;
-
-using ApiClient = Phoenix.Api.ApiClient;
 
 namespace AdvancedBot.Core.Commands;
 
@@ -24,7 +20,7 @@ public class TopModule : InteractionModuleBase<SocketInteractionContext>
 
     public GLClient GLClient { get; set; }
 
-    public Dictionary<ulong, ApiClient> PhoenixClients { get; set; }
+    public PhoenixWrapperService PhoenixWrapper { get; set; }
 
     public PaginatorService Paginator { get; set; }
 
@@ -50,30 +46,6 @@ public class TopModule : InteractionModuleBase<SocketInteractionContext>
         if (command.SupportsWildCards || command.Name.Contains(':') || command.Name.Contains(',')) return;
 
         await DeferAsync();
-
-        // Create a PhoenixApi Instance for every poweruser
-        // Needs to be done since SubjectId needs to be the user id
-        if (PowerUsers.Contains(Context.User.Id))
-        {
-            var existingClient = PhoenixClients[Context.User.Id];
-
-            if (existingClient == null)
-            {
-                var phoenix = new PhoenixClients(
-                    new HttpClient() { Timeout = TimeSpan.FromSeconds(10) },
-                    new PhoenixApiClientOptions
-                    {
-                        TokenEndpoint = new Uri("https://accounts.phoenixnetwork.net/oauth/token"),
-                        ClientId = Credentials.ClientId,
-                        ClientSecret = Credentials.ClientSecret,
-                        Scopes = [],
-                        SubjectId = Context.User.Id.ToString(),
-                        SubjectProvider = "discord"
-                    }, null);
-
-                PhoenixClients.Add(Context.User.Id, phoenix.PhoenixClient);
-            }
-        }
     }
 
     public override Task AfterExecuteAsync(ICommandInfo command)
@@ -210,34 +182,149 @@ public class TopModule : InteractionModuleBase<SocketInteractionContext>
         return profile;
     }
 
-    protected async Task<UserDto?> GetFullPhoenixUser(string input)
+    protected async Task<UserDto?> GetPhoenixUser(string input)
     {
         if (string.IsNullOrEmpty(input))
         {
             input = Context.User.Username;
         }
 
-        UserDto? detailedUser = null;
+        UserDto? user = null;
 
         // extra check to see if all characters were numbers
         if (long.TryParse(input, out var userId))
         {
-            detailedUser = await PhoenixClients[Context.User.Id].V1.Users[userId].Details.GetAsync();
+            user = await PhoenixWrapper.GetClient(Context.User.Id).V1.Users[userId].GetAsync();
+        }
+
+        // Get regular user to know its id
+        user ??= await PhoenixWrapper.GetClient(Context.User.Id).V1.Users.ByUsername[input].GetAsync();
+
+        return user;
+    }
+
+    protected async Task<UserDetailsDto?> GetFullPhoenixUser(string input)
+    {
+        if (string.IsNullOrEmpty(input))
+        {
+            input = Context.User.Username;
+        }
+
+        UserDetailsDto? detailedUser = null;
+
+        // extra check to see if all characters were numbers
+        if (long.TryParse(input, out var userId))
+        {
+            detailedUser = await PhoenixWrapper.GetClient(Context.User.Id).V1.Users[userId].Details.GetAsync();
         }
 
         // Not found, try fetching by name
         if (detailedUser == null)
         {
             // Get regular user to know its id
-            var user = await PhoenixClients[Context.User.Id].V1.Users.ByUsername[input].GetAsync();
+            var user = await PhoenixWrapper.GetClient(Context.User.Id).V1.Users.ByUsername[input].GetAsync();
 
             // Get user by id after getting it by name
             if (user != null)
             {
-                detailedUser = await PhoenixClients[Context.User.Id].V1.Users[detailedUser.Id ?? 0].Details.GetAsync();
+                detailedUser = await PhoenixWrapper.GetClient(Context.User.Id).V1.Users[detailedUser.Id ?? 0].Details.GetAsync();
             }
         }
 
         return detailedUser;
+    }
+
+    public async Task<ModResult> GetUserProfileAsync(string input)
+    {
+        var phoenixUser = await GetPhoenixUser(input);
+
+        if (phoenixUser == null)
+        {
+            return new ModResult(ModResultType.NotFound, message: new ResponseMessage($"<:shrugR:945740284308893696> Could not find any user for **{input}**."));
+        }
+
+        var user = await GetUserByInput(input);
+
+        // TODO: Check if user is banned
+        /*if (user == null)
+        {
+            if (phoenixUser.Role != PhoenixRole.Banned)
+            {
+                return new ModResult(ModResultType.Success, new ResponseMessage($"The person **{phoenixUser.UserName} ({phoenixUser.UserId})** exists, but has no progress in Galaxy Life!"), phoenixUser, null);
+            }
+            else
+            {
+                return new ModResult(ModResultType.Success, new ResponseMessage($"**{phoenixUser.UserName} ({phoenixUser.UserId})** is banned and reset!"), phoenixUser, null);
+            }
+        }*/
+
+        var stats = await GLClient.Api.GetUserStats(user.Id);
+
+        // TODO: Get role and steamId
+        /*var steamId = phoenixUser.SteamId ?? "No steam linked";
+        var roleText = phoenixUser.Role == PhoenixRole.Banned ? "[BANNED]"
+            : phoenixUser.Role == PhoenixRole.Donator ? "[Donator]"
+            : phoenixUser.Role == PhoenixRole.Staff ? "[Staff]"
+            : phoenixUser.Role == PhoenixRole.Administrator ? "[Admin]"
+            : "";
+
+        var color = phoenixUser.Role == PhoenixRole.Banned ? Color.Default
+            : phoenixUser.Role == PhoenixRole.Donator ? new Color(15710778)
+            : phoenixUser.Role == PhoenixRole.Staff ? new Color(2605694)
+            : phoenixUser.Role == PhoenixRole.Administrator ? Color.DarkRed
+            : Color.LightGrey;*/
+
+        var color = Color.Default;
+        var roleText = "Unknown role";
+
+        var displayAlliance = "This user is not a member of any alliance.";
+
+        if (!string.IsNullOrEmpty(user.AllianceId))
+        {
+            var alliance = await GLClient.Api.GetAlliance(user.AllianceId);
+
+            // can happen due to 24hour player delay
+            if (alliance == null)
+            {
+                displayAlliance = "This user has recently changed alliance, please wait for it to update!";
+            }
+            else
+            {
+                displayAlliance = $"This user is a member of **{alliance.Name}**.";
+            }
+        }
+
+        var embed = new EmbedBuilder()
+            .WithTitle($"{roleText} {phoenixUser.Username} | Profile")
+            .WithThumbnailUrl(user.Avatar)
+            .WithDescription($"{displayAlliance}\n\u200b")
+            .AddField("Level", FormatNumber(user.Level), true)
+            .AddField("Starbase", user.Planets[0].HQLevel, true)
+            .AddField("Colonies", user.Planets.Count(x => x != null) - 1, true)
+            .WithColor(color)
+            .WithFooter(footer => footer
+                .WithText($"ID: {phoenixUser.Id} • Account created on {phoenixUser.RegisteredOn.GetValueOrDefault():dd MMMM yyyy a\\t HH:mm}")
+                .WithIconUrl(user.Avatar));
+
+        /*if (!string.IsNullOrEmpty(phoenixUser.SteamId))
+        {
+            embed.WithUrl($"https://steamcommunity.com/profiles/{steamId.Replace("\"", "")}");
+        }*/
+
+        var message = new ResponseMessage("", [embed.Build()]);
+        return new ModResult(ModResultType.Success, message, phoenixUser, user);
+    }
+
+    private static string FormatNumber(decimal number)
+    {
+        return number switch
+        {
+            >= 1_000_000_000 => $"{Math.Round(number / 1_000_000_000, 2)}B",
+            >= 10_000_000 => $"{Math.Round(number / 1_000_000, 1)}M",
+            >= 1_000_000 => $"{Math.Round(number / 1_000_000, 2)}M",
+            >= 100_000 => $"{Math.Round(number / 1_000, 1)}K",
+            >= 10_000 => $"{Math.Round(number / 1_000, 2)}K",
+            _ => number.ToString()
+        };
     }
 }

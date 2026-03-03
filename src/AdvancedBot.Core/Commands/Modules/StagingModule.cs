@@ -74,7 +74,7 @@ public class StagingModule : TopModule
     [SlashCommand("reset", "Resets a user on staging")]
     public async Task ResetStagingUser(uint userId)
     {
-        var user = await PhoenixClients[Context.User.Id].V1.Users[userId].GetAsync();
+        var user = await PhoenixWrapper.GetClient(Context.User.Id).V1.Users[userId].GetAsync();
 
         if (user == null)
         {
@@ -84,7 +84,7 @@ public class StagingModule : TopModule
 
         if (!await GLClient.Staging.TryResetUserAsync(userId.ToString()))
         {
-            await ModifyOriginalResponseAsync(msg => msg.Content = $"Could not reset {user.UserName} ({user.UserId}) progress on staging.");
+            await ModifyOriginalResponseAsync(msg => msg.Content = $"Could not reset {user.Username} ({user.Id}) progress on staging.");
             return;
         }
 
@@ -92,7 +92,7 @@ public class StagingModule : TopModule
 
         var embed = new EmbedBuilder()
             .WithTitle("Account staging progress successfully reset")
-            .WithDescription($"Account with **{user.UserId}**'s progress has been reset on staging")
+            .WithDescription($"Account with **{user.Id}**'s progress has been reset on staging")
             .WithColor(Color.Green)
             .WithFooter(footer => footer
                 .WithText($"Staging progress reset requested by {Context.User.Username}#{Context.User.Discriminator}")

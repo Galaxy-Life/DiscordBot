@@ -44,13 +44,13 @@ public class GLModule : TopModule
     [SlashCommand("profile", "Displays a user's Galaxy Life profile")]
     public async Task ShowUserProfileAsync(string input = "")
     {
-        var response = await GLService.GetUserProfileAsync(string.IsNullOrEmpty(input) ? Context.User.Username : input);
+        var response = await GetUserProfileAsync(string.IsNullOrEmpty(input) ? Context.User.Username : input);
         await SendResponseMessage(response.Message, false);
 
         // no gl data found
         if (response.User == null) return;
 
-        var components = CreateDefaultComponents(response.PhoenixUser.UserName, response.User.Id, response.User.AllianceId, false);
+        var components = CreateDefaultComponents(response.PhoenixUser.Username, response.User.Id, response.User.AllianceId, false);
         await ModifyOriginalResponseAsync(msg => msg.Components = components);
     }
 
