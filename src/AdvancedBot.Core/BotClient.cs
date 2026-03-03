@@ -9,6 +9,7 @@ using AdvancedBot.Core.Services.DataStorage;
 using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
+using GL.NET;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace AdvancedBot.Core;
@@ -21,6 +22,7 @@ public class BotClient
     private readonly InteractionService _interactions;
     private AccountService _accounts;
     private PhoenixCredentials _credentials;
+    private GLClient _glClient;
 
     public BotClient(CustomCommandService commands = null, DiscordSocketClient client = null)
     {
@@ -58,6 +60,7 @@ public class BotClient
         var creds = envVar.Split(';');
 
         _credentials = new PhoenixCredentials(creds[0], creds[1], creds[2]);
+        _glClient = new GLClient(_credentials.ClientId, _credentials.ClientSecret, _credentials.BackendToken);
     }
 
     public async Task InitializeAsync()
@@ -168,6 +171,7 @@ public class BotClient
             .AddSingleton(_commands)
             .AddSingleton(_interactions)
             .AddSingleton(_credentials)
+            .AddSingleton(_glClient)
             .AddSingleton<LiteDBHandler>()
             .AddSingleton<AccountService>()
             .AddSingleton<PaginatorService>()
@@ -176,6 +180,7 @@ public class BotClient
             .AddSingleton<ModerationService>()
             .AddSingleton<GLService>()
             .AddSingleton<BotStorage>()
+            .AddSingleton<PhoenixWrapperService>()
             .BuildServiceProvider();
     }
 }
