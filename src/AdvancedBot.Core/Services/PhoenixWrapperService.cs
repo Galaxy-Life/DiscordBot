@@ -7,6 +7,7 @@ using Phoenix.ApiWrapper;
 using Phoenix.ApiWrapper.Entities;
 
 namespace AdvancedBot.Core.Services;
+
 public class PhoenixWrapperService
 {
     private PhoenixCredentials _credentials;

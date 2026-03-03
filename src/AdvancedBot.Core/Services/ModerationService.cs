@@ -36,10 +36,11 @@ public class ModerationService
     public async Task<ModResult> BanUserAsync(ulong discordId, uint userId, string reason, uint days = 0)
     {
         var user = await _phoenixWrapper.GetClient(discordId).V1.Users[userId].GetAsync();
-
-        if (user == null)
+        if (user is null)
         {
-            return new ModResult(ModResultType.NotFound, new ResponseMessage($"Could not find any user with id **{userId}**."));
+            return new ModResult(
+                ModResultType.NotFound,
+                new ResponseMessage($"Could not find any user with id **{userId}**."));
         }
 
         if (user.IsBanned.GetValueOrDefault())
@@ -51,7 +52,8 @@ public class ModerationService
         }
 
         // TODO: Set proper ban type
-        await _phoenixWrapper.GetClient(discordId).V1.Users[userId].Ban.PostAsync(new BanUserRequest() { Type = 0, Duration = days, Reason = reason });
+        var banRequest = new BanUserRequest() { Type = 0, Duration = days, Reason = reason };
+        await _phoenixWrapper.GetClient(discordId).V1.Users[userId].Ban.PostAsync(banRequest);
 
         var embed = new EmbedBuilder()
             .WithTitle("Account successfully banned")
@@ -82,10 +84,11 @@ public class ModerationService
     public async Task<ModResult> UnbanUserAsync(ulong discordId, uint userId, bool auto = false)
     {
         var user = await _phoenixWrapper.GetClient(discordId).V1.Users[userId].GetAsync();
-
-        if (user == null)
+        if (user is null)
         {
-            return new ModResult(ModResultType.NotFound, new ResponseMessage($"Could not find any user with id **{userId}**."));
+            return new ModResult(
+                ModResultType.NotFound,
+                new ResponseMessage($"Could not find any user with id **{userId}**."));
         }
 
         if (!user.IsBanned.GetValueOrDefault())
@@ -97,9 +100,13 @@ public class ModerationService
             );
         }
 
-        if (!await _gl.Phoenix.TryUnbanUser(userId))
+        var hasSucceeded = await _gl.Phoenix.TryUnbanUser(userId);
+        if (!hasSucceeded)
         {
-            return new ModResult(ModResultType.BackendError, new ResponseMessage($"Failed to unban {user.Username} ({user.Id})"), user);
+            return new ModResult(
+                ModResultType.BackendError,
+                new ResponseMessage($"Failed to unban {user.Username} ({user.Id})"),
+                user);
         }
 
         var extra = auto ? "Auto Unban" : "";
@@ -120,15 +127,19 @@ public class ModerationService
     public async Task<ModResult> AddBetaToUserAsync(ulong discordId, uint userId)
     {
         var user = await _phoenixWrapper.GetClient(discordId).V1.Users[userId].GetAsync();
-
-        if (user == null)
+        if (user is null)
         {
-            return new ModResult(ModResultType.NotFound, new ResponseMessage($"Could not find any user with id **{userId}**."));
+            return new ModResult(
+                ModResultType.NotFound,
+                new ResponseMessage($"Could not find any user with id **{userId}**."));
         }
 
-        if (!await _gl.Phoenix.AddGlBeta(userId))
+        var hasSucceeded = await _gl.Phoenix.AddGlBeta(userId);
+        if (!hasSucceeded)
         {
-            return new ModResult(ModResultType.BackendError, new ResponseMessage($"Failed to add beta access to {user.Username} ({user.Id})"));
+            return new ModResult(
+                ModResultType.BackendError,
+                new ResponseMessage($"Failed to add beta access to {user.Username} ({user.Id})"));
         }
 
         await _logs.LogGameActionAsync(LogAction.AddBeta, discordId, userId);
@@ -149,15 +160,19 @@ public class ModerationService
     public async Task<ModResult> RemoveBetaFromUserAsync(ulong discordId, uint userId)
     {
         var user = await _phoenixWrapper.GetClient(discordId).V1.Users[userId].GetAsync();
-
-        if (user == null)
+        if (user is null)
         {
-            return new ModResult(ModResultType.NotFound, new ResponseMessage($"Could not find any user with id **{userId}**."));
+            return new ModResult(
+                ModResultType.NotFound,
+                new ResponseMessage($"Could not find any user with id **{userId}**."));
         }
 
-        if (!await _gl.Phoenix.RemoveGlBeta(userId))
+        var hasSucceeded = await _gl.Phoenix.RemoveGlBeta(userId);
+        if (!hasSucceeded)
         {
-            return new ModResult(ModResultType.BackendError, new ResponseMessage($"Failed to remove beta access from {user.Username} ({user.Id})"));
+            return new ModResult(
+                ModResultType.BackendError,
+                new ResponseMessage($"Failed to remove beta access from {user.Username} ({user.Id})"));
         }
 
         await _logs.LogGameActionAsync(LogAction.RemoveBeta, discordId, userId);
@@ -178,15 +193,19 @@ public class ModerationService
     public async Task<ModResult> AddEmulateToUserAsync(ulong discordId, uint userId)
     {
         var user = await _phoenixWrapper.GetClient(discordId).V1.Users[userId].GetAsync();
-
-        if (user == null)
+        if (user is null)
         {
-            return new ModResult(ModResultType.NotFound, new ResponseMessage($"Could not find any user with id **{userId}**."));
+            return new ModResult(
+                ModResultType.NotFound,
+                new ResponseMessage($"Could not find any user with id **{userId}**."));
         }
 
-        if (!await _gl.Phoenix.AddEmulate(userId))
+        var hasSucceeded = await _gl.Phoenix.AddEmulate(userId);
+        if (!hasSucceeded)
         {
-            return new ModResult(ModResultType.BackendError, new ResponseMessage($"Failed to add emulate access to {user.Username} ({user.Id})"));
+            return new ModResult(
+                ModResultType.BackendError,
+                new ResponseMessage($"Failed to add emulate access to {user.Username} ({user.Id})"));
         }
 
         await _logs.LogGameActionAsync(LogAction.AddEmulate, discordId, userId);
@@ -207,15 +226,19 @@ public class ModerationService
     public async Task<ModResult> RemoveEmulateFromUserAsync(ulong discordId, uint userId)
     {
         var user = await _phoenixWrapper.GetClient(discordId).V1.Users[userId].GetAsync();
-
-        if (user == null)
+        if (user is null)
         {
-            return new ModResult(ModResultType.NotFound, new ResponseMessage($"Could not find any user with id **{userId}**."));
+            return new ModResult(
+                ModResultType.NotFound,
+                new ResponseMessage($"Could not find any user with id **{userId}**."));
         }
 
-        if (!await _gl.Phoenix.RemoveGlBeta(userId))
+        var hasSucceeded = await _gl.Phoenix.RemoveGlBeta(userId);
+        if (!hasSucceeded)
         {
-            return new ModResult(ModResultType.BackendError, new ResponseMessage($"Failed to remove emulate access from {user.Username} ({user.Id})"));
+            return new ModResult(
+                ModResultType.BackendError,
+                new ResponseMessage($"Failed to remove emulate access from {user.Username} ({user.Id})"));
         }
 
         await _logs.LogGameActionAsync(LogAction.RemoveEmulate, discordId, userId);
@@ -236,15 +259,19 @@ public class ModerationService
     public async Task<ModResult> DeleteAvatarAsync(ulong discordId, uint userId)
     {
         var user = await _phoenixWrapper.GetClient(discordId).V1.Users[userId].GetAsync();
-
-        if (user == null)
+        if (user is null)
         {
-            return new ModResult(ModResultType.NotFound, new ResponseMessage($"Could not find any user with id **{userId}**."));
+            return new ModResult(
+                ModResultType.NotFound,
+                new ResponseMessage($"Could not find any user with id **{userId}**."));
         }
 
-        if (!await _gl.Phoenix.DeleteAvatarAsync(userId))
+        var hasSucceeded = await _gl.Phoenix.DeleteAvatarAsync(userId);
+        if (!hasSucceeded)
         {
-            return new ModResult(ModResultType.BackendError, new ResponseMessage($"Failed to remove {user.Username}'s avatar."));
+            return new ModResult(
+                ModResultType.BackendError,
+                new ResponseMessage($"Failed to remove {user.Username}'s avatar."));
         }
 
         await _logs.LogGameActionAsync(LogAction.AvatarDeleted, discordId, userId);
@@ -265,10 +292,11 @@ public class ModerationService
     public async Task<ModResult> GetChipsBoughtAsync(ulong discordId, uint userId)
     {
         var user = await _gl.Api.GetUserById(userId.ToString());
-
-        if (user == null)
+        if (user is null)
         {
-            return new ModResult(ModResultType.NotFound, new ResponseMessage($"Could not find any user with id **{userId}**."));
+            return new ModResult(
+                ModResultType.NotFound,
+                new ResponseMessage($"Could not find any user with id **{userId}**."));
         }
 
         var chipsBought = await _gl.Api.GetChipsBoughtAsync(userId.ToString());
@@ -294,8 +322,7 @@ public class ModerationService
     public async Task<ModResult> GetChipsSpentAsync(ulong discordId, uint userId)
     {
         var user = await _gl.Api.GetUserById(userId.ToString());
-
-        if (user == null)
+        if (user is null)
         {
             return new ModResult(ModResultType.NotFound, new ResponseMessage($"Could not find any user with id **{userId}**."));
         }
@@ -323,17 +350,24 @@ public class ModerationService
     public async Task<ModResult> AddChipsAsync(ulong discordId, uint userId, int amount, bool staging = false)
     {
         var user = await _gl.Api.GetUserById(userId.ToString());
-
-        if (user == null)
+        if (user is null)
         {
-            return new ModResult(ModResultType.NotFound, new ResponseMessage($"Could not find any user with id **{userId}**."));
+            return new ModResult(
+                ModResultType.NotFound,
+                new ResponseMessage($"Could not find any user with id **{userId}**."));
         }
 
-        var success = staging ? await _gl.Staging.TryAddChipsToUserAsync(userId.ToString(), amount) : await _gl.Production.TryAddChipsToUserAsync(userId.ToString(), amount);
+        var hasSucceeded = staging
+            ? await _gl.Staging.TryAddChipsToUserAsync(userId.ToString(), amount)
+            : await _gl.Production.TryAddChipsToUserAsync(userId.ToString(), amount);
 
-        if (!success)
+        if (!hasSucceeded)
         {
-            return new ModResult(ModResultType.BackendError, new ResponseMessage($"Failed to add chips to {user.Name} ({user.Id})"), null, user);
+            return new ModResult(
+                ModResultType.BackendError,
+                new ResponseMessage($"Failed to add chips to {user.Name} ({user.Id})"),
+                null,
+                user);
         }
 
         await _logs.LogGameActionAsync(LogAction.AddChips, discordId, userId, amount.ToString());
@@ -358,17 +392,23 @@ public class ModerationService
     public async Task<ModResult> AddItemsAsync(ulong discordId, uint userId, string sku, int amount, bool staging = false)
     {
         var user = await _gl.Api.GetUserById(userId.ToString());
-
-        if (user == null)
+        if (user is null)
         {
-            return new ModResult(ModResultType.NotFound, new ResponseMessage($"Could not find any user with id **{userId}**."));
+            return new ModResult(
+                ModResultType.NotFound,
+                new ResponseMessage($"Could not find any user with id **{userId}**."));
         }
 
-        var success = staging ? await _gl.Staging.TryAddItemToUserAsync(userId.ToString(), sku, amount) : await _gl.Production.TryAddItemToUserAsync(userId.ToString(), sku, amount);
+        var hasSucceeded = staging
+            ? await _gl.Staging.TryAddItemToUserAsync(userId.ToString(), sku, amount)
+            : await _gl.Production.TryAddItemToUserAsync(userId.ToString(), sku, amount);
 
-        if (!success)
+        if (!hasSucceeded)
         {
-            return new ModResult(ModResultType.BackendError, new ResponseMessage($"Failed to add item with sku {sku} to {user.Name} ({user.Id})"), null, user);
+            return new ModResult(
+                ModResultType.BackendError,
+                new ResponseMessage($"Failed to add item with sku {sku} to {user.Name} ({user.Id})"),
+                null, user);
         }
 
         await _logs.LogGameActionAsync(LogAction.AddItem, discordId, userId, $"{sku}:{amount}");
@@ -394,16 +434,22 @@ public class ModerationService
     public async Task<ModResult> AddXpAsync(ulong discordId, uint userId, int amount, bool staging = false)
     {
         var user = await _gl.Api.GetUserById(userId.ToString());
-
-        if (user == null)
+        if (user is null)
         {
-            return new ModResult(ModResultType.NotFound, new ResponseMessage($"Could not find any user with id **{userId}**."));
+            return new ModResult(
+                ModResultType.NotFound,
+                new ResponseMessage($"Could not find any user with id **{userId}**."));
         }
 
-        var success = staging ? await _gl.Staging.TryAddXpToUserAsync(userId.ToString(), amount) : await _gl.Production.TryAddXpToUserAsync(userId.ToString(), amount);
-        if (!success)
+        var hasSucceeded = staging
+            ? await _gl.Staging.TryAddXpToUserAsync(userId.ToString(), amount)
+            : await _gl.Production.TryAddXpToUserAsync(userId.ToString(), amount);
+
+        if (!hasSucceeded)
         {
-            return new ModResult(ModResultType.BackendError, new ResponseMessage($"Failed to add xp to {user.Name} ({user.Id})"), null, user);
+            return new ModResult(
+                ModResultType.BackendError,
+                new ResponseMessage($"Failed to add xp to {user.Name} ({user.Id})"), null, user);
         }
 
         await _logs.LogGameActionAsync(LogAction.AddXp, discordId, userId, $"{amount}");
@@ -427,11 +473,12 @@ public class ModerationService
 
     public async Task<ModResult> EnableMaintenance(ulong discordId, uint minutes)
     {
-        var success = await _gl.Production.EnableMaintenance(minutes);
-
-        if (!success)
+        var hasSucceeded = await _gl.Production.EnableMaintenance(minutes);
+        if (!hasSucceeded)
         {
-            return new ModResult(ModResultType.BackendError, new ResponseMessage($"Failed to enable maintenance for {minutes} minutes"));
+            return new ModResult(
+                ModResultType.BackendError,
+                new ResponseMessage($"Failed to enable maintenance for {minutes} minutes"));
         }
 
         await _logs.LogGameActionAsync(LogAction.EnableMaintenance, discordId, 0, minutes.ToString());
@@ -451,12 +498,16 @@ public class ModerationService
 
     public async Task<ModResult> ReloadRules(ulong discordId, bool staging = false)
     {
-        var success = staging ? await _gl.Staging.ReloadRules() : await _gl.Production.ReloadRules();
         var serverText = staging ? "Staging" : "Production";
+        var hasSucceeded = staging
+            ? await _gl.Staging.ReloadRules()
+            : await _gl.Production.ReloadRules();
 
-        if (!success)
+        if (!hasSucceeded)
         {
-            return new ModResult(ModResultType.BackendError, new ResponseMessage($"Could not reload rules on the {serverText.ToLower()} backend!"));
+            return new ModResult(
+                ModResultType.BackendError,
+                new ResponseMessage($"Could not reload rules on the {serverText.ToLower()} backend!"));
         }
 
         await _logs.LogGameActionAsync(LogAction.ReloadRules, discordId, 0, serverText);
@@ -476,11 +527,12 @@ public class ModerationService
 
     public async Task<ModResult> RunStagingKickerAsync(ulong discordId)
     {
-        var success = await _gl.Staging.RunKicker();
-
-        if (!success)
+        var hasSucceeded = await _gl.Staging.RunKicker();
+        if (!hasSucceeded)
         {
-            return new ModResult(ModResultType.BackendError, new ResponseMessage($"Failed to run kicker on staging!"));
+            return new ModResult(
+                ModResultType.BackendError,
+                new ResponseMessage($"Failed to run kicker on staging!"));
         }
 
         await _logs.LogGameActionAsync(LogAction.RunKicker, discordId, 0, "Staging");
@@ -500,11 +552,12 @@ public class ModerationService
 
     public async Task<ModResult> ResetHelpsStagingAsync(ulong discordId, uint userId)
     {
-        var success = await _gl.Staging.ResetPlanetHelps(userId.ToString());
-
-        if (!success)
+        var hasSucceeded = await _gl.Staging.ResetPlanetHelps(userId.ToString());
+        if (!hasSucceeded)
         {
-            return new ModResult(ModResultType.BackendError, new ResponseMessage($"Failed to reset helps for user with id {userId}!"));
+            return new ModResult(
+                ModResultType.BackendError,
+                new ResponseMessage($"Failed to reset helps for user with id {userId}!"));
         }
 
         await _logs.LogGameActionAsync(LogAction.ResetHelps, discordId, 0, "Staging");
@@ -525,11 +578,12 @@ public class ModerationService
 
     public async Task<ModResult> ForceWarStagingAsync(ulong discordId, string allianceA, string allianceB)
     {
-        var success = await _gl.Staging.ForceWar(allianceA, allianceB);
-
-        if (!success)
+        var hasSucceeded = await _gl.Staging.ForceWar(allianceA, allianceB);
+        if (!hasSucceeded)
         {
-            return new ModResult(ModResultType.BackendError, new ResponseMessage($"Failed to force war between **{allianceA}** and **{allianceB}**!"));
+            return new ModResult(
+                ModResultType.BackendError,
+                new ResponseMessage($"Failed to force war between **{allianceA}** and **{allianceB}**!"));
         }
 
         await _logs.LogGameActionAsync(LogAction.ForceWar, discordId, 0, $"Staging:{allianceA}:{allianceB}");
@@ -552,11 +606,12 @@ public class ModerationService
 
     public async Task<ModResult> ForceEndWarStagingAsync(ulong discordId, string allianceA, string allianceB)
     {
-        var success = await _gl.Staging.ForceStopWar(allianceA, allianceB);
-
-        if (!success)
+        var hasSucceeded = await _gl.Staging.ForceStopWar(allianceA, allianceB);
+        if (!hasSucceeded)
         {
-            return new ModResult(ModResultType.BackendError, new ResponseMessage($"Failed to end war between **{allianceA}** and **{allianceB}**!"));
+            return new ModResult(
+                ModResultType.BackendError,
+                new ResponseMessage($"Failed to end war between **{allianceA}** and **{allianceB}**!"));
         }
 
         await _logs.LogGameActionAsync(LogAction.ForceStopWar, discordId, 0, $"Staging:{allianceA}:{allianceB}");
