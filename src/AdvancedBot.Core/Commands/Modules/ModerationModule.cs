@@ -200,28 +200,35 @@ public class ModerationModule : TopModule
 
         await LogService.LogGameActionAsync(LogAction.GetFull, Context.User.Id, user.Id.Value);
 
-        // TODO: add these once available on the UserDetailsDTO.
-        // var steamId = null;
-        // var discordTag = <@{discordId}>;
+        // TODO: should work once you update api wrapper with latest api changes
+        // var steamId = user.LinkedAccounts.FirstOrDefault(a => a.Provider == "steam")?.ProviderKey;
+        // var discordId = user.LinkedAccounts.FirstOrDefault(a => a.Provider == "discord")?.ProviderKey;
+        // var discordTag = discordId is null ? <@{discordId}> : "None";
 
-        var priorityRoles = new[] { "Admin", "Staff" };
+        var priorityRoles = new[] { "admin", "developer", "staff" };
         var role = priorityRoles.FirstOrDefault(r => user.Roles.Contains(r)) ?? user.Roles.FirstOrDefault();
 
-        var description = false // TODO: replace with ban check, not available on user details dto atm (sorry)
-            ? "This user is currently **banned**.\nReason: Unkown.\nNotes: None.\n\n" // TODO: replace with ban reason type and moderator notes.
+        // var isBanned = user.ActiveBan is not null; // TODO: uncomment when api wrapper is updated
+        var isBanned = false;
+
+        var description = isBanned
+            ? "This user is currently **banned**.\nReason: Unkown.\nNotes: None.\n\n" // TODO: replace with below once api wrapper is updated
+            // ? $"This user is currently **banned**.\nReason: {user.ActiveBan!.Reason}\nNotes: {user.ActiveBan.ModeratorNotes ?? "None"}\n\n"
             : role switch
             {
-                "Admin" => "This user is an Admininstrator.\n\n",
-                "Staff" => "This user is a Staff member.\n\n",
+                "admin" => "This user is an Admininstrator.\n\n",
+                "developer" => "This user is an developer.\n\n",
+                "staff" => "This user is part of the Staff.\n\n",
                 _ => ""
             };
 
-        var color = false // TODO: replace with ban check, not available on user details dto atm (sorry)
+        var color = isBanned
             ? Color.Default
             : role switch
             {
-                "Admin" => Color.DarkRed,
-                "Staff" => new Color(2605694),
+                "admin" => Color.DarkRed,
+                "developer" => Color.Blue,
+                "staff" => new Color(2605694),
                 _ => Color.LightGrey
             };
 
@@ -238,8 +245,6 @@ public class ModerationModule : TopModule
                 .WithText($"Full profile requested by {Context.User.Username}#{Context.User.Discriminator}")
                 .WithIconUrl(Context.User.GetDisplayAvatarUrl()))
             .WithCurrentTimestamp();
-
-        // 
 
         // if (steamId is not null)
         // {

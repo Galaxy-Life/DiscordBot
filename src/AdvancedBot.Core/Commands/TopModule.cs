@@ -252,7 +252,7 @@ public class TopModule : InteractionModuleBase<SocketInteractionContext>
 
         var stats = await GLClient.Api.GetUserStats(user.Id);
 
-        var priorityRoles = new[] { "Admin", "Staff" };
+        var priorityRoles = new[] { "admin", "developer", "staff" };
         var role = priorityRoles.FirstOrDefault(r => phoenixUser.Roles.Contains(r)) ?? phoenixUser.Roles.FirstOrDefault();
 
         var roleText = phoenixUser.IsBanned.GetValueOrDefault()
@@ -265,8 +265,9 @@ public class TopModule : InteractionModuleBase<SocketInteractionContext>
             ? Color.Default
             : role switch
             {
-                "Admin" => Color.DarkRed,
-                "Staff" => new Color(2605694),
+                "admin" => Color.DarkRed,
+                "developer" => Color.Blue,
+                "staff" => new Color(2605694),
                 _ => Color.LightGrey
             };
 
@@ -297,11 +298,6 @@ public class TopModule : InteractionModuleBase<SocketInteractionContext>
             .WithFooter(footer => footer
                 .WithText($"ID: {phoenixUser.Id} • Account created on {phoenixUser.RegisteredOn.GetValueOrDefault():dd MMMM yyyy a\\t HH:mm}")
                 .WithIconUrl(user.Avatar));
-
-        /*if (!string.IsNullOrEmpty(phoenixUser.SteamId))
-        {
-            embed.WithUrl($"https://steamcommunity.com/profiles/{steamId.Replace("\"", "")}");
-        }*/
 
         var message = new ResponseMessage("", [embed.Build()]);
         return new ModResult(ModResultType.Success, message, phoenixUser, user);
