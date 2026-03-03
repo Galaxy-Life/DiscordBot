@@ -192,6 +192,7 @@ public class ModerationModule : TopModule
     public async Task GetFullUserAsync(string input)
     {
         var user = await GetFullPhoenixUser(input);
+
         if (user is null)
         {
             await ModifyOriginalResponseAsync(msg => msg.Content = $"Could not find any user for **{input}**.");
@@ -201,8 +202,8 @@ public class ModerationModule : TopModule
         await LogService.LogGameActionAsync(LogAction.GetFull, Context.User.Id, user.Id.Value);
 
         var steamId = user.LinkedAccounts?.FirstOrDefault(a => a.Provider == "steam")?.ProviderKey;
-        var discordId = user.LinkedAccounts?.FirstOrDefault(a => a.Provider == "discord")?.ProviderKey;
-        var discordTag = discordId is null ? $"<@{discordId}>" : "None";
+        var discordId = user.LinkedAccounts?.FirstOrDefault(a => a.Provider?.ToLower() == "discord")?.ProviderKey;
+        var discordTag = discordId is null ? $"<@{discordId}>" : null;
 
         var priorityRoles = new[] { "admin", "developer", "staff" };
         var role = priorityRoles.FirstOrDefault(r => user.Roles?.Contains(r) ?? false) ?? user.Roles?.FirstOrDefault();
@@ -237,7 +238,7 @@ public class ModerationModule : TopModule
             .AddField("Email", $"{user.Email}", true)
             .AddField("Account creation date", $"{user.RegisteredOn.GetValueOrDefault():dd MMMM yyyy a\\t HH:mm}", true)
             .WithFooter(footer => footer
-                .WithText($"Full profile requested by {Context.User.Username}#{Context.User.Discriminator}")
+                .WithText($"Full profile requested by {Context.User.Username}")
                 .WithIconUrl(Context.User.GetDisplayAvatarUrl()))
             .WithCurrentTimestamp();
 

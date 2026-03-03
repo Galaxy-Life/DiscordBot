@@ -167,7 +167,7 @@ public class TopModule : InteractionModuleBase<SocketInteractionContext>
         return components.Build();
     }
 
-    protected async Task<User> GetUserByInput(string input)
+    protected async Task<User?> GetUserByInput(string input)
     {
         if (string.IsNullOrEmpty(input)) input = Context.User.Username;
 
@@ -180,54 +180,69 @@ public class TopModule : InteractionModuleBase<SocketInteractionContext>
 
     protected async Task<UserDto?> GetPhoenixUser(string input)
     {
-        if (string.IsNullOrEmpty(input))
+        try
         {
-            input = Context.User.Username;
+            if (string.IsNullOrEmpty(input))
+            {
+                input = Context.User.Username;
+            }
+
+            UserDto? user = null;
+
+            // extra check to see if all characters were numbers
+            if (long.TryParse(input, out var userId))
+            {
+                user = await PhoenixWrapper.GetClient(Context.User.Id).V1.Users[userId].GetAsync();
+            }
+
+            // Get regular user to know its id
+            user ??= await PhoenixWrapper.GetClient(Context.User.Id).V1.Users.ByUsername[input].GetAsync();
+
+            return user;
         }
-
-        UserDto? user = null;
-
-        // extra check to see if all characters were numbers
-        if (long.TryParse(input, out var userId))
+        catch (Exception)
         {
-            user = await PhoenixWrapper.GetClient(Context.User.Id).V1.Users[userId].GetAsync();
+            return null;
         }
-
-        // Get regular user to know its id
-        user ??= await PhoenixWrapper.GetClient(Context.User.Id).V1.Users.ByUsername[input].GetAsync();
-
-        return user;
     }
 
     protected async Task<UserDetailsDto?> GetFullPhoenixUser(string input)
     {
-        if (string.IsNullOrEmpty(input))
+        try
         {
-            input = Context.User.Username;
-        }
-
-        UserDetailsDto? detailedUser = null;
-
-        // extra check to see if all characters were numbers
-        if (long.TryParse(input, out var userId))
-        {
-            detailedUser = await PhoenixWrapper.GetClient(Context.User.Id).V1.Users[userId].Details.GetAsync();
-        }
-
-        // Not found, try fetching by name
-        if (detailedUser == null)
-        {
-            // Get regular user to know its id
-            var user = await PhoenixWrapper.GetClient(Context.User.Id).V1.Users.ByUsername[input].GetAsync();
-
-            // Get user details by id after getting it by name
-            if (user != null)
+            if (string.IsNullOrEmpty(input))
             {
-                detailedUser = await PhoenixWrapper.GetClient(Context.User.Id).V1.Users[user.Id.Value].Details.GetAsync();
+                input = Context.User.Username;
             }
-        }
 
-        return detailedUser;
+            UserDetailsDto? detailedUser = null;
+
+            // extra check to see if all characters were numbers
+            if (long.TryParse(input, out var userId))
+            {
+                detailedUser = await PhoenixWrapper.GetClient(Context.User.Id).V1.Users[userId].Details.GetAsync();
+            }
+
+            // Not found, try fetching by name
+            if (detailedUser == null)
+            {
+                // Get regular user to know its id
+                var user = await PhoenixWrapper.GetClient(Context.User.Id).V1.Users.ByUsername[input].GetAsync();
+
+                // Get user details by id after getting it by name
+                if (user != null)
+                {
+                    detailedUser = await PhoenixWrapper.GetClient(Context.User.Id).V1.Users[user.Id.Value].Details.GetAsync();
+                }
+            }
+
+            return detailedUser;
+        }
+        catch (Exception)
+        {
+            return null;
+        }
+        
     }
 
     public async Task<ModResult> GetUserProfileAsync(string input)
