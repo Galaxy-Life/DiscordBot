@@ -17,7 +17,7 @@ public class PhoenixWrapperService
         _credentials = credentials;
     }
 
-    public Dictionary<ulong, ApiClient> PhoenixClients { get; set; }
+    public Dictionary<ulong, ApiClient> PhoenixClients { get; set; } = [];
 
     public ApiClient GetClient(ulong discordId)
     {
