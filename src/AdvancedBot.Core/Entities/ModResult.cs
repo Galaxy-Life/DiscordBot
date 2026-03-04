@@ -14,7 +14,7 @@ public class ModResult
         User = user;
     }
 
-    public UserDto PhoenixUser { get; set; }
+    public UserDto? PhoenixUser { get; set; }
     public User User { get; set; }
     public Alliance Alliance { get; set; }
     public int IntValue { get; set; }

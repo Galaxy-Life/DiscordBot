@@ -50,7 +50,7 @@ public class GLModule : TopModule
         // no gl data found
         if (response.User == null) return;
 
-        var components = CreateDefaultComponents(response.PhoenixUser.Username, response.User.Id, response.User.AllianceId, response.PhoenixUser.IsBanned.GetValueOrDefault());
+        var components = CreateDefaultComponents(response.User.Name, response.User.Id, response.User.AllianceId, response.PhoenixUser?.IsBanned ?? false);
         await ModifyOriginalResponseAsync(msg => msg.Components = components);
     }
 
@@ -63,7 +63,7 @@ public class GLModule : TopModule
         // no gl data found
         if (response.User == null) return;
 
-        var components = CreateDefaultComponents(response.User.Name, response.User.Id, response.User.AllianceId, response.PhoenixUser.IsBanned.GetValueOrDefault());
+        var components = CreateDefaultComponents(response.User.Name, response.User.Id, response.User.AllianceId, response.PhoenixUser?.IsBanned ?? false);
         await ModifyOriginalResponseAsync(msg => msg.Components = components);
     }
 
@@ -77,7 +77,7 @@ public class GLModule : TopModule
         if (response.Alliance == null) return;
 
         var owner = response.Alliance.Members.First(x => x.AllianceRole == AllianceRole.LEADER);
-        var components = CreateDefaultComponents(owner.Name, owner.Id, response.Alliance.Id, response.PhoenixUser.IsBanned.GetValueOrDefault());
+        var components = CreateDefaultComponents(owner.Name, owner.Id, response.Alliance.Id, response.PhoenixUser?.IsBanned ?? false);
         await ModifyOriginalResponseAsync(msg => msg.Components = components);
     }
 
@@ -91,7 +91,7 @@ public class GLModule : TopModule
         if (response.Alliance == null) return;
 
         var owner = response.Alliance.Members.First(member => member.AllianceRole == AllianceRole.LEADER);
-        var components = CreateDefaultComponents(owner.Name, owner.Id, response.Alliance.Id, response.PhoenixUser.IsBanned.GetValueOrDefault());
+        var components = CreateDefaultComponents(owner.Name, owner.Id, response.Alliance.Id, response.PhoenixUser?.IsBanned ?? false);
         await ModifyOriginalResponseAsync(msg => msg.Components = components);
     }
 
