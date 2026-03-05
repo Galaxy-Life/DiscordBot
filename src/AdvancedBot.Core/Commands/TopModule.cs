@@ -109,7 +109,7 @@ public class TopModule : InteractionModuleBase<SocketInteractionContext>
         components.WithButton("Profile", $"profile:{username},{userId}", ButtonStyle.Primary, Emote.Parse("<:AFCElderby:943325489009934368>"));
         components.WithButton("Stats", $"stats:{username},{userId}", ButtonStyle.Primary, Emote.Parse("<:AACLooter:943311525320482877>"));
 
-        if (!string.IsNullOrEmpty(alliance))
+        if (!string.IsNullOrEmpty(alliance) && alliance != "1111111111111111111111111111111111111111")
         {
             components.WithButton("Alliance", $"alliance:{alliance}", ButtonStyle.Primary, Emote.Parse("<:AFECounselor_Mobius:1082315024829272154>"));
             components.WithButton("Members", $"members:{alliance}", ButtonStyle.Primary, Emote.Parse("<:Major_Wor:944250193279324171>"));
@@ -117,11 +117,11 @@ public class TopModule : InteractionModuleBase<SocketInteractionContext>
 
         if (PowerUsers.Contains(Context.User.Id))
         {
-            components.WithButton("Moderation", $"moderation:{username},{userId},{alliance ?? " "},{isBanned}", ButtonStyle.Secondary, new Emoji("➕"));
+            components.WithButton("Moderation", $"moderation:{username},{userId},{alliance ?? "1111111111111111111111111111111111111111"},{isBanned}", ButtonStyle.Secondary, new Emoji("➕"));
         }
         else if (SemiPowerUsers.Contains(Context.User.Id))
         {
-            components.WithButton("Moderation", $"semimoderation:{username},{userId},{alliance ?? " "}", ButtonStyle.Secondary, new Emoji("➕"));
+            components.WithButton("Moderation", $"semimoderation:{username},{userId},{alliance ?? "1111111111111111111111111111111111111111"}", ButtonStyle.Secondary, new Emoji("➕"));
         }
 
         return components.Build();
