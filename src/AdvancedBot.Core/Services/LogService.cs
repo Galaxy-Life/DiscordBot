@@ -1,6 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-using AdvancedBot.Core.Commands;
+﻿using AdvancedBot.Core.Commands;
 using AdvancedBot.Core.Entities;
 using AdvancedBot.Core.Entities.Enums;
 using AdvancedBot.Core.Services.DataStorage;
@@ -29,7 +27,7 @@ public class LogService
         _id = _storage.RestoreCount<Log>();
     }
 
-    public async Task LogGameActionAsync(LogAction action, ulong discordModId, uint victimGameId, string reason = "", DateTime? until = null)
+    public async Task LogGameActionAsync(LogAction action, ulong discordModId, long victimGameId, string reason = "", DateTime? until = null)
     {
         _id++;
         var log = new Log(_id, action, discordModId, victimGameId, reason, until);
@@ -37,15 +35,12 @@ public class LogService
         _storage.Store(log);
 
         var channel = await _client.GetChannelAsync(_commands.LogChannelId) as ISocketMessageChannel;
-        // Retry a few times cause api do be unstable
         var user = await _gl.Api.GetUserById(victimGameId.ToString());
-        user ??= await _gl.Api.GetUserById(victimGameId.ToString());
-        user ??= await _gl.Api.GetUserById(victimGameId.ToString());
 
         await channel.SendMessageAsync(embed: GetEmbedForLog(log, user?.Name, victimGameId));
     }
 
-    public static Embed GetEmbedForLog(Log log, string victimName, uint victimId)
+    public static Embed GetEmbedForLog(Log log, string victimName, long victimId)
     {
         var embed = new EmbedBuilder()
             .WithTitle($"Overview | {log.Type.Humanize()}")

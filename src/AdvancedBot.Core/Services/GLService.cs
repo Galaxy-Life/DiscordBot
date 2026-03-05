@@ -1,13 +1,9 @@
-﻿using System;
-using System.Linq;
-using System.Threading.Tasks;
-using AdvancedBot.Core.Entities;
+﻿using AdvancedBot.Core.Entities;
 using AdvancedBot.Core.Entities.Enums;
 using Discord;
 using GL.NET;
 using GL.NET.Entities;
 using Humanizer;
-using Humanizer.Localisation;
 
 namespace AdvancedBot.Core.Services;
 
@@ -20,89 +16,13 @@ public class GLService
         _client = client;
     }
 
-    public async Task<ModResult> GetUserProfileAsync(string input)
-    {
-        var phoenixUser = await getPhoenixUserByInput(input);
-
-        if (phoenixUser == null)
-        {
-            return new ModResult(ModResultType.NotFound, message: new ResponseMessage($"<:shrugR:945740284308893696> Could not find any user for **{input}**."));
-        }
-
-        var user = await getUserByInput(input);
-
-        if (user == null)
-        {
-            if (phoenixUser.Role != PhoenixRole.Banned)
-            {
-                return new ModResult(ModResultType.Success, new ResponseMessage($"The person **{phoenixUser.UserName} ({phoenixUser.UserId})** exists, but has no progress in Galaxy Life!"), phoenixUser, null);
-            }
-            else
-            {
-                return new ModResult(ModResultType.Success, new ResponseMessage($"**{phoenixUser.UserName} ({phoenixUser.UserId})** is banned and reset!"), phoenixUser, null);
-            }
-        }
-
-        var stats = await _client.Api.GetUserStats(user.Id);
-
-        var steamId = phoenixUser.SteamId ?? "No steam linked";
-        var roleText = phoenixUser.Role == PhoenixRole.Banned ? "[BANNED]"
-            : phoenixUser.Role == PhoenixRole.Donator ? "[Donator]"
-            : phoenixUser.Role == PhoenixRole.Staff ? "[Staff]"
-            : phoenixUser.Role == PhoenixRole.Administrator ? "[Admin]"
-            : "";
-
-        var color = phoenixUser.Role == PhoenixRole.Banned ? Color.Default
-            : phoenixUser.Role == PhoenixRole.Donator ? new Color(15710778)
-            : phoenixUser.Role == PhoenixRole.Staff ? new Color(2605694)
-            : phoenixUser.Role == PhoenixRole.Administrator ? Color.DarkRed
-            : Color.LightGrey;
-
-        var displayAlliance = "This user is not a member of any alliance.";
-
-        if (!string.IsNullOrEmpty(user.AllianceId))
-        {
-            var alliance = await _client.Api.GetAlliance(user.AllianceId);
-
-            // can happen due to 24hour player delay
-            if (alliance == null)
-            {
-                displayAlliance = "This user has recently changed alliance, please wait for it to update!";
-            }
-            else
-            {
-                displayAlliance = $"This user is a member of **{alliance.Name}**.";
-            }
-        }
-
-        var embed = new EmbedBuilder()
-            .WithTitle($"{roleText} {phoenixUser.UserName} | Profile")
-            .WithThumbnailUrl(user.Avatar)
-            .WithDescription($"{displayAlliance}\n\u200b")
-            .AddField("Level", formatNumber(user.Level), true)
-            .AddField("Starbase", user.Planets[0].HQLevel, true)
-            .AddField("Colonies", user.Planets.Count(x => x != null) - 1, true)
-            .WithColor(color)
-            .WithFooter(footer => footer
-                .WithText($"ID: {phoenixUser.UserId} • Account created on {phoenixUser.Created.GetValueOrDefault():dd MMMM yyyy a\\t HH:mm}")
-                .WithIconUrl(user.Avatar));
-
-        if (!string.IsNullOrEmpty(phoenixUser.SteamId))
-        {
-            embed.WithUrl($"https://steamcommunity.com/profiles/{steamId.Replace("\"", "")}");
-        }
-
-        var message = new ResponseMessage("", [embed.Build()]);
-        return new ModResult(ModResultType.Success, message, phoenixUser, user);
-    }
-
     public async Task<ModResult> GetUserStatsAsync(string input)
     {
         var user = await getUserByInput(input);
 
         if (user == null)
         {
-            return new ModResult(ModResultType.NotFound, message: new ResponseMessage($"<:shrugR:945740284308893696> Could not find any user for **{input}**."));
+            return new ModResult(ModResultType.NotFound, message: new ResponseMessage($"Could not find any user for **{input}**."));
         }
 
         var stats = await _client.Api.GetUserStats(user.Id);
@@ -116,11 +36,11 @@ public class GLService
             .AddField("Level", user.Level, true)
             .AddField("Players attacked", stats.PlayersAttacked, true)
             .AddField("NPCs attacked", stats.NpcsAttacked, true)
-            .AddField("Coins spent", formatNumber(stats.CoinsSpent), true)
-            .AddField("Minerals spent", formatNumber(stats.MineralsSpent), true)
-            .AddField("Friends helped", formatNumber(stats.FriendsHelped), true)
-            .AddField("Gifts received", formatNumber(stats.GiftsReceived), true)
-            .AddField("Gifts sent", formatNumber(stats.GiftsSent), true)
+            .AddField("Coins spent", FormatNumber(stats.CoinsSpent), true)
+            .AddField("Minerals spent", FormatNumber(stats.MineralsSpent), true)
+            .AddField("Friends helped", FormatNumber(stats.FriendsHelped), true)
+            .AddField("Gifts received", FormatNumber(stats.GiftsReceived), true)
+            .AddField("Gifts sent", FormatNumber(stats.GiftsSent), true)
             .AddField("Obstacles recycled", stats.ObstaclesRecycled, true)
             .AddField("Troops trained", stats.TroopsTrained, true)
             .AddField("Troopsize donated", stats.TroopSizesDonated, true)
@@ -141,7 +61,7 @@ public class GLService
 
         if (alliance == null)
         {
-            return new ModResult(ModResultType.NotFound, message: new ResponseMessage($"<:shrugR:945740284308893696> Could not find any alliance for **{input}**."));
+            return new ModResult(ModResultType.NotFound, message: new ResponseMessage($"Could not find any alliance for **{input}**."));
         }
 
         var emblemUrl = $"https://cdn.galaxylifegame.net/content/img/alliance_flag/AllianceLogos/flag_{(int)alliance.Emblem.Shape}_{(int)alliance.Emblem.Pattern}_{(int)alliance.Emblem.Icon}.png";
@@ -182,7 +102,7 @@ public class GLService
 
         if (alliance == null)
         {
-            return new ModResult(ModResultType.NotFound, message: new ResponseMessage($"<:shrugR:945740284308893696> No alliance found for **{input}**"));
+            return new ModResult(ModResultType.NotFound, message: new ResponseMessage($"No alliance found for **{input}**"));
         }
 
         var owner = alliance.Members.FirstOrDefault(x => x.AllianceRole == AllianceRole.LEADER);
@@ -226,38 +146,7 @@ public class GLService
         return profile;
     }
 
-    private async Task<PhoenixUser> getPhoenixUserByInput(string input, bool full = false)
-    {
-        PhoenixUser user = null;
-
-        string digitString = new(input.Where(char.IsDigit).ToArray());
-
-        // extra check to see if all characters were numbers
-        if (digitString.Length == input.Length)
-        {
-            if (full)
-            {
-                user = await _client.Phoenix.GetFullPhoenixUserAsync(input);
-            }
-            else
-            {
-                user = await _client.Phoenix.GetPhoenixUserAsync(input);
-            }
-        }
-
-        // try to get user by name
-        user ??= await _client.Phoenix.GetPhoenixUserByNameAsync(input);
-
-        // get user by id after getting it by name
-        if (user != null && full)
-        {
-            user = await _client.Phoenix.GetFullPhoenixUserAsync(user.UserId);
-        }
-
-        return user;
-    }
-
-    private static string formatNumber(decimal number)
+    private static string FormatNumber(decimal number)
     {
         return number switch
         {

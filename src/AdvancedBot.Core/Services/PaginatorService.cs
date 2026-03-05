@@ -1,12 +1,11 @@
 ﻿using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using System.Timers;
 using AdvancedBot.Core.Entities;
 using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
+
+using Timer = System.Timers.Timer;
 
 namespace AdvancedBot.Core.Services;
 

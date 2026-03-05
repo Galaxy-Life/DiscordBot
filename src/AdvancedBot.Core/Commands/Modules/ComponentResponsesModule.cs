@@ -1,4 +1,4 @@
-﻿using System.Threading.Tasks;
+﻿using AdvancedBot.Core.Commands.Modals;
 using AdvancedBot.Core.Services;
 using Discord.Interactions;
 
@@ -13,7 +13,7 @@ public class ComponentResponsesModule : TopModule
     public async Task OnProfileComponent(string username, string userId)
     {
         await DeferAsync();
-        var response = await GLService.GetUserProfileAsync(userId);
+        var response = await GetUserProfileAsync(userId);
 
         await SendResponseMessage(response.Message, false);
     }
@@ -240,7 +240,7 @@ public class ComponentResponsesModule : TopModule
 
         await DeferAsync();
 
-        var result = await ModService.BanUserAsync(Context.User.Id, uint.Parse(userId), modal.BanReason, (uint)days);
+        var result = await ModService.BanUserAsync(Context.User.Id, uint.Parse(userId), modal.BanType, modal.BanReason, (uint)days);
         await SendResponseMessage(result.Message, true);
     }
 

@@ -9,6 +9,7 @@ using Discord;
 using Discord.Interactions;
 using GL.NET.Entities;
 using Humanizer;
+using Phoenix.Api.Models;
 
 namespace AdvancedBot.Core.Commands.Modules;
 
@@ -29,7 +30,7 @@ public class ModerationModule : TopModule
 
             if (alliance == null)
             {
-                await ModifyOriginalResponseAsync(msg => msg.Content = $"<:shrugR:945740284308893696> Could not find any alliance named **{allianceName}**");
+                await ModifyOriginalResponseAsync(msg => msg.Content = $"Could not find any alliance named **{allianceName}**");
                 return;
             }
 
@@ -75,7 +76,7 @@ public class ModerationModule : TopModule
 
             if (alliance == null)
             {
-                await ModifyOriginalResponseAsync(msg => msg.Content = $"<:shrugR:945740284308893696> Could not find any alliance named **{allianceName}**.");
+                await ModifyOriginalResponseAsync(msg => msg.Content = $"Could not find any alliance named **{allianceName}**.");
                 return;
             }
 
@@ -83,7 +84,7 @@ public class ModerationModule : TopModule
 
             if (checkAlliance != null)
             {
-                await ModifyOriginalResponseAsync(msg => msg.Content = $"<:shrugR:945740284308893696> This alliance name is not available!");
+                await ModifyOriginalResponseAsync(msg => msg.Content = $"This alliance name is not available!");
                 return;
             }
 
@@ -116,7 +117,7 @@ public class ModerationModule : TopModule
 
             if (alliance == null)
             {
-                await ModifyOriginalResponseAsync(msg => msg.Content = $"<:shrugR:945740284308893696> Could not find any alliance named **{allianceName}**.");
+                await ModifyOriginalResponseAsync(msg => msg.Content = $"Could not find any alliance named **{allianceName}**.");
                 return;
             }
 
@@ -124,7 +125,7 @@ public class ModerationModule : TopModule
 
             if (user == null || user.AllianceId != alliance.Id)
             {
-                await ModifyOriginalResponseAsync(msg => msg.Content = $"<:shrugR:945740284308893696> This user is not a member of this alliance."); return;
+                await ModifyOriginalResponseAsync(msg => msg.Content = $"This user is not a member of this alliance."); return;
             }
 
             if (!await GLClient.Api.MakeUserOwnerInAllianceAsync(alliance.Id, userId.ToString()))
@@ -136,7 +137,7 @@ public class ModerationModule : TopModule
 
             var embed = new EmbedBuilder()
                 .WithTitle("Ownership successfully given")
-                .WithDescription($"Player **{user.Name}** is now the owner of **${allianceName}**.")
+                .WithDescription($"Player **{user.Name}** is now the owner of **{allianceName}**.")
                 .WithColor(Color.Green)
                 .WithFooter(footer => footer
                     .WithText($"Ownership transfer requested by {Context.User.Username}#{Context.User.Discriminator}")
@@ -154,14 +155,14 @@ public class ModerationModule : TopModule
 
             if (alliance == null)
             {
-                await ModifyOriginalResponseAsync(msg => msg.Content = $"<:shrugR:945740284308893696> Could not find any alliance named **{allianceName}**.");
+                await ModifyOriginalResponseAsync(msg => msg.Content = $"Could not find any alliance named **{allianceName}**.");
                 return;
             }
 
             var user = await GLClient.Api.GetUserById(userId.ToString());
             if (user == null || user.AllianceId != alliance.Id)
             {
-                await ModifyOriginalResponseAsync(msg => msg.Content = $"<:shrugR:945740284308893696> This user is not a member of this alliance.");
+                await ModifyOriginalResponseAsync(msg => msg.Content = $"This user is not a member of this alliance.");
                 return;
             }
 
@@ -190,57 +191,75 @@ public class ModerationModule : TopModule
     [SlashCommand("getfull", "Retrieves the complete profile of a user.")]
     public async Task GetFullUserAsync(string input)
     {
-        if (await GetPhoenixUserByInput(input, true) is not FullPhoenixUser user)
+        var user = await GetFullPhoenixUser(input);
+
+        if (user is null)
         {
-            await ModifyOriginalResponseAsync(msg => msg.Content = $"<:shrugR:945740284308893696> Could not find any user for **{input}**.");
+            await ModifyOriginalResponseAsync(msg => msg.Content = $"Could not find any user for **{input}**.");
             return;
         }
 
-        await LogService.LogGameActionAsync(LogAction.GetFull, Context.User.Id, user.UserId);
+        await LogService.LogGameActionAsync(LogAction.GetFull, Context.User.Id, user.Id.Value);
 
-        var steamId = user.SteamId ?? "No account linked";
-        var discordTag = string.IsNullOrEmpty(user.DiscordId) ? "No account linked" : $"<@{user.DiscordId}>";
+        var steamId = user.LinkedAccounts?.FirstOrDefault(a => a.Provider == "steam")?.ProviderKey;
+        var discordId = user.LinkedAccounts?.FirstOrDefault(a => a.Provider?.ToLower() == "discord")?.ProviderKey;
+        var discordTag = discordId is not null ? $"<@{discordId}>" : null;
 
-        var description =
-              user.Role == PhoenixRole.Banned ? $"**This user has been banned!!**\nBan Reason: **{user.BanReason}**\n\n"
-            : user.Role == PhoenixRole.Donator ? "This user is a Donator\n\n"
-            : user.Role == PhoenixRole.Staff ? "This user is a Staff Member\n\n"
-            : user.Role == PhoenixRole.Administrator ? "This user is an Admin\n\n"
-            : "";
+        var priorityRoles = new[] { "admin", "developer", "staff" };
+        var role = priorityRoles.FirstOrDefault(r => user.Roles?.Contains(r) ?? false) ?? user.Roles?.FirstOrDefault();
 
-        var color =
-              user.Role == PhoenixRole.Banned ? Color.Default
-            : user.Role == PhoenixRole.Donator ? new Color(15710778)
-            : user.Role == PhoenixRole.Staff ? new Color(2605694)
-            : user.Role == PhoenixRole.Administrator ? Color.DarkRed
-            : Color.LightGrey;
+        var isBanned = user.ActiveBan is not null;
+
+        var description = isBanned
+            ? $"This user is currently **banned**.\nReason: {user.ActiveBan!.Reason}\nNotes: {user.ActiveBan.ModeratorNotes ?? "None"}\n\n"
+            : role switch
+            {
+                "admin" => "This user is an Admininstrator.\n\n",
+                "developer" => "This user is a developer.\n\n",
+                "staff" => "This user is a Staff member.\n\n",
+                _ => ""
+            };
+
+        var color = isBanned
+            ? Color.Default
+            : role switch
+            {
+                "admin" => Color.DarkRed,
+                "developer" => Color.Blue,
+                "staff" => new Color(2605694),
+                _ => Color.LightGrey
+            };
 
         var embed = new EmbedBuilder()
-            .WithTitle($"{user.UserName} | Profile")
+            .WithTitle($"{user.Username} | Profile")
             .WithDescription(description)
             .WithColor(color)
-            .AddField("ID", $"`{user.UserId}`", true)
-            .AddField("Steam ID", $"`{steamId.Replace("\"", "")}`", true)
-            .AddField("Discord", $"{discordTag}", true)
-            .AddField("Email", $"{user.Email}")
-            .AddField("Account creation date", $"{user.Created.GetValueOrDefault():dd MMMM yyyy a\\t HH:mm}", true)
+            .AddField("ID", $"`{user.Id}`", true)
+            .AddField("Email", $"{user.Email}", true)
+            .AddField("Account creation date", $"{user.RegisteredOn.GetValueOrDefault():dd MMMM yyyy a\\t HH:mm}", true)
             .WithFooter(footer => footer
-                .WithText($"Full profile requested by {Context.User.Username}#{Context.User.Discriminator}")
+                .WithText($"Full profile requested by {Context.User.Username}")
                 .WithIconUrl(Context.User.GetDisplayAvatarUrl()))
             .WithCurrentTimestamp();
 
-        if (user.SteamId != null)
+        if (steamId is not null)
         {
-            embed.WithUrl($"https://steamcommunity.com/profiles/{steamId.Replace("\"", "")}");
+            embed.AddField("Steam ID", $"`{steamId}`", true);
+            embed.WithUrl($"https://steamcommunity.com/profiles/{steamId}");
+        }
+
+        if (discordId is not null)
+        {
+            embed.AddField("Discord", $"{discordTag}", true);
         }
 
         await ModifyOriginalResponseAsync(msg => msg.Embeds = new Embed[] { embed.Build() });
     }
 
     [SlashCommand("ban", "Bans a given user")]
-    public async Task TryBanUserAsync(uint userId, string reason, uint days = 0)
+    public async Task TryBanUserAsync(uint userId, BanReasonType type, string reason, uint days = 0)
     {
-        var result = await ModService.BanUserAsync(Context.User.Id, userId, reason, days);
+        var result = await ModService.BanUserAsync(Context.User.Id, userId, type, reason, days);
         await SendResponseMessage(result.Message, false);
     }
 
@@ -254,7 +273,7 @@ public class ModerationModule : TopModule
     [SlashCommand("updateemail", "Updates a given user's email address")]
     public async Task TryUpdateEmailAsync(uint userId, string newEmail)
     {
-        var user = await GLClient.Phoenix.GetFullPhoenixUserAsync(userId);
+        var user = await GetFullPhoenixUser(userId.ToString());
 
         if (user == null)
         {
@@ -264,21 +283,17 @@ public class ModerationModule : TopModule
 
         if (user.Email == newEmail)
         {
-            await ModifyOriginalResponseAsync(msg => msg.Content = $"{user.UserName} ({user.UserId}) already has `{user.Email}` as their email!");
+            await ModifyOriginalResponseAsync(msg => msg.Content = $"{user.Username} ({user.Id}) already has `{user.Email}` as their email!");
             return;
         }
 
-        if (!await GLClient.Phoenix.TryUpdateEmail(userId, newEmail))
-        {
-            await ModifyOriginalResponseAsync(msg => msg.Content = $"Could not update email for {user.UserName} ({user.UserId})");
-            return;
-        }
+        await PhoenixWrapper.GetClient(Context.User.Id).V1.Users[userId].Email.PatchAsync(new ChangeUserEmailRequest() { Email = newEmail });
 
         await LogService.LogGameActionAsync(LogAction.UpdateEmail, Context.User.Id, userId, $"{user.Email}:{newEmail}");
 
         var embed = new EmbedBuilder()
             .WithTitle("Email successfully updated")
-            .WithDescription($"**{user.UserName}** email has been updated.")
+            .WithDescription($"**{user.Username}** email has been updated.")
             .AddField("Previous", $"**{user.Email}**", true)
             .AddField("Updated", $"**{newEmail}**", true)
             .WithColor(Color.Green)
@@ -294,7 +309,7 @@ public class ModerationModule : TopModule
     [SlashCommand("updatename", "Updates a given user's username")]
     public async Task TryUpdateNameAsync(uint userId, string newName)
     {
-        var user = await GLClient.Phoenix.GetFullPhoenixUserAsync(userId);
+        var user = await GetFullPhoenixUser(userId.ToString());
 
         if (user == null)
         {
@@ -302,29 +317,22 @@ public class ModerationModule : TopModule
             return;
         }
 
-        if (user.UserName == newName)
+        if (user.Username == newName)
         {
-            await ModifyOriginalResponseAsync(msg => msg.Content = $"{user.UserName} ({userId}) is already named `{newName}`.");
+            await ModifyOriginalResponseAsync(msg => msg.Content = $"{user.Username} ({userId}) is already named `{newName}`.");
             return;
         }
 
-        if (!await GLClient.Phoenix.TryUpdateUsername(userId, newName))
-        {
-            await ModifyOriginalResponseAsync(msg => msg.Content = $"Could not update username for {user.UserName} ({user.UserId})");
-            return;
-        }
+        await PhoenixWrapper.GetClient(Context.User.Id).V1.Users[userId].Username.PatchAsync(new ChangeUserNameRequest() { Username = newName });
 
-        var backendSuccess = await GLClient.Production.UpdateNameFromPhoenixAsync(userId.ToString());
-
-        await LogService.LogGameActionAsync(LogAction.UpdateName, Context.User.Id, userId, $"{user.UserName}:{newName}");
+        await LogService.LogGameActionAsync(LogAction.UpdateName, Context.User.Id, userId, $"{user.Username}:{newName}");
 
         var embed = new EmbedBuilder()
             .WithTitle("Username successfully updated")
-            .WithDescription($"User with id **{user.UserId}** username has been updated.")
-            .AddField("Previous", $"**{user.UserName}**", true)
+            .WithDescription($"User with id **{user.Id}** username has been updated.")
+            .AddField("Previous", $"**{user.Username}**", true)
             .AddField("Updated", $"**{newName}**", true)
-            .AddField("Backend update status", backendSuccess ? "Success" : "Failed")
-            .WithColor(backendSuccess ? Color.Green : Color.Orange)
+            .WithColor(Color.Green)
             .WithFooter(footer => footer
                 .WithText($"Username change requested by {Context.User.Username}#{Context.User.Discriminator}")
                 .WithIconUrl(Context.User.GetDisplayAvatarUrl()))
@@ -359,13 +367,6 @@ public class ModerationModule : TopModule
     public async Task RemoveEmulateFromUserAsync(uint userId)
     {
         var result = await ModService.RemoveEmulateFromUserAsync(Context.User.Id, userId);
-        await SendResponseMessage(result.Message, false);
-    }
-
-    [SlashCommand("giverole", "Gives a certain user a role")]
-    public async Task GiveRoleAsync(uint userId, PhoenixRole role)
-    {
-        var result = await ModService.GiveRoleAsync(Context.User.Id, userId, role);
         await SendResponseMessage(result.Message, false);
     }
 
@@ -407,7 +408,7 @@ public class ModerationModule : TopModule
     [SlashCommand("kick", "Forces kick a user offline")]
     public async Task KickUserOfflineAsync(uint userId)
     {
-        var user = await GLClient.Phoenix.GetPhoenixUserAsync(userId);
+        var user = await PhoenixWrapper.GetClient(Context.User.Id).V1.Users[userId].GetAsync();
 
         if (user == null)
         {
@@ -417,7 +418,7 @@ public class ModerationModule : TopModule
 
         if (!await GLClient.Production.TryKickUserOfflineAsync(userId.ToString()))
         {
-            await ModifyOriginalResponseAsync(msg => msg.Content = $"Failed to force {user.UserName} ({user.UserId}) offline.");
+            await ModifyOriginalResponseAsync(msg => msg.Content = $"Failed to force {user.Username} ({user.Id}) offline.");
             return;
         }
 
@@ -425,7 +426,7 @@ public class ModerationModule : TopModule
 
         var embed = new EmbedBuilder()
             .WithTitle("User was successfully kicked")
-            .WithDescription($"User with id **{user.UserId}** is now offline.")
+            .WithDescription($"User with id **{user.Id}** is now offline.")
             .WithColor(Color.Green)
             .WithFooter(footer => footer
                 .WithText($"Offline kick requested by {Context.User.Username}#{Context.User.Discriminator}")
@@ -439,7 +440,7 @@ public class ModerationModule : TopModule
     [SlashCommand("reset", "Resets a user's progress")]
     public async Task ResetUserAsync(uint userId)
     {
-        var user = await GLClient.Phoenix.GetPhoenixUserAsync(userId);
+        var user = await PhoenixWrapper.GetClient(Context.User.Id).V1.Users[userId].GetAsync();
 
         if (user == null)
         {
@@ -449,7 +450,7 @@ public class ModerationModule : TopModule
 
         if (!await GLClient.Production.TryResetUserAsync(userId.ToString()))
         {
-            await ModifyOriginalResponseAsync(msg => msg.Content = $"Failed to reset {user.UserName} ({user.UserId}) progress.");
+            await ModifyOriginalResponseAsync(msg => msg.Content = $"Failed to reset {user.Username} ({user.Id}) progress.");
             return;
         }
 
@@ -457,7 +458,7 @@ public class ModerationModule : TopModule
 
         var embed = new EmbedBuilder()
             .WithTitle("Account progress successfully reset")
-            .WithDescription($"Account with **{user.UserId}**'s progress has been reset.")
+            .WithDescription($"Account with **{user.Id}**'s progress has been reset.")
             .WithColor(Color.Green)
             .WithFooter(footer => footer
                 .WithText($"Progress reset requested by {Context.User.Username}#{Context.User.Discriminator}")

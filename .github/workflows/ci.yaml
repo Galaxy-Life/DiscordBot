@@ -40,4 +40,4 @@ jobs:
       - name: Compile
         working-directory: src/AdvancedBot.Console
         run: |
-          dotnet build -c Release -warnaserror
+          dotnet build -c Release

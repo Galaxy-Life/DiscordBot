@@ -1,23 +1,29 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using AdvancedBot.Core.Entities;
+﻿using AdvancedBot.Core.Entities;
+using AdvancedBot.Core.Entities.Enums;
 using AdvancedBot.Core.Services;
 using AdvancedBot.Core.Services.DataStorage;
 using Discord;
 using Discord.Interactions;
 using GL.NET;
 using GL.NET.Entities;
+using Phoenix.Api.Models;
 
 namespace AdvancedBot.Core.Commands;
 
 public class TopModule : InteractionModuleBase<SocketInteractionContext>
 {
     public AccountService Accounts { get; set; }
+
     public GLClient GLClient { get; set; }
+
+    public PhoenixWrapperService PhoenixWrapper { get; set; }
+
     public PaginatorService Paginator { get; set; }
+
     public LogService LogService { get; set; }
+
+    public PhoenixCredentials Credentials { get; set; }
+
 
     public readonly List<ulong> PowerUsers =
     [
@@ -137,7 +143,7 @@ public class TopModule : InteractionModuleBase<SocketInteractionContext>
 
         if (isBanned)
         {
-            components.WithButton("Unban", $"unban:{username},{userId}", ButtonStyle.Success, Emote.Parse("<:Starling_Happy:946859412763578419>"), row: 1);
+            components.WithButton("Unban", $"unban:{userId}", ButtonStyle.Success, Emote.Parse("<:Starling_Happy:946859412763578419>"), row: 1);
         }
         else
         {
@@ -161,7 +167,7 @@ public class TopModule : InteractionModuleBase<SocketInteractionContext>
         return components.Build();
     }
 
-    protected async Task<User> GetUserByInput(string input)
+    protected async Task<User?> GetUserByInput(string input)
     {
         if (string.IsNullOrEmpty(input)) input = Context.User.Username;
 
@@ -172,35 +178,151 @@ public class TopModule : InteractionModuleBase<SocketInteractionContext>
         return profile;
     }
 
-    protected async Task<PhoenixUser> GetPhoenixUserByInput(string input, bool full = false)
+    protected async Task<UserDto?> GetPhoenixUser(string input)
     {
-        if (string.IsNullOrEmpty(input)) input = Context.User.Username;
-        PhoenixUser user = null;
-
-        string digitString = new(input.Where(char.IsDigit).ToArray());
-
-        // extra check to see if all characters were numbers
-        if (digitString.Length == input.Length)
+        try
         {
-            if (full)
+            if (string.IsNullOrEmpty(input))
             {
-                user = await GLClient.Phoenix.GetFullPhoenixUserAsync(input);
+                input = Context.User.Username;
+            }
+
+            UserDto? user = null;
+
+            // extra check to see if all characters were numbers
+            if (long.TryParse(input, out var userId))
+            {
+                user = await PhoenixWrapper.GetClient(Context.User.Id).V1.Users[userId].GetAsync();
+            }
+
+            // Get regular user to know its id
+            user ??= await PhoenixWrapper.GetClient(Context.User.Id).V1.Users.ByUsername[input].GetAsync();
+
+            return user;
+        }
+        catch (Exception)
+        {
+            return null;
+        }
+    }
+
+    protected async Task<UserDetailsDto?> GetFullPhoenixUser(string input)
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(input))
+            {
+                input = Context.User.Username;
+            }
+
+            UserDetailsDto? detailedUser = null;
+
+            // extra check to see if all characters were numbers
+            if (long.TryParse(input, out var userId))
+            {
+                detailedUser = await PhoenixWrapper.GetClient(Context.User.Id).V1.Users[userId].Details.GetAsync();
+            }
+
+            // Not found, try fetching by name
+            if (detailedUser == null)
+            {
+                // Get regular user to know its id
+                var user = await PhoenixWrapper.GetClient(Context.User.Id).V1.Users.ByUsername[input].GetAsync();
+
+                // Get user details by id after getting it by name
+                if (user != null)
+                {
+                    detailedUser = await PhoenixWrapper.GetClient(Context.User.Id).V1.Users[user.Id.Value].Details.GetAsync();
+                }
+            }
+
+            return detailedUser;
+        }
+        catch (Exception)
+        {
+            return null;
+        }
+    }
+
+    public async Task<ModResult> GetUserProfileAsync(string input)
+    {
+        var phoenixUser = await GetPhoenixUser(input);
+        if (phoenixUser is null)
+        {
+            return new ModResult(ModResultType.NotFound, message: new ResponseMessage($"Could not find any user for **{input}**."));
+        }
+
+        var user = await GetUserByInput(input);
+        if (user is null)
+        {
+            return phoenixUser.IsBanned.GetValueOrDefault()
+                ? new ModResult(ModResultType.Success, new ResponseMessage($"**{phoenixUser.Username} ({phoenixUser.Id})** is currently banned and has no progress on Galaxy Life."), phoenixUser, null)
+                : new ModResult(ModResultType.Success, new ResponseMessage($"**{phoenixUser.Username} ({phoenixUser.Id})** exists but has no progress on Galaxy Life."), phoenixUser, null);
+        }
+
+        var stats = await GLClient.Api.GetUserStats(user.Id);
+
+        var priorityRoles = new[] { "admin", "developer", "staff" };
+        var role = priorityRoles.FirstOrDefault(r => phoenixUser.Roles.Contains(r)) ?? phoenixUser.Roles.FirstOrDefault();
+
+        var roleText = phoenixUser.IsBanned.GetValueOrDefault()
+            ? "[BANNED]"
+            : role is not null
+                ? $"[{role}]"
+                : "";
+
+        var color = phoenixUser.IsBanned.GetValueOrDefault()
+            ? Color.Default
+            : role switch
+            {
+                "admin" => Color.DarkRed,
+                "developer" => Color.Blue,
+                "staff" => new Color(2605694),
+                _ => Color.LightGrey
+            };
+
+        var displayAlliance = "This user is not a member of any alliance.";
+        if (!string.IsNullOrEmpty(user.AllianceId))
+        {
+            var alliance = await GLClient.Api.GetAlliance(user.AllianceId);
+
+            // can happen due to 24hour player delay
+            if (alliance == null)
+            {
+                displayAlliance = "This user has recently changed alliance, please wait for it to update!";
             }
             else
             {
-                user = await GLClient.Phoenix.GetPhoenixUserAsync(input);
+                displayAlliance = $"This user is a member of **{alliance.Name}**.";
             }
         }
 
-        // try to get user by name
-        user ??= await GLClient.Phoenix.GetPhoenixUserByNameAsync(input);
+        var embed = new EmbedBuilder()
+            .WithTitle($"{roleText} {phoenixUser.Username} | Profile")
+            .WithThumbnailUrl(user.Avatar)
+            .WithDescription($"{displayAlliance}\n\u200b")
+            .AddField("Level", FormatNumber(user.Level), true)
+            .AddField("Starbase", user.Planets[0].HQLevel, true)
+            .AddField("Colonies", user.Planets.Count(x => x != null) - 1, true)
+            .WithColor(color)
+            .WithFooter(footer => footer
+                .WithText($"ID: {phoenixUser.Id} • Account created on {phoenixUser.RegisteredOn.GetValueOrDefault():dd MMMM yyyy a\\t HH:mm}")
+                .WithIconUrl(user.Avatar));
 
-        // get user by id after getting it by name
-        if (user != null && full)
+        var message = new ResponseMessage("", [embed.Build()]);
+        return new ModResult(ModResultType.Success, message, phoenixUser, user);
+    }
+
+    private static string FormatNumber(decimal number)
+    {
+        return number switch
         {
-            user = await GLClient.Phoenix.GetFullPhoenixUserAsync(user.UserId);
-        }
-
-        return user;
+            >= 1_000_000_000 => $"{Math.Round(number / 1_000_000_000, 2)}B",
+            >= 10_000_000 => $"{Math.Round(number / 1_000_000, 1)}M",
+            >= 1_000_000 => $"{Math.Round(number / 1_000_000, 2)}M",
+            >= 100_000 => $"{Math.Round(number / 1_000, 1)}K",
+            >= 10_000 => $"{Math.Round(number / 1_000, 2)}K",
+            _ => number.ToString()
+        };
     }
 }

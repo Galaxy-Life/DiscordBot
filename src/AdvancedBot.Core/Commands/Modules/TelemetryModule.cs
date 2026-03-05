@@ -28,7 +28,7 @@ public class TelemetryModule : TopModule
     public async Task GiftsAsync(uint userId)
     {
         var result = await ModService.GetGiftsTelemetry(Context.User.Id, userId);
-        var user = await GLService.GetUserProfileAsync(userId.ToString());
+        var user = await GetUserByInput(userId.ToString());
 
         var users = new Dictionary<string, int>();
 
@@ -47,7 +47,7 @@ public class TelemetryModule : TopModule
         var fields = users.OrderByDescending(x => x.Value).Select(x => new EmbedFieldBuilder() { Name = $"Id: {x.Key}", Value = $"Items sent: {x.Value}" }.Build());
 
         var templateEmbed = new EmbedBuilder()
-            .WithTitle($"Gifts Telemetry for {user.User.Name} ({userId})");
+            .WithTitle($"Gifts Telemetry for {user.Name} ({userId})");
 
         await SendPaginatedMessageAsync(fields, null, templateEmbed);
     }
@@ -63,9 +63,9 @@ public class TelemetryModule : TopModule
     public async Task GetPossibleAltsAsync(uint userId)
     {
         var result = await ModService.GetPossibleAlts(Context.User.Id, userId);
-        var user = await GLService.GetUserProfileAsync(userId.ToString());
+        var user = await GetUserByInput(userId.ToString());
 
-        if (user.User == null)
+        if (user == null)
         {
             await SendResponseMessage(new ResponseMessage() { Content = "No Galaxy Life Data for this user." }, false);
             return;
@@ -91,7 +91,7 @@ public class TelemetryModule : TopModule
         }
 
         var templateEmbed = new EmbedBuilder()
-              .WithTitle($"Possible Connections to {user.User.Name} ({userId})");
+              .WithTitle($"Possible Connections to {user.Name} ({userId})");
 
         await SendPaginatedMessageAsync(fields, null, templateEmbed);
     }

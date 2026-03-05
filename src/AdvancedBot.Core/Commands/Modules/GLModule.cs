@@ -44,13 +44,13 @@ public class GLModule : TopModule
     [SlashCommand("profile", "Displays a user's Galaxy Life profile")]
     public async Task ShowUserProfileAsync(string input = "")
     {
-        var response = await GLService.GetUserProfileAsync(string.IsNullOrEmpty(input) ? Context.User.Username : input);
+        var response = await GetUserProfileAsync(string.IsNullOrEmpty(input) ? Context.User.Username : input);
         await SendResponseMessage(response.Message, false);
 
         // no gl data found
         if (response.User == null) return;
 
-        var components = CreateDefaultComponents(response.PhoenixUser.UserName, response.User.Id, response.User.AllianceId, false);
+        var components = CreateDefaultComponents(response.User.Name, response.User.Id, response.User.AllianceId, response.PhoenixUser?.IsBanned ?? false);
         await ModifyOriginalResponseAsync(msg => msg.Components = components);
     }
 
@@ -63,7 +63,7 @@ public class GLModule : TopModule
         // no gl data found
         if (response.User == null) return;
 
-        var components = CreateDefaultComponents(response.User.Name, response.User.Id, response.User.AllianceId, false);
+        var components = CreateDefaultComponents(response.User.Name, response.User.Id, response.User.AllianceId, response.PhoenixUser?.IsBanned ?? false);
         await ModifyOriginalResponseAsync(msg => msg.Components = components);
     }
 
@@ -77,7 +77,7 @@ public class GLModule : TopModule
         if (response.Alliance == null) return;
 
         var owner = response.Alliance.Members.First(x => x.AllianceRole == AllianceRole.LEADER);
-        var components = CreateDefaultComponents(owner.Name, owner.Id, response.Alliance.Id, false);
+        var components = CreateDefaultComponents(owner.Name, owner.Id, response.Alliance.Id, response.PhoenixUser?.IsBanned ?? false);
         await ModifyOriginalResponseAsync(msg => msg.Components = components);
     }
 
@@ -91,7 +91,7 @@ public class GLModule : TopModule
         if (response.Alliance == null) return;
 
         var owner = response.Alliance.Members.First(member => member.AllianceRole == AllianceRole.LEADER);
-        var components = CreateDefaultComponents(owner.Name, owner.Id, response.Alliance.Id, false);
+        var components = CreateDefaultComponents(owner.Name, owner.Id, response.Alliance.Id, response.PhoenixUser?.IsBanned ?? false);
         await ModifyOriginalResponseAsync(msg => msg.Components = components);
     }
 
@@ -187,13 +187,13 @@ public class GLModule : TopModule
 
         if (baseUser == null)
         {
-            await ModifyOriginalResponseAsync(msg => msg.Content = $"<:shrugR:945740284308893696> Could not find any player named **{input1}**");
+            await ModifyOriginalResponseAsync(msg => msg.Content = $"Could not find any player named **{input1}**");
             return;
         }
 
         if (secondUser == null)
         {
-            await ModifyOriginalResponseAsync(msg => msg.Content = $"<:shrugR:945740284308893696> Could not find any player named **{input2}**");
+            await ModifyOriginalResponseAsync(msg => msg.Content = $"Could not find any player named **{input2}**");
             return;
         }
 
@@ -238,5 +238,4 @@ public class GLModule : TopModule
             _ => number.ToString()
         };
     }
-
 }
