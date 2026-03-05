@@ -117,11 +117,11 @@ public class TopModule : InteractionModuleBase<SocketInteractionContext>
 
         if (PowerUsers.Contains(Context.User.Id))
         {
-            components.WithButton("Moderation", $"moderation:{username},{userId},{alliance ?? "1111111111111111111111111111111111111111"},{isBanned}", ButtonStyle.Secondary, new Emoji("➕"));
+            components.WithButton("Moderation", $"moderation:{username},{userId},{(string.IsNullOrEmpty(alliance) ? "1111111111111111111111111111111111111111" : alliance)},{isBanned}", ButtonStyle.Secondary, new Emoji("➕"));
         }
         else if (SemiPowerUsers.Contains(Context.User.Id))
         {
-            components.WithButton("Moderation", $"semimoderation:{username},{userId},{alliance ?? "1111111111111111111111111111111111111111"}", ButtonStyle.Secondary, new Emoji("➕"));
+            components.WithButton("Moderation", $"semimoderation:{username},{userId},{(string.IsNullOrEmpty(alliance) ? "1111111111111111111111111111111111111111" : alliance)}", ButtonStyle.Secondary, new Emoji("➕"));
         }
 
         return components.Build();
