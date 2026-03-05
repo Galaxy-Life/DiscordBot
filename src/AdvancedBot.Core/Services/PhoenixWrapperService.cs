@@ -27,7 +27,7 @@ public class PhoenixWrapperService
             new HttpClient() { Timeout = TimeSpan.FromSeconds(10) },
             new PhoenixApiClientOptions
             {
-                TokenEndpoint = new Uri("https://auth.phoenixnetwork.net/api/oauth/token"),
+                TokenEndpoint = new Uri("https://accounts.phoenixnetwork.net/api/oauth/token"),
                 ClientId = _credentials.ClientId,
                 ClientSecret = _credentials.ClientSecret,
                 Scopes = ["accounts:edit", "accounts:moderate", "accounts:read", "token_exchange:obo"],
