@@ -358,6 +358,9 @@ MigrationBackup/
 !.vscode/launch.json
 !.vscode/extensions.json
 
+## Rider
+*.idea/
+
 # Project specific
 *assets/
 *.db
