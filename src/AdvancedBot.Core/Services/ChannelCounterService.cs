@@ -133,7 +133,14 @@ public class ChannelCounterService
 
             for (var j = 0; j < guilds[i].ChannelCounters.Count; j++)
             {
-                await UpdateChannelAsync(guilds[i], guilds[i].ChannelCounters[j]);
+                try
+                {
+                    await UpdateChannelAsync(guilds[i], guilds[i].ChannelCounters[j]);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine($"Failed to update Voice Counter in {guilds[i].Id} (channel: {guilds[i].ChannelCounters[j].ChannelId}");
+                }
             }
         }
 
