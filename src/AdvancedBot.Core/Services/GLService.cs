@@ -1,14 +1,9 @@
-﻿using System;
-using System.Linq;
-using System.Threading.Tasks;
-using AdvancedBot.Core.Entities;
+﻿using AdvancedBot.Core.Entities;
 using AdvancedBot.Core.Entities.Enums;
 using Discord;
 using GL.NET;
 using GL.NET.Entities;
 using Humanizer;
-using Humanizer.Localisation;
-using Phoenix.Api.Models;
 
 namespace AdvancedBot.Core.Services;
 

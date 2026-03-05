@@ -30,7 +30,7 @@ public class PhoenixWrapperService
                 TokenEndpoint = new Uri("https://auth.phoenixnetwork.net/api/oauth/token"),
                 ClientId = _credentials.ClientId,
                 ClientSecret = _credentials.ClientSecret,
-                Scopes = [ "accounts:edit", "accounts:moderate", "accounts:read", "token_exchange:obo" ],
+                Scopes = ["accounts:edit", "accounts:moderate", "accounts:read", "token_exchange:obo"],
                 EnableTokenExchange = true,
                 SubjectId = discordId.ToString(),
                 SubjectProvider = "discord",

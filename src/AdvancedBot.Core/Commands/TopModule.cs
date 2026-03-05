@@ -242,7 +242,6 @@ public class TopModule : InteractionModuleBase<SocketInteractionContext>
         {
             return null;
         }
-        
     }
 
     public async Task<ModResult> GetUserProfileAsync(string input)
