@@ -32,8 +32,13 @@ public class ModerationService
         onBanTimer(null, null);
     }
 
-    public async Task<ModResult> BanUserAsync(ulong discordId, uint userId, BanReasonType type, string reason, uint days = 0)
+    public async Task<ModResult> BanUserAsync(ulong discordId, uint userId, BanReasonType type, string reason, uint? days = null)
     {
+        if (days == 0)
+        {
+            days = null;
+        }
+
         var user = await _phoenixWrapper.GetClient(discordId).V1.Users[userId].GetAsync();
         if (user is null)
         {
@@ -58,7 +63,7 @@ public class ModerationService
             .WithDescription($"**{user.Username}** ({user.Id}) has been banned!")
             .WithColor(Color.Red)
             .AddField("Player", $"{user.Username} (`{user.Id}`)", true)
-            .AddField("Ban duration", days > 0 ? $"{days} days" : $"Permanent", true)
+            .AddField("Ban duration", days != null ? $"{days} days" : $"Permanent", true)
             .WithFooter(footer => footer
                 .WithText($"Ban requested by moderator with id {discordId}"))
             .WithCurrentTimestamp()
@@ -66,9 +71,9 @@ public class ModerationService
 
         DateTime? banDuration = null;
 
-        if (days > 0)
+        if (days != null)
         {
-            banDuration = DateTime.UtcNow.AddDays(days);
+            banDuration = DateTime.UtcNow.AddDays((double)days);
             _storage.AddTempBan(new Tempban(discordId, userId, banDuration.Value));
         }
 
