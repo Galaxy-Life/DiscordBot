@@ -32,13 +32,8 @@ public class PhoenixWrapperService
                 ClientId = _credentials.ClientId,
                 ClientSecret = _credentials.ClientSecret,
                 Scopes = [],
-            }).PhoenixClient;
-
-        if (client == null)
-        {
-            throw new Exception("Failed to create default profile");
-        }
-
+            }).PhoenixClient ?? throw new Exception("Failed to create default profile");
+       
         _defaultClient = client;
     }
 

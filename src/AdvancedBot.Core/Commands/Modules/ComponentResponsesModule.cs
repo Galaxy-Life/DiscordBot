@@ -243,7 +243,7 @@ public class ComponentResponsesModule : TopModule
             type: modal.BanType,
             notes: modal.ModeratorNotes,
             days: string.IsNullOrWhiteSpace(modal.Duration)
-                ? null 
+                ? null
                 : days);
 
         await SendResponseMessage(result.Message, true);

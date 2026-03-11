@@ -44,7 +44,8 @@ public class ModerationService
                 user);
         }
 
-        var banRequest = new BanUserRequest() { 
+        var banRequest = new BanUserRequest()
+        {
             Type = (int)type,
             Duration = days,
             ModeratorNote = notes
@@ -63,14 +64,14 @@ public class ModerationService
             .WithCurrentTimestamp()
             .Build();
 
-        DateTime? banDuration = days is not null 
+        DateTime? banDuration = days is not null
             ? DateTime.UtcNow.AddDays((double)days)
             : null;
 
         await _gl.Production.TryKickUserOfflineAsync(userId.ToString());
 
-        var banInfo = string.IsNullOrEmpty(notes) 
-            ? $"Reason: {type}" 
+        var banInfo = string.IsNullOrEmpty(notes)
+            ? $"Reason: {type}"
             : $"Reason: {type}\nAdditional notes: {notes}";
 
         await _logs.LogGameActionAsync(
