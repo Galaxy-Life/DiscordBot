@@ -257,9 +257,13 @@ public class ModerationModule : TopModule
     }
 
     [SlashCommand("ban", "Bans a given user")]
-    public async Task TryBanUserAsync(uint userId, BanReasonType type, string reason, uint days = 0)
+    public async Task TryBanUserAsync(
+        [Summary(description: "The ID of the user to ban")] uint userId,
+        [Summary(description: "The reason category for the ban")] BanReasonType type,
+        [Summary(description: "Additional notes about the ban (not shown to the user)")] string? notes = null,
+        [Summary(description: "Duration of the ban in days (omit for permanent)")] uint? days = null)
     {
-        var result = await ModService.BanUserAsync(Context.User.Id, userId, type, reason, days);
+        var result = await ModService.BanUserAsync(Context.User.Id, userId, type, notes, days);
         await SendResponseMessage(result.Message, false);
     }
 

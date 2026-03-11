@@ -72,7 +72,7 @@ public class LogService
                 break;
 
             case LogAction.Ban:
-                embed.AddField("Reason", log.Reason);
+                embed.AddField("Information", log.Reason);
                 embed.AddField("Expires on", log.Until == null ? "Never" : log.Until.Value.ToShortDateString());
                 break;
 

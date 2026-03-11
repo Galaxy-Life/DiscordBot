@@ -32,13 +32,8 @@ public class ModerationService
         onBanTimer(null, null);
     }
 
-    public async Task<ModResult> BanUserAsync(ulong discordId, uint userId, BanReasonType type, string reason, uint? days = null)
+    public async Task<ModResult> BanUserAsync(ulong discordId, uint userId, BanReasonType type, string? notes, uint? days)
     {
-        if (days == 0)
-        {
-            days = null;
-        }
-
         var user = await _phoenixWrapper.GetClient(discordId).V1.Users[userId].GetAsync();
         if (user is null)
         {
@@ -55,7 +50,12 @@ public class ModerationService
                 user);
         }
 
-        var banRequest = new BanUserRequest() { Type = (int)type, Duration = days, Reason = reason };
+        var banRequest = new BanUserRequest() { 
+            Type = (int)type,
+            Duration = days,
+            ModeratorNote = notes
+        };
+
         await _phoenixWrapper.GetClient(discordId).V1.Users[userId].Ban.PostAsync(banRequest);
 
         var embed = new EmbedBuilder()
@@ -69,16 +69,22 @@ public class ModerationService
             .WithCurrentTimestamp()
             .Build();
 
-        DateTime? banDuration = null;
-
-        if (days != null)
-        {
-            banDuration = DateTime.UtcNow.AddDays((double)days);
-            _storage.AddTempBan(new Tempban(discordId, userId, banDuration.Value));
-        }
+        DateTime? banDuration = days is not null 
+            ? DateTime.UtcNow.AddDays((double)days)
+            : null;
 
         await _gl.Production.TryKickUserOfflineAsync(userId.ToString());
-        await _logs.LogGameActionAsync(LogAction.Ban, discordId, userId, reason, banDuration);
+
+        var banInfo = string.IsNullOrEmpty(notes) 
+            ? $"Reason: {type}" 
+            : $"Reason: {type}\nAdditional notes: {notes}";
+
+        await _logs.LogGameActionAsync(
+            LogAction.Ban,
+            discordId,
+            userId,
+            banInfo,
+            banDuration);
 
         var message = new ResponseMessage(embeds: [embed]);
         return new ModResult(ModResultType.Success, message, user);

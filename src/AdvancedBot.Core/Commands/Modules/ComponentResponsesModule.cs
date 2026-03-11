@@ -108,7 +108,7 @@ public class ComponentResponsesModule : TopModule
             return;
         }
 
-        await Context.Interaction.RespondWithModalAsync<BanModal>($"ban_menu:{userId}", null, x => x.Title = $"Banning {username} ({userId})");
+        await Context.Interaction.RespondWithModalAsync<BanModal>($"ban_menu:{userId}", null, x => x.Title = $"Ban {username} ({userId})");
     }
 
     [ComponentInteraction("unban:*")]
@@ -227,20 +227,25 @@ public class ComponentResponsesModule : TopModule
             return;
         }
 
-        if (string.IsNullOrEmpty(modal.BanReason))
+        uint days = 0;
+        if (!string.IsNullOrWhiteSpace(modal.Duration) && !uint.TryParse(modal.Duration, out days))
         {
-            await RespondAsync("Cannot ban without a valid ban reason", ephemeral: true);
+            await RespondAsync("Please enter a valid number of days.", ephemeral: true);
             return;
-        }
-
-        var days = 0;
-        if (!string.IsNullOrEmpty(modal.Duration) && int.TryParse(modal.Duration, out days))
-        {
         }
 
         await DeferAsync();
 
-        var result = await ModService.BanUserAsync(Context.User.Id, uint.Parse(userId), modal.BanType, modal.BanReason, (uint)days);
+
+        var result = await ModService.BanUserAsync(
+            discordId: Context.User.Id,
+            userId: uint.Parse(userId),
+            type: modal.BanType,
+            notes: modal.ModeratorNotes,
+            days: string.IsNullOrWhiteSpace(modal.Duration)
+                ? null 
+                : days);
+
         await SendResponseMessage(result.Message, true);
     }
 

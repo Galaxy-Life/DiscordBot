@@ -1,4 +1,5 @@
-﻿using AdvancedBot.Core.Entities;
+﻿using System.Globalization;
+using AdvancedBot.Core.Entities;
 using AdvancedBot.Core.Entities.Enums;
 using AdvancedBot.Core.Services;
 using AdvancedBot.Core.Services.DataStorage;
@@ -266,9 +267,9 @@ public class TopModule : InteractionModuleBase<SocketInteractionContext>
         var role = priorityRoles.FirstOrDefault(r => phoenixUser.Roles.Contains(r)) ?? phoenixUser.Roles.FirstOrDefault();
 
         var roleText = phoenixUser.IsBanned.GetValueOrDefault()
-            ? "[BANNED]"
+            ? "[Banned]"
             : role is not null
-                ? $"[{role}]"
+                ? $"[{CultureInfo.InvariantCulture.TextInfo.ToTitleCase(role)}]"
                 : "";
 
         var color = phoenixUser.IsBanned.GetValueOrDefault()
