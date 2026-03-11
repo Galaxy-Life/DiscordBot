@@ -203,7 +203,6 @@ public class BotClient
             .AddSingleton<ChannelCounterService>()
             .AddSingleton<ModerationService>()
             .AddSingleton<GLService>()
-            .AddSingleton<BotStorage>()
             .AddSingleton<PhoenixWrapperService>()
             .BuildServiceProvider();
     }

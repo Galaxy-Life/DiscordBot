@@ -16,20 +16,14 @@ public class ModerationService
     private readonly GLClient _gl;
     private readonly PhoenixWrapperService _phoenixWrapper;
     private readonly LogService _logs;
-    private readonly BotStorage _storage;
 
     private readonly Timer _banTimer = new(1000 * 60 * 30);
 
-    public ModerationService(GLClient gl, PhoenixWrapperService phoenixWrapper, LogService logs, BotStorage storage)
+    public ModerationService(GLClient gl, PhoenixWrapperService phoenixWrapper, LogService logs)
     {
         _gl = gl;
         _phoenixWrapper = phoenixWrapper;
         _logs = logs;
-        _storage = storage;
-
-        _banTimer.Elapsed += onBanTimer;
-        _banTimer.Start();
-        onBanTimer(null, null);
     }
 
     public async Task<ModResult> BanUserAsync(ulong discordId, uint userId, BanReasonType type, string? notes, uint? days)
@@ -633,29 +627,5 @@ public class ModerationService
         await _logs.LogGameActionAsync(LogAction.GetAccounts, discordId, userId);
 
         return new ModResult<Dictionary<string, Dictionary<string, Fingerprint>>>(result, ModResultType.Success);
-    }
-
-    private void onBanTimer(object sender, ElapsedEventArgs e)
-    {
-        var bans = _storage.GetTempbans();
-        var bansToRemove = new List<Tempban>();
-
-        for (var i = 0; i < bans.Count; i++)
-        {
-            var time = (bans[i].BanEnd - DateTime.UtcNow).TotalMinutes;
-
-            if (time <= 0)
-            {
-                // no need to await
-                UnbanUserAsync(bans[i].ModeratorId, bans[i].UserId, true).ConfigureAwait(false);
-                bansToRemove.Add(bans[i]);
-            }
-        }
-
-        // remove bans that were handled
-        for (var i = 0; i < bansToRemove.Count; i++)
-        {
-            _storage.RemoveTempban(bansToRemove[i]);
-        }
     }
 }
