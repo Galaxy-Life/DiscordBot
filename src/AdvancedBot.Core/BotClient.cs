@@ -204,6 +204,7 @@ public class BotClient
             .AddSingleton<ModerationService>()
             .AddSingleton<GLService>()
             .AddSingleton<PhoenixWrapperService>()
+            .AddSingleton<CloudflareService>()
             .BuildServiceProvider();
     }
 }

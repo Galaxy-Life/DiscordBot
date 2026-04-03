@@ -1,5 +1,4 @@
-﻿using System.Threading.Tasks;
-using AdvancedBot.Core.Commands.Preconditions;
+﻿using AdvancedBot.Core.Commands.Preconditions;
 using AdvancedBot.Core.Entities;
 using AdvancedBot.Core.Entities.Enums;
 using AdvancedBot.Core.Services;
@@ -14,6 +13,8 @@ namespace AdvancedBot.Core.Commands.Modules;
 public class StagingModule : TopModule
 {
     public ModerationService ModService { get; set; }
+
+    public CloudflareService CloudflareService { get; set; }
 
     [SlashCommand("overview", "Shows an overview of the staging server")]
     public async Task StagingOverviewAsync()
@@ -132,10 +133,30 @@ public class StagingModule : TopModule
         if (!result)
         {
             await ModifyOriginalResponseAsync(msg => msg.Content = "Failed lol");
+            return;
         }
 
         var embed = new EmbedBuilder()
             .WithTitle($"Restarted Staging")
+            .WithColor(Color.Green)
+            .Build();
+
+        await ModifyOriginalResponseAsync(msg => msg.Embeds = new Embed[] { embed });
+    }
+
+    [SlashCommand("cache", "Clears staging cache")]
+    public async Task ClearStagingCacheAsync()
+    {
+        var result = await CloudflareService.PurgeStagingCacheAsync();
+
+        if (!result)
+        {
+            await ModifyOriginalResponseAsync(msg => msg.Content = "Failed lol");
+            return;
+        }
+
+        var embed = new EmbedBuilder()
+            .WithTitle($"Cleared Staging Cache")
             .WithColor(Color.Green)
             .Build();
 
