@@ -14,8 +14,8 @@ public class CloudflareService : IDisposable
             Timeout = TimeSpan.FromSeconds(10),
         };
 
-        var test = Environment.GetEnvironmentVariable("CLOUDFLARE__TOKEN");
-        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", test);
+        var token = Environment.GetEnvironmentVariable("CLOUDFLARE__TOKEN");
+        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
     }
 
     public void Dispose()
