@@ -30,7 +30,13 @@ public class CloudflareService : IDisposable
             var content = JsonContent.Create(new { hosts = new[] { "staging.galaxylifegame.net" } });
             using var response = await _client.PostAsync($"https://api.cloudflare.com/client/v4/zones/c8f15f27bfa4a7f1b0e93191d485695a/purge_cache", content);
 
-            return response.IsSuccessStatusCode;
+            var result = await response.Content.ReadFromJsonAsync<CloudflareResponse>();
+            if (result is null) return false;
+
+            if (!result.Success)
+                Console.WriteLine("Cloudflare CDN purge failed: {0}", result.Errors);
+
+            return result.Success;
         }
         catch (Exception ex)
         {
@@ -38,4 +44,7 @@ public class CloudflareService : IDisposable
             return false;
         }
     }
+
+    private record CloudflareResponse(bool Success, CloudflareError[] Errors);
+    private record CloudflareError(int Code, string Message);
 }
