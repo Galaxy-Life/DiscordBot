@@ -27,7 +27,7 @@ public class CloudflareService : IDisposable
     {
         try
         {
-            var content = JsonContent.Create(new { hosts = new[] { "staging.galaxylifegame.net" } });
+            var content = JsonContent.Create(new { hosts = new[] { "cdn.staging.galaxylifegame.net" } });
             using var response = await _client.PostAsync($"https://api.cloudflare.com/client/v4/zones/c8f15f27bfa4a7f1b0e93191d485695a/purge_cache", content);
 
             var result = await response.Content.ReadFromJsonAsync<CloudflareResponse>();
